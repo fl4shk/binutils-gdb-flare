@@ -1148,6 +1148,10 @@ case "${target}" in
   moxie-*-*)
     noconfigdirs="$noconfigdirs"
     ;;
+  flare32-*-*)
+    noconfigdirs="$noconfigdirs binutils gas gdb ld opcodes config"
+    noconfigdirs="$noconfigdirs gprof target-libgloss"
+    ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;

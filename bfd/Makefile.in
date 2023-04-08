@@ -595,6 +595,7 @@ ALL_MACHINES = \
 	cpu-mips.lo \
 	cpu-mmix.lo \
 	cpu-moxie.lo \
+	cpu-flare32.lo \
 	cpu-msp430.lo \
 	cpu-mt.lo \
 	cpu-nds32.lo \
@@ -678,6 +679,7 @@ ALL_MACHINES_CFILES = \
 	cpu-mips.c \
 	cpu-mmix.c \
 	cpu-moxie.c \
+	cpu-flare32.c \
 	cpu-msp430.c \
 	cpu-mt.c \
 	cpu-nds32.c \
@@ -786,6 +788,7 @@ BFD32_BACKENDS = \
 	elf32-metag.lo \
 	elf32-microblaze.lo \
 	elf32-moxie.lo \
+	elf32-flare32.lo \
 	elf32-msp430.lo \
 	elf32-mt.lo \
 	elf32-nds32.lo \
@@ -921,6 +924,7 @@ BFD32_BACKENDS_CFILES = \
 	elf32-metag.c \
 	elf32-microblaze.c \
 	elf32-moxie.c \
+	elf32-flare32.c \
 	elf32-msp430.c \
 	elf32-mt.c \
 	elf32-nds32.c \
@@ -1472,6 +1476,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-d30v.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-dlx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-epiphany.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-flare32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-fr30.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-frv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-ft32.Plo@am__quote@
@@ -1566,6 +1571,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-d30v.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-dlx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-epiphany.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-flare32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-fr30.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-frv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-ft32.Plo@am__quote@

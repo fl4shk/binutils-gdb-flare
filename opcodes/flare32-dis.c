@@ -89,9 +89,12 @@ snprintf_insn_flare32_maybe_pre_lpre (int length, flare32_temp_t iword,
 int
 print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
 {
-  int length = 0;
-  int status;
   stream = info->stream;
+  fpr = info->fprintf_func;
+
+  int
+    length = 0,
+    status;
   bfd_byte buffer[2];
   const flare32_opc_info_t *opc_info;
   flare32_temp_t
@@ -99,8 +102,8 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
     simm = 0,
     grp,
     ra_ind,
-    rc_ind;
-  fpr = info->fprintf_func;
+    rc_ind,
+    f;
 
   if ((status = info->read_memory_func (addr + length, buffer, 2, info)))
   {
@@ -183,28 +186,28 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         case FLARE32_OA_RA_S5:
         {
           fpr (stream, "%s\t%s, #0x%x%s",
-            opc_info->name, gpr_names[ra_ind], (unsigned)simm,
+            opc_info->names[0], gpr_names[ra_ind], (unsigned)simm,
             snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
           break;
         case FLARE32_OA_RA_PC_S5:
         {
           fpr (stream, "%s\t%s, pc, #0x%x%s",
-            opc_info->name, gpr_names[ra_ind], (unsigned)simm,
+            opc_info->names[0], gpr_names[ra_ind], (unsigned)simm,
             snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
           break;
         case FLARE32_OA_RA_SP_S5:
         {
           fpr (stream, "%s\t%s, sp, #0x%x%s",
-            opc_info->name, gpr_names[ra_ind], (unsigned)simm,
+            opc_info->names[0], gpr_names[ra_ind], (unsigned)simm,
             snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
           break;
         case FLARE32_OA_RA_FP_S5:
         {
           fpr (stream, "%s\t%s, fp, #0x%x%s",
-            opc_info->name, gpr_names[ra_ind], (unsigned)simm,
+            opc_info->names[0], gpr_names[ra_ind], (unsigned)simm,
             snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
           break;
@@ -218,7 +221,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s",
-              opc_info->name, gpr_names[ra_ind]);
+              opc_info->names[0], gpr_names[ra_ind]);
           }
         }
           break;
@@ -236,6 +239,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       /* -------- */
       opc_info = &flare32_opc_info_g2
         [GET_INSN_FIELD (FLARE32_G2_OP_MASK, FLARE32_G2_OP_BITPOS, iword)];
+      f = GET_INSN_FIELD (FLARE32_G2_F_MASK, FLARE32_G2_F_BITPOS, iword);
       /* -------- */
       switch (opc_info->oparg)
       {
@@ -249,7 +253,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, %s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[f], gpr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -263,7 +267,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, sp, %s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[f], gpr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -277,7 +281,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, fp, %s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[f], gpr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -316,7 +320,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         case (FLARE32_OA_PCREL_S9):
         {
           fpr (stream, "%s\t#0x%x%s",
-            opc_info->name, (unsigned)simm,
+            opc_info->names[0], (unsigned)simm,
             snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
           break;
@@ -346,7 +350,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s",
-              opc_info->name, gpr_names[ra_ind]);
+              opc_info->names[0], gpr_names[ra_ind]);
           }
         }
           break;
@@ -360,7 +364,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, %s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[0], gpr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -374,7 +378,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s",
-              opc_info->name, "ira");
+              opc_info->names[0], "ira");
           }
         }
           break;
@@ -388,7 +392,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s",
-              opc_info->name);
+              opc_info->names[0]);
           }
         }
           break;
@@ -402,7 +406,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, %s",
-              opc_info->name, gpr_names[ra_ind], spr_names[rc_ind]);
+              opc_info->names[0], gpr_names[ra_ind], spr_names[rc_ind]);
           }
         }
           break;
@@ -416,7 +420,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, %s",
-              opc_info->name, spr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[0], spr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -430,7 +434,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           else
           {
             fpr (stream, "%s\t%s, [%s]",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind]);
+              opc_info->names[0], gpr_names[ra_ind], gpr_names[rc_ind]);
           }
         }
           break;
@@ -468,7 +472,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         case FLARE32_OA_RA_RC_S5_LDST:
         {
             fpr (stream, "%s\t%s, [%s, #0x%x]%s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind],
+              opc_info->names[0], gpr_names[ra_ind], gpr_names[rc_ind],
               (unsigned)simm,
               snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }
@@ -506,7 +510,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         case FLARE32_OA_RA_RC_S5_LDST:
         {
             fpr (stream, "%s\t%s, [%s, #0x%x]%s",
-              opc_info->name, gpr_names[ra_ind], gpr_names[rc_ind],
+              opc_info->names[0], gpr_names[ra_ind], gpr_names[rc_ind],
               (unsigned)simm,
               snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
         }

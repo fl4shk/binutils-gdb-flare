@@ -404,12 +404,13 @@ extern const flare32_grp_info_t flare32_grp_info_g4;
 extern const flare32_grp_info_t flare32_grp_info_g5;
 extern const flare32_grp_info_t flare32_grp_info_g6;
 
+#define FLARE32_OPC_INFO_NAMES_LIM (2ull)
 typedef struct flare32_opc_info_t
 {
   const flare32_grp_info_t *grp_info;
   signed opcode;
   flare32_oparg_t oparg;
-  const char *name;
+  const char *names[FLARE32_OPC_INFO_NAMES_LIM];
 } flare32_opc_info_t;
 #define FLARE32_OPC_INFO_NULL_OP (-1)
 #define FLARE32_OPC_INFO_PSEUDO_OP (-2)

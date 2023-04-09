@@ -42,11 +42,13 @@ const flare32_opc_info_t
 {
   /* pre #simm */
   {&flare32_grp_info_pre,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_PRE, "pre"},
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_PRE,
+    {"pre", "pre"}},
 
   /* lpre #simm */
   {&flare32_grp_info_lpre,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_LPRE, "lpre"},
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_LPRE,
+    {"lpre", "lpre"}},
 };
 
 const flare32_grp_info_t flare32_grp_info_g1 =
@@ -70,67 +72,83 @@ const flare32_opc_info_t
   /* -------- */
   /* add rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ADD_RA_S5, FLARE32_OA_RA_S5, "add"},
+    FLARE32_G1_OP_ENUM_ADD_RA_S5, FLARE32_OA_RA_S5,
+    {"add", "add"}},
 
   /* add rA, pc, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ADD_RA_PC_S5, FLARE32_OA_RA_PC_S5, "add"},
+    FLARE32_G1_OP_ENUM_ADD_RA_PC_S5, FLARE32_OA_RA_PC_S5,
+    {"add", "add"}},
 
   /* add rA, sp, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ADD_RA_SP_S5, FLARE32_OA_RA_SP_S5, "add"},
+    FLARE32_G1_OP_ENUM_ADD_RA_SP_S5, FLARE32_OA_RA_SP_S5,
+    {"add", "add"}},
 
   /* add rA, fp, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ADD_RA_FP_S5, FLARE32_OA_RA_FP_S5, "add"},
+    FLARE32_G1_OP_ENUM_ADD_RA_FP_S5, FLARE32_OA_RA_FP_S5,
+    {"add", "add"}},
   /* -------- */
   /* cmp rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_CMP_RA_S5, FLARE32_OA_RA_S5, "cmp"},
+    FLARE32_G1_OP_ENUM_CMP_RA_S5, FLARE32_OA_RA_S5,
+    {"cmp", "cmp"}},
 
   /* cpy rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_CPY_RA_S5, FLARE32_OA_RA_S5, "cpy"},
+    FLARE32_G1_OP_ENUM_CPY_RA_S5, FLARE32_OA_RA_S5,
+    {"cpy", "cpy"}},
 
   /* lsl rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_LSL_RA_S5, FLARE32_OA_RA_S5, "lsl"},
+    FLARE32_G1_OP_ENUM_LSL_RA_S5, FLARE32_OA_RA_S5,
+    {"lsl", "lsl"}},
 
   /* lsr rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_LSR_RA_S5, FLARE32_OA_RA_S5, "lsr"},
+    FLARE32_G1_OP_ENUM_LSR_RA_S5, FLARE32_OA_RA_S5,
+    {"lsr", "lsr"}},
   /* -------- */
   /* asr rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ASR_RA_S5, FLARE32_OA_RA_S5, "asr"},
+    FLARE32_G1_OP_ENUM_ASR_RA_S5, FLARE32_OA_RA_S5,
+    {"asr", "asr"}},
 
   /* and rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_AND_RA_S5, FLARE32_OA_RA_S5, "and"},
+    FLARE32_G1_OP_ENUM_AND_RA_S5, FLARE32_OA_RA_S5,
+    {"and", "and"}},
 
   /* orr rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ORR_RA_S5, FLARE32_OA_RA_S5, "orr"},
+    FLARE32_G1_OP_ENUM_ORR_RA_S5, FLARE32_OA_RA_S5,
+    {"orr", "orr"}},
 
   /* xor rA, #simm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_XOR_RA_S5, FLARE32_OA_RA_S5, "xor"},
+    FLARE32_G1_OP_ENUM_XOR_RA_S5, FLARE32_OA_RA_S5,
+    {"xor", "xor"}},
   /* -------- */
   /* zeb rA */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ZEB_RA, FLARE32_OA_RA, "zeb"},
+    FLARE32_G1_OP_ENUM_ZEB_RA, FLARE32_OA_RA,
+    {"zeb", "zeb"}},
 
   /* zeh rA */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ZEH_RA, FLARE32_OA_RA, "zeh"},
+    FLARE32_G1_OP_ENUM_ZEH_RA, FLARE32_OA_RA,
+    {"zeh", "zeh"}},
 
   /* seb rA */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_SEB_RA, FLARE32_OA_RA, "seb"},
+    FLARE32_G1_OP_ENUM_SEB_RA, FLARE32_OA_RA,
+    {"seb", "seb"}},
 
   /* seh rA */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_SEH_RA, FLARE32_OA_RA, "seh"},
+    FLARE32_G1_OP_ENUM_SEH_RA, FLARE32_OA_RA,
+    {"seh", "seh"}},
   /* -------- */
 };
 
@@ -155,67 +173,83 @@ const flare32_opc_info_t
   /* -------- */
   /* add rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ADD_RA_RC, FLARE32_OA_RA_RC, "add"},
+    FLARE32_G2_OP_ENUM_ADD_RA_RC, FLARE32_OA_RA_RC,
+    {"add", "add.f"}},
 
   /* sub rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_SUB_RA_RC, FLARE32_OA_RA_RC, "sub"},
+    FLARE32_G2_OP_ENUM_SUB_RA_RC, FLARE32_OA_RA_RC,
+    {"sub", "sub.f"}},
 
   /* add rA, sp, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ADD_RA_SP_RC, FLARE32_OA_RA_SP_RC, "add"},
+    FLARE32_G2_OP_ENUM_ADD_RA_SP_RC, FLARE32_OA_RA_SP_RC, 
+    {"add", "add.f"}},
 
   /* add rA, fp, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ADD_RA_FP_RC, FLARE32_OA_RA_FP_RC, "add"},
+    FLARE32_G2_OP_ENUM_ADD_RA_FP_RC, FLARE32_OA_RA_FP_RC,
+    {"add", "add.f"}},
   /* -------- */
   /* cmp rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_CMP_RA_RC, FLARE32_OA_RA_RC, "cmp"},
+    FLARE32_G2_OP_ENUM_CMP_RA_RC, FLARE32_OA_RA_RC,
+    {"cmp", "cmp.f"}},
 
   /* cpy rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_CPY_RA_RC, FLARE32_OA_RA_RC, "cpy"},
+    FLARE32_G2_OP_ENUM_CPY_RA_RC, FLARE32_OA_RA_RC,
+    {"cpy", "cpy.f"}},
 
   /* lsl rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_LSL_RA_RC, FLARE32_OA_RA_RC, "lsl"},
+    FLARE32_G2_OP_ENUM_LSL_RA_RC, FLARE32_OA_RA_RC,
+    {"lsl", "lsl.f"}},
 
   /* lsr rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_LSR_RA_RC, FLARE32_OA_RA_RC, "lsr"},
+    FLARE32_G2_OP_ENUM_LSR_RA_RC, FLARE32_OA_RA_RC,
+    {"lsr", "lsr.f"}},
   /* -------- */
   /* asr rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ASR_RA_RC, FLARE32_OA_RA_RC, "asr"},
+    FLARE32_G2_OP_ENUM_ASR_RA_RC, FLARE32_OA_RA_RC, 
+    {"asr", "asr.f"}},
 
   /* and rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_AND_RA_RC, FLARE32_OA_RA_RC, "and"},
+    FLARE32_G2_OP_ENUM_AND_RA_RC, FLARE32_OA_RA_RC,
+    {"and", "and.f"}},
 
   /* orr rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ORR_RA_RC, FLARE32_OA_RA_RC, "orr"},
+    FLARE32_G2_OP_ENUM_ORR_RA_RC, FLARE32_OA_RA_RC,
+    {"orr", "orr.f"}},
 
   /* xor rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_XOR_RA_RC, FLARE32_OA_RA_RC, "xor"},
+    FLARE32_G2_OP_ENUM_XOR_RA_RC, FLARE32_OA_RA_RC,
+    {"xor", "xor.f"}},
   /* -------- */
   /* adc rA, rC  */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_ADC_RA_RC, FLARE32_OA_RA_RC, "adc"},
+    FLARE32_G2_OP_ENUM_ADC_RA_RC, FLARE32_OA_RA_RC,
+    {"adc", "adc.f"}},
 
   /* sbc rA, rC */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_SBC_RA_RC, FLARE32_OA_RA_RC, "sbc"},
+    FLARE32_G2_OP_ENUM_SBC_RA_RC, FLARE32_OA_RA_RC,
+    {"sbc", "sbc.f"}},
 
   /* reserved */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_RESERVED_14, FLARE32_OA_BAD, "bad"},
+    FLARE32_G2_OP_ENUM_RESERVED_14, FLARE32_OA_BAD,
+    {"bad", "bad.f"}},
 
   /* reserved */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_RESERVED_15, FLARE32_OA_BAD, "bad"},
+    FLARE32_G2_OP_ENUM_RESERVED_15, FLARE32_OA_BAD,
+    {"bad", "bad.f"}},
   /* -------- */
 };
 
@@ -240,67 +274,83 @@ const flare32_opc_info_t
   /* -------- */
   /* bl #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BL_PCREL_S9, FLARE32_OA_PCREL_S9, "bl"},
+    FLARE32_G3_OP_ENUM_BL_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bl", "bl"}},
 
   /* bra #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BRA_PCREL_S9, FLARE32_OA_PCREL_S9, "bra"},
+    FLARE32_G3_OP_ENUM_BRA_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bra", "bra"}},
 
   /* beq #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BEQ_PCREL_S9, FLARE32_OA_PCREL_S9, "beq"},
+    FLARE32_G3_OP_ENUM_BEQ_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"beq", "beq"}},
 
   /* bne #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BNE_PCREL_S9, FLARE32_OA_PCREL_S9, "bne"},
+    FLARE32_G3_OP_ENUM_BNE_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bne", "bne"}},
   /* -------- */
   /* bmi #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BMI_PCREL_S9, FLARE32_OA_PCREL_S9, "bmi"},
+    FLARE32_G3_OP_ENUM_BMI_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bmi", "bmi"}},
 
   /* bpl #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BPL_PCREL_S9, FLARE32_OA_PCREL_S9, "bpl"},
+    FLARE32_G3_OP_ENUM_BPL_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bpl", "bpl"}},
 
   /* bvs #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BVS_PCREL_S9, FLARE32_OA_PCREL_S9, "bvs"},
+    FLARE32_G3_OP_ENUM_BVS_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bvs", "bvs"}},
 
   /* bvc simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BVC_PCREL_S9, FLARE32_OA_PCREL_S9, "bvc"},
+    FLARE32_G3_OP_ENUM_BVC_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bvc", "bvc"}},
   /* -------- */
   /* bgeu #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BGEU_PCREL_S9, FLARE32_OA_PCREL_S9, "bgeu"},
+    FLARE32_G3_OP_ENUM_BGEU_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bgeu", "bgeu"}},
 
   /* bltu #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BLTU_PCREL_S9, FLARE32_OA_PCREL_S9, "bltu"},
+    FLARE32_G3_OP_ENUM_BLTU_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bltu", "bltu"}},
 
   /* bgtu #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BGTU_PCREL_S9, FLARE32_OA_PCREL_S9, "bgtu"},
+    FLARE32_G3_OP_ENUM_BGTU_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bgtu", "bgtu"}},
 
   /* bleu #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BLEU_PCREL_S9, FLARE32_OA_PCREL_S9, "bleu"},
+    FLARE32_G3_OP_ENUM_BLEU_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bleu", "bleu"}},
   /* -------- */
   /* bges #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BGES_PCREL_S9, FLARE32_OA_PCREL_S9, "bges"},
+    FLARE32_G3_OP_ENUM_BGES_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bges", "bges"}},
 
   /* blts #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BLTS_PCREL_S9, FLARE32_OA_PCREL_S9, "blts"},
+    FLARE32_G3_OP_ENUM_BLTS_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"blts", "blts"}},
 
   /* bgts #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BGTS_PCREL_S9, FLARE32_OA_PCREL_S9, "bgts"},
+    FLARE32_G3_OP_ENUM_BGTS_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bgts", "bgts"}},
 
   /* bles #simm */
   {&flare32_grp_info_g3,
-    FLARE32_G3_OP_ENUM_BLES_PCREL_S9, FLARE32_OA_PCREL_S9, "bles"},
+    FLARE32_G3_OP_ENUM_BLES_PCREL_S9, FLARE32_OA_PCREL_S9,
+    {"bles", "bles"}},
   /* -------- */
 };
 const flare32_grp_info_t flare32_grp_info_g4 =
@@ -324,158 +374,196 @@ const flare32_opc_info_t
   /* -------- */
   /* jl rA */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_JL_RA, FLARE32_OA_RA, "jl"},
+    FLARE32_G4_OP_ENUM_JL_RA, FLARE32_OA_RA,
+    {"jl", "jl"}},
 
   /* jmp rA */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_JMP_RA, FLARE32_OA_RA, "jmp"},
+    FLARE32_G4_OP_ENUM_JMP_RA, FLARE32_OA_RA,
+    {"jmp", "jmp"}},
 
   /* jmp rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_JMP_RA_RC, FLARE32_OA_RA_RC, "jmp"},
+    FLARE32_G4_OP_ENUM_JMP_RA_RC, FLARE32_OA_RA_RC,
+    {"jmp", "jmp"}},
 
   /* jmp ira */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_JMP_IRA, FLARE32_OA_IRA, "jmp"},
+    FLARE32_G4_OP_ENUM_JMP_IRA, FLARE32_OA_IRA,
+    {"jmp", "jmp"}},
   /* -------- */
   /* reti */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_RETI, FLARE32_OA_NONE, "reti"},
+    FLARE32_G4_OP_ENUM_RETI, FLARE32_OA_NONE,
+    {"reti", "reti"}},
 
   /* cpy rA, sC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_CPY_RA_SC, FLARE32_OA_RA_SC, "cpy"},
+    FLARE32_G4_OP_ENUM_CPY_RA_SC, FLARE32_OA_RA_SC,
+    {"cpy", "cpy"}},
 
   /* cpy sA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_CPY_SA_RC, FLARE32_OA_SA_RC, "cpy"},
+    FLARE32_G4_OP_ENUM_CPY_SA_RC, FLARE32_OA_SA_RC,
+    {"cpy", "cpy"}},
 
   /* ei */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_EI, FLARE32_OA_NONE, "ei"},
+    FLARE32_G4_OP_ENUM_EI, FLARE32_OA_NONE,
+    {"ei", "ei"}},
   /* -------- */
   /* di */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_DI, FLARE32_OA_NONE, "di"},
+    FLARE32_G4_OP_ENUM_DI, FLARE32_OA_NONE,
+    {"di", "di"}},
 
   /* push rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_PUSH_RA_RC, FLARE32_OA_RA_RC, "push"},
+    FLARE32_G4_OP_ENUM_PUSH_RA_RC, FLARE32_OA_RA_RC,
+    {"push", "push"}},
 
   /* pop rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_POP_RA_RC, FLARE32_OA_RA_RC, "pop"},
+    FLARE32_G4_OP_ENUM_POP_RA_RC, FLARE32_OA_RA_RC,
+    {"pop", "pop"}},
 
   /* push sA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_PUSH_SA_RC, FLARE32_OA_SA_RC, "push"},
+    FLARE32_G4_OP_ENUM_PUSH_SA_RC, FLARE32_OA_SA_RC,
+    {"push", "push"}},
   /* -------- */
   /* pop sA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_POP_SA_RC, FLARE32_OA_SA_RC, "pop"},
+    FLARE32_G4_OP_ENUM_POP_SA_RC, FLARE32_OA_SA_RC,
+    {"pop", "pop"}},
 
   /* index rA */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA, "index"},
+    FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA,
+    {"index", "index"}},
 
   /* mul rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_MUL_RA_RC, FLARE32_OA_RA_RC, "mul"},
+    FLARE32_G4_OP_ENUM_MUL_RA_RC, FLARE32_OA_RA_RC,
+    {"mul", "mul"}},
 
   /* udiv rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_UDIV_RA_RC, FLARE32_OA_RA_RC, "udiv"},
+    FLARE32_G4_OP_ENUM_UDIV_RA_RC, FLARE32_OA_RA_RC,
+    {"udiv", "udiv"}},
 
   /* -------- */
 
   /* sdiv rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_SDIV_RA_RC, FLARE32_OA_RA_RC, "sdiv"},
+    FLARE32_G4_OP_ENUM_SDIV_RA_RC, FLARE32_OA_RA_RC,
+    {"sdiv", "sdiv"}},
 
   /* umod rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_UMOD_RA_RC, FLARE32_OA_RA_RC, "umod"},
+    FLARE32_G4_OP_ENUM_UMOD_RA_RC, FLARE32_OA_RA_RC,
+    {"umod", "umod"}},
 
   /* smod rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_SMOD_RA_RC, FLARE32_OA_RA_RC, "smod"},
+    FLARE32_G4_OP_ENUM_SMOD_RA_RC, FLARE32_OA_RA_RC,
+    {"smod", "smod"}},
 
   /* lumul rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LUMUL_RA_RC, FLARE32_OA_RA_RC, "lumul"},
+    FLARE32_G4_OP_ENUM_LUMUL_RA_RC, FLARE32_OA_RA_RC,
+    {"lumul", "lumul"}},
   /* -------- */
   /* lsmul rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LSMUL_RA_RC, FLARE32_OA_RA_RC, "lsmul"},
+    FLARE32_G4_OP_ENUM_LSMUL_RA_RC, FLARE32_OA_RA_RC,
+    {"lsmul", "lsmul"}},
 
   /* ludiv rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LUDIV_RA_RC, FLARE32_OA_RA_RC, "ludiv"},
+    FLARE32_G4_OP_ENUM_LUDIV_RA_RC, FLARE32_OA_RA_RC,
+    {"ludiv", "ludiv"}},
 
   /* lsdiv rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LSDIV_RA_RC, FLARE32_OA_RA_RC, "lsdiv"},
+    FLARE32_G4_OP_ENUM_LSDIV_RA_RC, FLARE32_OA_RA_RC,
+    {"lsdiv", "lsdiv"}},
 
   /* lumod rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LUMOD_RA_RC, FLARE32_OA_RA_RC, "lumod"},
+    FLARE32_G4_OP_ENUM_LUMOD_RA_RC, FLARE32_OA_RA_RC,
+    {"lumod", "lumod"}},
   /* -------- */
   /* lsmod rA, rC */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LSMOD_RA_RC, FLARE32_OA_RA_RC, "lsmod"},
+    FLARE32_G4_OP_ENUM_LSMOD_RA_RC, FLARE32_OA_RA_RC,
+    {"lsmod", "lsmod"}},
 
   /* ldub rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LDUB_RA_RC, FLARE32_OA_RA_RC_LDST, "ldub"},
+    FLARE32_G4_OP_ENUM_LDUB_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"ldub", "ldub"}},
 
   /* ldsb rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LDSB_RA_RC, FLARE32_OA_RA_RC_LDST, "ldsb"},
+    FLARE32_G4_OP_ENUM_LDSB_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"ldsb", "ldsb"}},
 
   /* lduh rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LDUH_RA_RC, FLARE32_OA_RA_RC_LDST, "lduh"},
+    FLARE32_G4_OP_ENUM_LDUH_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"lduh", "lduh"}},
   /* -------- */
   /* ldsh rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LDSH_RA_RC, FLARE32_OA_RA_RC_LDST, "ldsh"},
+    FLARE32_G4_OP_ENUM_LDSH_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"ldsh", "ldsh"}},
 
   /* stb rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_STB_RA_RC, FLARE32_OA_RA_RC_LDST, "stb"},
+    FLARE32_G4_OP_ENUM_STB_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"stb", "stb"}},
 
   /* sth rA, [rC] */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_STH_RA_RC, FLARE32_OA_RA_RC_LDST, "sth"},
+    FLARE32_G4_OP_ENUM_STH_RA_RC, FLARE32_OA_RA_RC_LDST,
+    {"sth", "sth"}},
 
   /* reserved */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_RESERVED_31, FLARE32_OA_BAD, "bad"},
+    FLARE32_G4_OP_ENUM_RESERVED_31, FLARE32_OA_BAD,
+    {"bad", "bad"}},
   /* -------- */
   /* Following are some pseudo instructions. */
   /* ldub rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "ldub"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"ldub", "ldub"}},
 
   /* ldsb rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "ldsb"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"ldsb", "ldsb"}},
 
   /* lduh rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "lduh"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"lduh", "lduh"}},
 
   /* ldsh rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "ldsh"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"ldsh", "ldsh"}},
   /* -------- */
   /* stb rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "stb"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"stb", "stb"}},
 
   /* sth rA, [rC, rB] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "sth"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"sth", "sth"}},
   /* -------- */
 };
 const flare32_grp_info_t flare32_grp_info_g5 =
@@ -499,20 +587,24 @@ const flare32_opc_info_t
   /* -------- */
   /* ldr rA, [rC, #simm] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_S5_LDST, "ldr"},
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_S5_LDST,
+    {"ldr", "ldr"}},
   /* -------- */
   /* Following are some pseudo instructions */
   /* ldr rA, [rC] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_LDST, "ldr"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_LDST,
+    {"ldr", "ldr"}},
 
   /* ldr rA, [rC, rB] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "ldr"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"ldr", "ldr"}},
 
   /* ldr rA, [rC, rB, #simm] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_S5_LDST, "ldr"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_S5_LDST,
+    {"ldr", "ldr"}},
   /* -------- */
 };
 
@@ -537,19 +629,23 @@ const flare32_opc_info_t
   /* -------- */
   /* str rA, [rC, #simm] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_S5_LDST, "str"},
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_S5_LDST,
+    {"str", "str"}},
   /* -------- */
   /* Following are some pseudo instructions */
   /* st rA, [rC] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_LDST, "str"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_LDST,
+    {"str", "str"}},
 
   /* str rA, [rC, rB] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST, "str"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_LDST,
+    {"str", "str"}},
 
   /* str rA, [rC, rB, #simm] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_S5_LDST, "str"},
+    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RC_RB_S5_LDST,
+    {"str", "str"}},
   /* -------- */
 };

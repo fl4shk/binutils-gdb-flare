@@ -1149,7 +1149,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs"
     ;;
   flare32-*-*)
-    noconfigdirs="$noconfigdirs binutils gas gdb ld opcodes config"
+    noconfigdirs="$noconfigdirs binutils gas gdb ld config"
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
   h8300*-*-*)

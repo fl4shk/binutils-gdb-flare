@@ -599,6 +599,8 @@ TARGET32_LIBOPCODES_CFILES = \
 	microblaze-dis.c \
 	moxie-dis.c \
 	moxie-opc.c \
+	flare32-dis.c \
+	flare32-opc.c \
 	msp430-decode.c \
 	msp430-dis.c \
 	mt-asm.c \
@@ -913,6 +915,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-dis.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-ibld.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-opc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flare32-dis.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flare32-opc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-asm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-desc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-dis.Plo@am__quote@

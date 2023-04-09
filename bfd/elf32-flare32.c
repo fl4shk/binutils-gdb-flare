@@ -332,8 +332,8 @@ flare32_elf_do_ext_reloc (bfd *input_bfd, reloc_howto_type *howto,
     return bfd_reloc_outofrange;
   }
 
-  // Get symbol value
   relocation += addend;
+  //// Get symbol value
   //relocation = symbol->value + symbol->section->output_section->vma
   //  + symbol->section->output_offset + reloc_entry->addend;
   /* -------- */
@@ -489,7 +489,7 @@ flare32_elf_relocate_section (bfd *output_bfd,
       {
         case R_FLARE32_NONE:
           /* We don't need to find a value for this symbol.  It's just a
-        marker.  */
+          marker.  */
           r = bfd_reloc_ok;
           break;
 
@@ -518,7 +518,9 @@ flare32_elf_relocate_section (bfd *output_bfd,
       }
     }
     else
-    r = bfd_reloc_notsupported;
+    {
+      r = bfd_reloc_notsupported;
+    }
 
     if (r != bfd_reloc_ok)
     {
@@ -704,14 +706,14 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
     for (isec = abfd->sections; isec; isec = isec->next)
     {
       bfd_vma symval;
-      bfd_vma shrinked_insn_address;
+      bfd_vma shrunk_insn_address;
 
       if (isec->reloc_count == 0)
       {
         continue;
       }
 
-      shrinked_insn_address = (sec->output_section->vma
+      shrunk_insn_address = (sec->output_section->vma
                               + sec->output_offset + addr);
 
       irel = elf_section_data (isec)->relocs;
@@ -759,8 +761,8 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
               + sym_sec->output_offset;
 
             /* Fix the addend, if it is affected.  */
-            if (symval <= shrinked_insn_address
-                && (symval + irel->r_addend) > shrinked_insn_address)
+            if (symval <= shrunk_insn_address
+                && (symval + irel->r_addend) > shrunk_insn_address)
             {
               irel->r_addend -= count;
             }
@@ -796,7 +798,8 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
                   /* If this assert fires then we have a symbol that ends
                      part way through an instruction.  Does that make
                      sense?  */
-                  BFD_ASSERT (isym->st_value + isym->st_size >= addr + count);
+                  BFD_ASSERT (isym->st_value + isym->st_size
+                              >= addr + count);
                   isym->st_size -= count;
                 }
             }
@@ -809,28 +812,30 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
   sym_hashes = elf_sym_hashes (abfd);
   end_hashes = sym_hashes + symcount;
   for (; sym_hashes < end_hashes; sym_hashes++)
+  {
+    struct elf_link_hash_entry *sym_hash = *sym_hashes;
+    if ((sym_hash->root.type == bfd_link_hash_defined
+          || sym_hash->root.type == bfd_link_hash_defweak)
+        && sym_hash->root.u.def.section == sec)
     {
-      struct elf_link_hash_entry *sym_hash = *sym_hashes;
-      if ((sym_hash->root.type == bfd_link_hash_defined
-           || sym_hash->root.type == bfd_link_hash_defweak)
-          && sym_hash->root.u.def.section == sec)
-        {
-          if (sym_hash->root.u.def.value > addr
-              && sym_hash->root.u.def.value <= toaddr)
-            sym_hash->root.u.def.value -= count;
+      if (sym_hash->root.u.def.value > addr
+          && sym_hash->root.u.def.value <= toaddr)
+      {
+        sym_hash->root.u.def.value -= count;
+      }
 
-          if (sym_hash->root.u.def.value <= addr
-              && (sym_hash->root.u.def.value + sym_hash->size > addr))
-            {
-              /* If this assert fires then we have a symbol that ends
-                 part way through an instruction.  Does that make
-                 sense?  */
-              BFD_ASSERT (sym_hash->root.u.def.value + sym_hash->size
-                          >= addr + count);
-              sym_hash->size -= count;
-            }
-        }
+      if (sym_hash->root.u.def.value <= addr
+          && (sym_hash->root.u.def.value + sym_hash->size > addr))
+      {
+        /* If this assert fires then we have a symbol that ends
+            part way through an instruction.  Does that make
+            sense?  */
+        BFD_ASSERT (sym_hash->root.u.def.value + sym_hash->size
+                    >= addr + count);
+        sym_hash->size -= count;
+      }
     }
+  }
 
   return true;
 }
@@ -865,9 +870,8 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
             args->contents + args->irel->r_offset + 2)),
         args->contents + args->irel->r_offset + 2);
 
-
       if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
-        args->irel->r_offset, 2))
+        args->irel->r_offset, 2U))
       {
         return false;
       }
@@ -895,7 +899,6 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
 
   return true;
 }
-
 
 static bool
 flare32_do_partial_relax_prefix (bfd *abfd,
@@ -963,7 +966,6 @@ flare32_do_partial_relax_prefix (bfd *abfd,
       //insn_bitpos = FLARE32_G1G5G6_S5_BITPOS;
       //insn_mask = FLARE32_G1G5G6_S5_MASK;
       
-      curr_bitsize = prefix_insn_bitsize + insn_bitsize;
       target_bitsize = insn_bitsize;
     }
     else if (howto->type == R_FLARE32_G1G5G6_S32)
@@ -981,7 +983,6 @@ flare32_do_partial_relax_prefix (bfd *abfd,
       //insn_bitpos = FLARE32_G1G5G6_S5_BITPOS;
       //insn_mask = FLARE32_G1G5G6_S5_MASK;
 
-      curr_bitsize = prefix_insn_bitsize + insn_bitsize;
       target_bitsize = FLARE32_PRE_S12_BITSIZE + insn_bitsize;
     }
     else if (howto->type == R_FLARE32_G3_S21_PCREL)
@@ -1001,7 +1002,6 @@ flare32_do_partial_relax_prefix (bfd *abfd,
       //insn_bitpos = FLARE32_G3_S9_BITPOS;
       //insn_mask = FLARE32_G3_S9_MASK;
 
-      curr_bitsize = prefix_insn_bitsize + insn_bitsize;
       target_bitsize = insn_bitsize;
     }
     else // if (howto->type == R_FLARE32_G3_S32_PCREL)
@@ -1019,9 +1019,9 @@ flare32_do_partial_relax_prefix (bfd *abfd,
       //insn_bitpos = FLARE32_G3_S9_BITPOS;
       //insn_mask = FLARE32_G3_S9_MASK;
 
-      curr_bitsize = prefix_insn_bitsize + insn_bitsize;
       target_bitsize = FLARE32_PRE_S12_BITSIZE + insn_bitsize;
     }
+    curr_bitsize = prefix_insn_bitsize + insn_bitsize;
 
     if (flare32_relax_can_shrink_value (value, curr_bitsize,
       target_bitsize))
@@ -1052,9 +1052,9 @@ flare32_do_partial_relax_prefix (bfd *abfd,
         //insn_mask
       };
 
-      args.rm_prefix = !(
-        was_lpre
-        && flare32_relax_can_shrink_value (value, target_bitsize,
+      args.rm_prefix = (
+        !was_lpre
+        || flare32_relax_can_shrink_value (value, target_bitsize,
           insn_bitsize)
       );
 
@@ -1343,7 +1343,7 @@ flare32_elf_relax_section (bfd *abfd,
 #define ELF_MAXPAGESIZE     0x1
 
 #define TARGET_BIG_SYM    flare32_elf32_vec
-#define TARGET_BIG_NAME    "elf32-flare32"
+#define TARGET_BIG_NAME   "elf32-flare32"
 
 #define elf_info_to_howto_rel         NULL
 #define elf_info_to_howto             flare32_elf_info_to_howto
@@ -1353,7 +1353,7 @@ flare32_elf_relax_section (bfd *abfd,
 //#define elf_backend_check_relocs      flare32_elf_check_relocs
 //
 #define elf_backend_can_gc_sections   1
-#define elf_backend_can_rela_normal   1
+#define elf_backend_rela_normal       1
 
 #define bfd_elf32_bfd_reloc_type_lookup flare32_reloc_type_lookup
 #define bfd_elf32_bfd_reloc_name_lookup flare32_reloc_name_lookup

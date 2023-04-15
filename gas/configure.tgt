@@ -335,6 +335,8 @@ case ${generic_target} in
   moxie-*-uclinux)			fmt=elf em=linux ;;
   moxie-*-moxiebox*)                    fmt=elf endian=little ;;
   moxie-*-*)				fmt=elf ;;
+
+  flare32-*-*)				fmt=elf ;;
     
   mt-*-elf)				fmt=elf bfd_gas=yes ;;
 

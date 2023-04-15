@@ -28,21 +28,38 @@ START_RELOC_NUMBERS (elf_flare32_reloc_type)
   /* -------- */
   RELOC_NUMBER (R_FLARE32_NONE, 0)
   /* -------- */
-  RELOC_NUMBER (R_FLARE32_32, 1)
+  RELOC_NUMBER (R_FLARE32_8, 1)
+  RELOC_NUMBER (R_FLARE32_16, 2)
+  RELOC_NUMBER (R_FLARE32_32, 3)
+  RELOC_NUMBER (R_FLARE32_64, 4)
   /* -------- */
   /* RELOC_NUMBER (R_FLARE32_PRE12, 1) */
   /* RELOC_NUMBER (R_FLARE32_LPRE27, 2) */
   /* RELOC_NUMBER (R_FLARE32_IMM32, 3) */
   /* -------- */
   /* Instruction Groups 1, 5, and 6 */
-  RELOC_NUMBER (R_FLARE32_G1G5G6_S5, 2) /* no `pre`/`lpre` */
-  RELOC_NUMBER (R_FLARE32_G1G5G6_S17, 3) /* `pre` */
-  RELOC_NUMBER (R_FLARE32_G1G5G6_S32, 4) /* `lpre` */
+  RELOC_NUMBER (R_FLARE32_G1G5G6_S5, 5) /* no `pre`/`lpre` */
+  RELOC_NUMBER (R_FLARE32_G1G5G6_S17, 6) /* `pre` */
+  RELOC_NUMBER (R_FLARE32_G1G5G6_S32, 7) /* `lpre` */
+  RELOC_NUMBER (R_FLARE32_G1G5G6_S32_ADD32, 8) /* local label sub */
+  RELOC_NUMBER (R_FLARE32_G1G5G6_S32_SUB32, 9) /* local label sub */
   /* -------- */
   /* Instruction Group 3 */
-  RELOC_NUMBER (R_FLARE32_G3_S9_PCREL, 5) /* no `pre`/`lpre` */
-  RELOC_NUMBER (R_FLARE32_G3_S21_PCREL, 6) /* `pre` */
-  RELOC_NUMBER (R_FLARE32_G3_S32_PCREL, 7) /* `lpre` */
+  RELOC_NUMBER (R_FLARE32_G3_S9_PCREL, 10) /* no `pre`/`lpre` */
+  RELOC_NUMBER (R_FLARE32_G3_S21_PCREL, 11) /* `pre` */
+  RELOC_NUMBER (R_FLARE32_G3_S32_PCREL, 12) /* `lpre` */
+  RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_ADD32, 13) /* local label sub */
+  RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_SUB32, 14) /* local label sub */
+  /* -------- */
+  /* Local label subtraction within a pseudo-op */
+  RELOC_NUMBER (R_FLARE32_PSEUDO_ADD8, 15)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_ADD16, 16)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_ADD32, 17)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_ADD64, 18)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_SUB8, 19)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_SUB16, 20)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_SUB32, 21)
+  RELOC_NUMBER (R_FLARE32_PSEUDO_SUB64, 22)
   /* -------- */
 END_RELOC_NUMBERS (R_FLARE32_max)
 

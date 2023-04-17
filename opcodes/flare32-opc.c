@@ -388,7 +388,7 @@ const flare32_opc_info_t
   /* cmp rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_CMP_RA_RB, FLARE32_OA_RA_RB,
-    {"cmp", "cmp.f"}},
+    {"cmp", "cmp"}},
 
   /* cpy rA, rB */
   {&flare32_grp_info_g2,
@@ -563,20 +563,20 @@ const flare32_opc_info_t
     {"jmp", "jmp"}},
 
   /* jmp rA, rB */
-  {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_JMP_RA_RB, FLARE32_OA_RA_RB,
-    {"jmp", "jmp"}},
+  //{&flare32_grp_info_g4,
+  //  FLARE32_G4_OP_ENUM_JMP_RA_RB, FLARE32_OA_RA_RB,
+  //  {"jmp", "jmp"}},
 
   /* jmp ira */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_JMP_IRA, FLARE32_OA_IRA,
     {"jmp", "jmp"}},
-  /* -------- */
+
   /* reti */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_RETI, FLARE32_OA_NONE,
     {"reti", "reti"}},
-
+  /* -------- */
   /* cpy rA, sB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_CPY_RA_SB, FLARE32_OA_RA_SB,
@@ -591,12 +591,12 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_EI, FLARE32_OA_NONE,
     {"ei", "ei"}},
-  /* -------- */
+
   /* di */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_DI, FLARE32_OA_NONE,
     {"di", "di"}},
-
+  /* -------- */
   /* push rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_PUSH_RA_RB, FLARE32_OA_RA_RB,
@@ -611,12 +611,12 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_PUSH_SA_RB, FLARE32_OA_SA_RB,
     {"push", "push"}},
-  /* -------- */
+
   /* pop sA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_POP_SA_RB, FLARE32_OA_SA_RB,
     {"pop", "pop"}},
-
+  /* -------- */
   /* index rA */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA,
@@ -632,12 +632,12 @@ const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_UDIV_RA_RB, FLARE32_OA_RA_RB,
     {"udiv", "udiv"}},
 
-  /* -------- */
-
   /* sdiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_SDIV_RA_RB, FLARE32_OA_RA_RB,
     {"sdiv", "sdiv"}},
+
+  /* -------- */
 
   /* umod rA, rB */
   {&flare32_grp_info_g4,
@@ -653,12 +653,12 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUMUL_RA_RB, FLARE32_OA_RA_RB,
     {"lumul", "lumul"}},
-  /* -------- */
+
   /* lsmul rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LSMUL_RA_RB, FLARE32_OA_RA_RB,
     {"lsmul", "lsmul"}},
-
+  /* -------- */
   /* ludiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUDIV_RA_RB, FLARE32_OA_RA_RB,
@@ -673,12 +673,11 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUMOD_RA_RB, FLARE32_OA_RA_RB,
     {"lumod", "lumod"}},
-  /* -------- */
   /* lsmod rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LSMOD_RA_RB, FLARE32_OA_RA_RB,
     {"lsmod", "lsmod"}},
-
+  /* -------- */
   /* ldub rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDUB_RA_RB, FLARE32_OA_RA_RB_LDST,
@@ -693,12 +692,12 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDUH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"lduh", "lduh"}},
-  /* -------- */
+
   /* ldsh rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDSH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"ldsh", "ldsh"}},
-
+  /* -------- */
   /* stb rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_STB_RA_RB, FLARE32_OA_RA_RB_LDST,
@@ -708,6 +707,11 @@ const flare32_opc_info_t
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_STH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"sth", "sth"}},
+
+  /* reserved */
+  {&flare32_grp_info_g4,
+    FLARE32_G4_OP_ENUM_RESERVED_30, FLARE32_OA_BAD,
+    {"bad", "bad"}},
 
   /* reserved */
   {&flare32_grp_info_g4,

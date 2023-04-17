@@ -380,7 +380,7 @@ extern const flare32_enc_info_t
 
 /* the `opcode` field of group 4 instructions */
 #define FLARE32_G4_OP_BITSIZE (5ull)
-#define FLARE32_G4_OP_BITPOS (12ull)
+#define FLARE32_G4_OP_BITPOS (8ull)
 #define FLARE32_G4_OP_RSMASK \
   (FLARE32_ENC_RSMASK (G4_OP))
 #define FLARE32_G4_OP_MASK \
@@ -389,37 +389,38 @@ extern const flare32_enc_info_t
 /* the specific opcode values usable with group 4 instructions */
 #define FLARE32_G4_OP_ENUM_JL_RA (0x0ull)
 #define FLARE32_G4_OP_ENUM_JMP_RA (0x1ull)
-#define FLARE32_G4_OP_ENUM_JMP_RA_RB (0x2ull)
-#define FLARE32_G4_OP_ENUM_JMP_IRA (0x3ull)
-#define FLARE32_G4_OP_ENUM_RETI (0x4ull)
-#define FLARE32_G4_OP_ENUM_CPY_RA_SB (0x5ull)
-#define FLARE32_G4_OP_ENUM_CPY_SA_RB (0x6ull)
-#define FLARE32_G4_OP_ENUM_EI (0x7ull)
-#define FLARE32_G4_OP_ENUM_DI (0x8ull)
-#define FLARE32_G4_OP_ENUM_PUSH_RA_RB (0x9ull)
-#define FLARE32_G4_OP_ENUM_POP_RA_RB (0xaull)
-#define FLARE32_G4_OP_ENUM_PUSH_SA_RB (0xbull)
-#define FLARE32_G4_OP_ENUM_POP_SA_RB (0xcull)
-#define FLARE32_G4_OP_ENUM_INDEX_RA (0xdull)
-#define FLARE32_G4_OP_ENUM_MUL_RA_RB (0xeull)
-#define FLARE32_G4_OP_ENUM_UDIV_RA_RB (0xfull)
+//#define FLARE32_G4_OP_ENUM_JMP_RA_RB (0x2ull)
+#define FLARE32_G4_OP_ENUM_JMP_IRA (0x2ull)
+#define FLARE32_G4_OP_ENUM_RETI (0x3ull)
+#define FLARE32_G4_OP_ENUM_CPY_RA_SB (0x4ull)
+#define FLARE32_G4_OP_ENUM_CPY_SA_RB (0x5ull)
+#define FLARE32_G4_OP_ENUM_EI (0x6ull)
+#define FLARE32_G4_OP_ENUM_DI (0x7ull)
+#define FLARE32_G4_OP_ENUM_PUSH_RA_RB (0x8ull)
+#define FLARE32_G4_OP_ENUM_POP_RA_RB (0x9ull)
+#define FLARE32_G4_OP_ENUM_PUSH_SA_RB (0xaull)
+#define FLARE32_G4_OP_ENUM_POP_SA_RB (0xbull)
+#define FLARE32_G4_OP_ENUM_INDEX_RA (0xcull)
+#define FLARE32_G4_OP_ENUM_MUL_RA_RB (0xdull)
+#define FLARE32_G4_OP_ENUM_UDIV_RA_RB (0xeull)
 
-#define FLARE32_G4_OP_ENUM_SDIV_RA_RB (0x10ull)
-#define FLARE32_G4_OP_ENUM_UMOD_RA_RB (0x11ull)
-#define FLARE32_G4_OP_ENUM_SMOD_RA_RB (0x12ull)
-#define FLARE32_G4_OP_ENUM_LUMUL_RA_RB (0x13ull)
-#define FLARE32_G4_OP_ENUM_LSMUL_RA_RB (0x14ull)
-#define FLARE32_G4_OP_ENUM_LUDIV_RA_RB (0x15ull)
-#define FLARE32_G4_OP_ENUM_LSDIV_RA_RB (0x16ull)
-#define FLARE32_G4_OP_ENUM_LUMOD_RA_RB (0x17ull)
-#define FLARE32_G4_OP_ENUM_LSMOD_RA_RB (0x18ull)
-#define FLARE32_G4_OP_ENUM_LDUB_RA_RB (0x19ull)
-#define FLARE32_G4_OP_ENUM_LDSB_RA_RB (0x1aull)
-#define FLARE32_G4_OP_ENUM_LDUH_RA_RB (0x1bull)
-#define FLARE32_G4_OP_ENUM_LDSH_RA_RB (0x1cull)
-#define FLARE32_G4_OP_ENUM_STB_RA_RB (0x1dull)
-#define FLARE32_G4_OP_ENUM_STH_RA_RB (0x1eull)
-#define FLARE32_G4_OP_ENUM_RESERVED_31 (0x1full)
+#define FLARE32_G4_OP_ENUM_SDIV_RA_RB (0x0full)
+#define FLARE32_G4_OP_ENUM_UMOD_RA_RB (0x10ull)
+#define FLARE32_G4_OP_ENUM_SMOD_RA_RB (0x11ull)
+#define FLARE32_G4_OP_ENUM_LUMUL_RA_RB (0x12ull)
+#define FLARE32_G4_OP_ENUM_LSMUL_RA_RB (0x13ull)
+#define FLARE32_G4_OP_ENUM_LUDIV_RA_RB (0x14ull)
+#define FLARE32_G4_OP_ENUM_LSDIV_RA_RB (0x15ull)
+#define FLARE32_G4_OP_ENUM_LUMOD_RA_RB (0x16ull)
+#define FLARE32_G4_OP_ENUM_LSMOD_RA_RB (0x17ull)
+#define FLARE32_G4_OP_ENUM_LDUB_RA_RB (0x18ull)
+#define FLARE32_G4_OP_ENUM_LDSB_RA_RB (0x19ull)
+#define FLARE32_G4_OP_ENUM_LDUH_RA_RB (0x1aull)
+#define FLARE32_G4_OP_ENUM_LDSH_RA_RB (0x1bull)
+#define FLARE32_G4_OP_ENUM_STB_RA_RB (0x1cull)
+#define FLARE32_G4_OP_ENUM_STH_RA_RB (0x1dull)
+#define FLARE32_G4_OP_ENUM_RESERVED_30 (0x1eull)
+#define FLARE32_G4_OP_ENUM_RESERVED_31 (0x1eull)
 /* -------- */
 /* the `grp` field of group 5 instructions */
 #define FLARE32_G5_GRP_VALUE (0x5ull)
@@ -797,6 +798,7 @@ flare32_enc_temp_insn_g4 (flare32_temp_t op,
   //SET_INSN_FIELD(FLARE32_RB_IND_MASK, FLARE32_RB_IND_BITPOS, ret, rb_ind);
   //SET_INSN_FIELD(FLARE32_RA_IND_MASK, FLARE32_RA_IND_BITPOS, ret, ra_ind);
 
+  //ret |= (0x4ull << 13ull);
   flare32_set_insn_field_p (FLARE32_GRP_16_MASK, FLARE32_GRP_16_BITPOS, 
     &ret, FLARE32_G4_GRP_VALUE);
   flare32_set_insn_field_p (FLARE32_G4_OP_MASK, FLARE32_G4_OP_BITPOS, 

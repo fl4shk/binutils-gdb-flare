@@ -303,8 +303,16 @@ flare32_enc_temp_insn_non_pre_lpre
       return flare32_enc_temp_insn_g3
         (opc_info->opcode, simm);
     case FLARE32_G4_GRP_VALUE:
-      return flare32_enc_temp_insn_g4
+    {
+      flare32_temp_t ret = flare32_enc_temp_insn_g4
         (opc_info->opcode, ra_ind, rb_ind);
+      //printf ("flare32_enc_temp_insn_non_pre_lpre: %s %d %d %d; 0x%x; "
+      //  "\n",
+      //  opc_info->names[0], (unsigned) opc_info->oparg,
+      //  (unsigned) ra_ind, (unsigned) rb_ind,
+      //  (unsigned) ret);
+      return ret;
+    }
     case FLARE32_G5_GRP_VALUE:
       return flare32_enc_temp_insn_g5
         (ra_ind, rb_ind, simm);
@@ -918,7 +926,11 @@ md_begin (void)
     ++opc_info)
   {
     flare32_opci_list_hnv_append (opc_info, 0);
-    flare32_opci_list_hnv_append (opc_info, 1);
+
+    if (opc_info->opcode != FLARE32_G2_OP_ENUM_CMP_RA_RB)
+    {
+      flare32_opci_list_hnv_append (opc_info, 1);
+    }
   }
   //printf ("post g2\n");
   //flare32_print_hash_opci_list ("cpy");
@@ -1122,6 +1134,16 @@ md_assemble (char *str)
     } \
   } while (0)
 
+#define FLARE32_PARSE_EXP_POST_POUND() \
+  do \
+  { \
+    op_end = clear_and_parse_exp_save_ilp (op_end, &ex); \
+    if (ex.X_op == O_illegal || ex.X_op == O_absent) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+  
 #define FLARE32_PARSE_EXP() \
   do \
   { \
@@ -1130,11 +1152,7 @@ md_assemble (char *str)
       goto post_oa_switch; \
     } \
     ++op_end; \
-    op_end = clear_and_parse_exp_save_ilp (op_end, &ex); \
-    if (ex.X_op == O_illegal || ex.X_op == O_absent) \
-    { \
-      goto post_oa_switch; \
-    } \
+    FLARE32_PARSE_EXP_POST_POUND (); \
   } while (0)
 
   for (opc_info=opci_list->opc_info;
@@ -1304,7 +1322,8 @@ md_assemble (char *str)
       {
         FLARE32_SKIP_ISSPACE ();
 
-        FLARE32_PARSE_EXP ();
+        //FLARE32_PARSE_EXP ();
+        FLARE32_PARSE_EXP_POST_POUND ();
 
         parse_good = true;
         is_pcrel = true;

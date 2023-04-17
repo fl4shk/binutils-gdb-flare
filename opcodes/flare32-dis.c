@@ -129,6 +129,12 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
   switch (opc_info->oparg)
   {
     /* -------- */
+    case FLARE32_OA_NONE:
+    {
+      fpr (stream, "%s",
+        opc_info->names[fw]);
+    }
+      break;
     case FLARE32_OA_RA_S5:
     {
       fpr (stream, "%s\t%s, #%i%s",
@@ -223,7 +229,7 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
       break;
     case FLARE32_OA_PCREL_S9:
     {
-      fpr (stream, "%s\t#%i%s",
+      fpr (stream, "%s\t%i%s",
         opc_info->names[fw], (signed) simm,
         do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }

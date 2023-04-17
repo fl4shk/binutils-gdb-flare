@@ -1139,6 +1139,9 @@ case "${target}" in
   d30v-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
+  flare32-*-*)
+    noconfigdirs="$noconfigdirs sim gdb gprof target-libgloss"
+    ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
@@ -1147,10 +1150,6 @@ case "${target}" in
     ;;
   moxie-*-*)
     noconfigdirs="$noconfigdirs"
-    ;;
-  flare32-*-*)
-    noconfigdirs="$noconfigdirs gdb"
-    noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"

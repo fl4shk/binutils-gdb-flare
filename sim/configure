@@ -789,6 +789,11 @@ SIM_ENABLE_ARCH_frv_TRUE
 CC_FOR_TARGET_FRV
 LD_FOR_TARGET_FRV
 AS_FOR_TARGET_FRV
+SIM_ENABLE_ARCH_flare32_FALSE
+SIM_ENABLE_ARCH_flare32_TRUE
+CC_FOR_TARGET_FLARE32
+LD_FOR_TARGET_FLARE32
+AS_FOR_TARGET_FLARE32
 SIM_ENABLE_ARCH_d10v_FALSE
 SIM_ENABLE_ARCH_d10v_TRUE
 CC_FOR_TARGET_D10V
@@ -1048,6 +1053,9 @@ CC_FOR_TARGET_CRIS
 AS_FOR_TARGET_D10V
 LD_FOR_TARGET_D10V
 CC_FOR_TARGET_D10V
+AS_FOR_TARGET_FLARE32
+LD_FOR_TARGET_FLARE32
+CC_FOR_TARGET_FLARE32
 AS_FOR_TARGET_FRV
 LD_FOR_TARGET_FRV
 CC_FOR_TARGET_FRV
@@ -1866,6 +1874,12 @@ Some influential environment variables:
               Linker for d10v tests
   CC_FOR_TARGET_D10V
               C compiler for d10v tests
+  AS_FOR_TARGET_FLARE32
+              Assembler for flare32 tests
+  LD_FOR_TARGET_FLARE32
+              Linker for flare32 tests
+  CC_FOR_TARGET_FLARE32
+              C compiler for flare32 tests
   AS_FOR_TARGET_FRV
               Assembler for frv tests
   LD_FOR_TARGET_FRV
@@ -12257,7 +12271,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12260 "configure"
+#line 12274 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12363,7 +12377,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12366 "configure"
+#line 12380 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14507,6 +14521,43 @@ else
 fi
 
 
+      sim_enable_arch_flare32=false
+  case "${targ}" in
+    all|flare32-*-*)
+      if test "${targ}" = "${target}"; then
+        SIM_PRIMARY_TARGET=flare32
+      fi
+        ENABLE_SIM=yes
+  as_fn_append SIM_ENABLED_ARCHES " flare32"
+
+  ac_config_files="$ac_config_files flare32/.gdbinit:common/gdbinit.in"
+
+
+      sim_enable_arch_flare32=true
+      ;;
+  esac
+
+
+
+
+  if test "$SIM_PRIMARY_TARGET" = "flare32"; then :
+      : "${AS_FOR_TARGET_FLARE32:=\$(AS_FOR_TARGET)}"
+    : "${LD_FOR_TARGET_FLARE32:=\$(LD_FOR_TARGET)}"
+    : "${CC_FOR_TARGET_FLARE32:=\$(CC_FOR_TARGET)}"
+
+fi
+
+as_fn_append SIM_TOOLCHAIN_VARS " AS_FOR_TARGET_FLARE32 LD_FOR_TARGET_FLARE32 CC_FOR_TARGET_FLARE32"
+
+   if ${sim_enable_arch_flare32}; then
+  SIM_ENABLE_ARCH_flare32_TRUE=
+  SIM_ENABLE_ARCH_flare32_FALSE='#'
+else
+  SIM_ENABLE_ARCH_flare32_TRUE='#'
+  SIM_ENABLE_ARCH_flare32_FALSE=
+fi
+
+
       sim_enable_arch_frv=false
   case "${targ}" in
     all|frv-*-*)
@@ -16421,6 +16472,10 @@ if test -z "${SIM_ENABLE_ARCH_d10v_TRUE}" && test -z "${SIM_ENABLE_ARCH_d10v_FAL
   as_fn_error $? "conditional \"SIM_ENABLE_ARCH_d10v\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${SIM_ENABLE_ARCH_flare32_TRUE}" && test -z "${SIM_ENABLE_ARCH_flare32_FALSE}"; then
+  as_fn_error $? "conditional \"SIM_ENABLE_ARCH_flare32\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${SIM_ENABLE_ARCH_frv_TRUE}" && test -z "${SIM_ENABLE_ARCH_frv_FALSE}"; then
   as_fn_error $? "conditional \"SIM_ENABLE_ARCH_frv\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -17401,6 +17456,7 @@ do
     "cr16/.gdbinit") CONFIG_FILES="$CONFIG_FILES cr16/.gdbinit:common/gdbinit.in" ;;
     "cris/.gdbinit") CONFIG_FILES="$CONFIG_FILES cris/.gdbinit:common/gdbinit.in" ;;
     "d10v/.gdbinit") CONFIG_FILES="$CONFIG_FILES d10v/.gdbinit:common/gdbinit.in" ;;
+    "flare32/.gdbinit") CONFIG_FILES="$CONFIG_FILES flare32/.gdbinit:common/gdbinit.in" ;;
     "frv/.gdbinit") CONFIG_FILES="$CONFIG_FILES frv/.gdbinit:common/gdbinit.in" ;;
     "ft32/.gdbinit") CONFIG_FILES="$CONFIG_FILES ft32/.gdbinit:common/gdbinit.in" ;;
     "h8300/.gdbinit") CONFIG_FILES="$CONFIG_FILES h8300/.gdbinit:common/gdbinit.in" ;;

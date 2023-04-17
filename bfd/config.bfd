@@ -515,6 +515,10 @@ case "${targ}" in
     targ_defvec=m68k_elf32_vec
     ;;
 
+  flare32-*-elf)
+    targ_defvec=flare32_elf32_vec
+    ;;
+
   fr30-*-elf)
     targ_defvec=fr30_elf32_vec
     ;;
@@ -536,10 +540,6 @@ case "${targ}" in
 
   moxie-*-moxiebox*)
     targ_defvec=moxie_elf32_le_vec
-    ;;
-
-  flare32-*-elf)
-    targ_defvec=flare32_elf32_vec
     ;;
 
   h8300*-*-elf | h8300*-*-rtems*)

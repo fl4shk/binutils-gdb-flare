@@ -114,6 +114,9 @@ static size_t flare32_opci_list_vec_size = 0;
 //      case FLARE32_OA_RA_FP_S5:
 //        printf ("FLARE32_OA_RA_FP_S5\n");
 //        break;
+//      case FLARE32_OA_S5:
+//        printf ("FLARE32_OA_S5\n");
+//        break;
 //      case FLARE32_OA_RA:
 //        printf ("FLARE32_OA_RA\n");
 //        break;
@@ -1264,6 +1267,16 @@ md_assemble (char *str)
         have_lpre = true;
       }
         break;
+      case FLARE32_OA_S5:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_EXP ();
+
+        parse_good = true;
+        have_lpre = true;
+      }
+        break;
       case FLARE32_OA_RA:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -1501,6 +1514,7 @@ md_assemble (char *str)
   #undef FLARE32_PARSE_SPR
   #undef FLARE32_PARSE_NOENC_REG
   #undef FLARE32_PARSE_PC
+  #undef FLARE32_PARSE_EXP_POST_POUND
   #undef FLARE32_PARSE_EXP
 
   if (!parse_good)

@@ -145,6 +145,8 @@ TARGET32_LIBOPCODES_CFILES = \
 	epiphany-dis.c \
 	epiphany-ibld.c \
 	epiphany-opc.c \
+	flare32-dis.c \
+	flare32-opc.c \
 	fr30-asm.c \
 	fr30-desc.c \
 	fr30-dis.c \
@@ -207,8 +209,6 @@ TARGET32_LIBOPCODES_CFILES = \
 	microblaze-dis.c \
 	moxie-dis.c \
 	moxie-opc.c \
-	flare32-dis.c \
-	flare32-opc.c \
 	msp430-decode.c \
 	msp430-dis.c \
 	mt-asm.c \

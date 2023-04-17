@@ -350,6 +350,14 @@ const flare32_opc_info_t
   {&flare32_grp_info_g1,
   FLARE32_G1_OP_ENUM_SE_RA_S5, FLARE32_OA_RA_S5,
   {"se", "se"}},
+
+  {&flare32_grp_info_g1,
+  FLARE32_G1_OP_ENUM_SWI_RA_S5, FLARE32_OA_RA_S5,
+  {"swi", "swi"}},
+
+  {&flare32_grp_info_g1,
+  FLARE32_G1_OP_ENUM_SWI_S5, FLARE32_OA_S5,
+  {"swi", "swi"}},
   /* -------- */
 };
 
@@ -721,32 +729,32 @@ const flare32_opc_info_t
   /* Following are some pseudo instructions. */
   /* ldub rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_LDUB_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"ldub", "ldub"}},
 
   /* ldsb rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_LDSB_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"ldsb", "ldsb"}},
 
   /* lduh rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_LDUH_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"lduh", "lduh"}},
 
   /* ldsh rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_LDSH_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"ldsh", "ldsh"}},
   /* -------- */
   /* stb rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_STB_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"stb", "stb"}},
 
   /* sth rA, [rB, rC] */
   {&flare32_grp_info_g4,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_G4_OP_ENUM_STH_RA_RB, FLARE32_OA_RA_RB_RC_LDST,
     {"sth", "sth"}},
   /* -------- */
 };
@@ -770,17 +778,17 @@ const flare32_opc_info_t
   /* Following are some pseudo instructions */
   /* ldr rA, [rB] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST,
     {"ldr", "ldr"}},
 
   /* ldr rA, [rB, rC] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"ldr", "ldr"}},
 
   /* ldr rA, [rB, rC, #simm] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
     {"ldr", "ldr"}},
   /* -------- */
 };
@@ -805,17 +813,17 @@ const flare32_opc_info_t
   /* Following are some pseudo instructions */
   /* st rA, [rB] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST,
     {"str", "str"}},
 
   /* str rA, [rB, rC] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"str", "str"}},
 
   /* str rA, [rB, rC, #simm] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
     {"str", "str"}},
   /* -------- */
 };
@@ -849,6 +857,11 @@ const flare32_opc_info_t
   {&flare32_grp_info_g7_aluopbh,
     FLARE32_G7_ALUOPBH_OP_ENUM_ASR_RA_RB, FLARE32_OA_RA_RB,
     {"asrb", "asrh"}},
+
+  /* reserved */
+  {&flare32_grp_info_g7_aluopbh,
+    FLARE32_G7_ALUOPBH_OP_ENUM_RESERVED_3, FLARE32_OA_BAD,
+    {"bad", "bad"}},
   /* -------- */
 };
 /* -------- */

@@ -101,6 +101,7 @@ if test "${enable_sim}" != no; then
     SIM_TARGET([cr16*-*-*], [cr16])
     SIM_TARGET([cris-*-* | crisv32-*-*], [cris])
     SIM_TARGET([d10v-*-*], [d10v])
+    SIM_TARGET([flare32-*-*], [flare32])
     SIM_TARGET([frv-*-*], [frv])
     SIM_TARGET([ft32-*-*], [ft32])
     SIM_TARGET([h8300*-*-*], [h8300])

@@ -638,6 +638,7 @@ TARGET_CPU_CFILES = \
 	config/tc-d30v.c \
 	config/tc-dlx.c \
 	config/tc-epiphany.c \
+	config/tc-flare32.c \
 	config/tc-fr30.c \
 	config/tc-frv.c \
 	config/tc-ft32.c \
@@ -663,7 +664,6 @@ TARGET_CPU_CFILES = \
 	config/tc-mn10200.c \
 	config/tc-mn10300.c \
 	config/tc-moxie.c \
-	config/tc-flare32.c \
 	config/tc-msp430.c \
 	config/tc-mt.c \
 	config/tc-nds32.c \
@@ -1111,6 +1111,8 @@ config/tc-dlx.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)
 config/tc-epiphany.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)
+config/tc-flare32.$(OBJEXT): config/$(am__dirstamp) \
+	config/$(DEPDIR)/$(am__dirstamp)
 config/tc-fr30.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)
 config/tc-frv.$(OBJEXT): config/$(am__dirstamp) \
@@ -1160,8 +1162,6 @@ config/tc-mn10200.$(OBJEXT): config/$(am__dirstamp) \
 config/tc-mn10300.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)
 config/tc-moxie.$(OBJEXT): config/$(am__dirstamp) \
-	config/$(DEPDIR)/$(am__dirstamp)
-config/tc-flare32.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)
 config/tc-msp430.$(OBJEXT): config/$(am__dirstamp) \
 	config/$(DEPDIR)/$(am__dirstamp)

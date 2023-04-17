@@ -111,6 +111,7 @@ ALL_MACHINES = \
 	cpu-d30v.lo \
 	cpu-dlx.lo \
 	cpu-epiphany.lo \
+	cpu-flare32.lo \
 	cpu-fr30.lo \
 	cpu-frv.lo \
 	cpu-ft32.lo \
@@ -140,7 +141,6 @@ ALL_MACHINES = \
 	cpu-mips.lo \
 	cpu-mmix.lo \
 	cpu-moxie.lo \
-	cpu-flare32.lo \
 	cpu-msp430.lo \
 	cpu-mt.lo \
 	cpu-nds32.lo \
@@ -195,6 +195,7 @@ ALL_MACHINES_CFILES = \
 	cpu-d30v.c \
 	cpu-dlx.c \
 	cpu-epiphany.c \
+	cpu-flare32.c \
 	cpu-fr30.c \
 	cpu-frv.c \
 	cpu-ft32.c \
@@ -224,7 +225,6 @@ ALL_MACHINES_CFILES = \
 	cpu-mips.c \
 	cpu-mmix.c \
 	cpu-moxie.c \
-	cpu-flare32.c \
 	cpu-msp430.c \
 	cpu-mt.c \
 	cpu-nds32.c \
@@ -309,6 +309,7 @@ BFD32_BACKENDS = \
 	elf32-d30v.lo \
 	elf32-dlx.lo \
 	elf32-epiphany.lo \
+	elf32-flare32.lo \
 	elf32-fr30.lo \
 	elf32-frv.lo \
 	elf32-ft32.lo \
@@ -332,7 +333,6 @@ BFD32_BACKENDS = \
 	elf32-metag.lo \
 	elf32-microblaze.lo \
 	elf32-moxie.lo \
-	elf32-flare32.lo \
 	elf32-msp430.lo \
 	elf32-mt.lo \
 	elf32-nds32.lo \
@@ -445,6 +445,7 @@ BFD32_BACKENDS_CFILES = \
 	elf32-d30v.c \
 	elf32-dlx.c \
 	elf32-epiphany.c \
+	elf32-flare32.c \
 	elf32-fr30.c \
 	elf32-frv.c \
 	elf32-ft32.c \
@@ -468,7 +469,6 @@ BFD32_BACKENDS_CFILES = \
 	elf32-metag.c \
 	elf32-microblaze.c \
 	elf32-moxie.c \
-	elf32-flare32.c \
 	elf32-msp430.c \
 	elf32-mt.c \
 	elf32-nds32.c \

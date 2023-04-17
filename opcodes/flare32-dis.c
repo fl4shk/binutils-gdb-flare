@@ -35,38 +35,11 @@ static void *stream;
 static char cbuf[FLARE32_DIS_CBUF_LIM];
 /* -------- */
 /* General purpose register names */
-const flare32_reg_t gprs[FLARE32_NUM_GPRS] =
-{
-  {"r0", 0x0, FLARE32_REG_KIND_GPR},
-  {"r1", 0x1, FLARE32_REG_KIND_GPR},
-  {"r2", 0x2, FLARE32_REG_KIND_GPR},
-  {"r3", 0x3, FLARE32_REG_KIND_GPR},
-  {"r4", 0x4, FLARE32_REG_KIND_GPR},
-  {"r5", 0x5, FLARE32_REG_KIND_GPR},
-  {"r6", 0x6, FLARE32_REG_KIND_GPR},
-  {"r7", 0x7, FLARE32_REG_KIND_GPR},
-  {"r8", 0x8, FLARE32_REG_KIND_GPR},
-  {"r9", 0x9, FLARE32_REG_KIND_GPR},
-  {"r10", 0xa, FLARE32_REG_KIND_GPR},
-  {"r11", 0xb, FLARE32_REG_KIND_GPR},
-  {"r12", 0xc, FLARE32_REG_KIND_GPR},
-  {"lr", 0xd, FLARE32_REG_KIND_GPR},
-  {"fp", 0xe, FLARE32_REG_KIND_GPR},
-  {"sp", 0xf, FLARE32_REG_KIND_GPR},
-};
+const flare32_reg_t gprs[FLARE32_NUM_GPRS] = FLARE32_INST_GPRS ();
 /* Special purpose register names */
-const flare32_reg_t sprs[FLARE32_NUM_SPRS] =
-{
-  {"flags", 0x0, FLARE32_REG_KIND_SPR},
-  {"ids", 0x1, FLARE32_REG_KIND_SPR},
-  {"ira", 0x2, FLARE32_REG_KIND_SPR},
-  {"ie", 0x3, FLARE32_REG_KIND_SPR},
-  {"hi", 0x4, FLARE32_REG_KIND_SPR},
-  {"lo", 0x5, FLARE32_REG_KIND_SPR},
-};
+const flare32_reg_t sprs[FLARE32_NUM_SPRS] = FLARE32_INST_SPRS ();
 
-const flare32_reg_t reg_pc =
-  {"pc", 0x0, FLARE32_REG_KIND_PC};
+const flare32_reg_t reg_pc = FLARE32_INST_REG_PC ();
 
 static char*
 do_snprintf_insn_flare32_maybe_pre_lpre (int length,
@@ -160,6 +133,13 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
     {
       fpr (stream, "%s\t%s, fp, #%i%s",
         opc_info->names[fw], gprs[ra_ind].name, (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
+    }
+      break;
+    case FLARE32_OA_S5:
+    {
+      fpr (stream, "%s\t#%i%s",
+        opc_info->names[fw], (signed) simm,
         do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
@@ -311,8 +291,10 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
     //case FLARE32_OA_RA_RB_RC_S5_LDST:
     //  break;
     default:
-      fpr (stream, "bad (grp 0x%x; oparg 0x%x)",
-        (unsigned) grp, (unsigned) opc_info->oparg);
+      fpr (stream, "bad (grp 0x%x; oparg 0x%x; opcode 0x%x; name %s)",
+        (unsigned) grp, (unsigned) opc_info->oparg,
+        (unsigned) opc_info->opcode,
+        opc_info->names[fw]);
       break;
     /* -------- */
   }

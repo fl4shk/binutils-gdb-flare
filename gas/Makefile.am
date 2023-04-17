@@ -151,6 +151,7 @@ TARGET_CPU_CFILES = \
 	config/tc-d30v.c \
 	config/tc-dlx.c \
 	config/tc-epiphany.c \
+	config/tc-flare32.c \
 	config/tc-fr30.c \
 	config/tc-frv.c \
 	config/tc-ft32.c \
@@ -176,7 +177,6 @@ TARGET_CPU_CFILES = \
 	config/tc-mn10200.c \
 	config/tc-mn10300.c \
 	config/tc-moxie.c \
-	config/tc-flare32.c \
 	config/tc-msp430.c \
 	config/tc-mt.c \
 	config/tc-nds32.c \

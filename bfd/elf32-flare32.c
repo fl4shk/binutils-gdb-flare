@@ -265,34 +265,34 @@ static reloc_howto_type flare32_elf_howto_table [] =
       (FLARE32_G3_LPRE_EXT_LSMASK | FLARE32_G3_S9_MASK),
       true),                     /* pcrel_offset */
 
-  HOWTO (R_FLARE32_G3_S32_PCREL_ADD32,  /* type */
-      1,                          /* rightshift */
-      4,                          /* size (0 = byte, 1 = short, 2 = long) */
-      32,                         /* bitsize */
-      true,                       /* pc_relative */
-      FLARE32_G3_S9_BITPOS,       /* bitpos */
-      complain_overflow_dont,     /* complain_on_overflow */
-      flare32_elf_add_sub_reloc, /* special_function */
-      "R_FLARE32_G3_S32_PCREL_ADD32",   /* name */
-      false,                      /* partial_inplace */
-      0x0,                        /* src_mask */
-      /* dst_mask */
-      (FLARE32_G3_LPRE_EXT_LSMASK | FLARE32_G3_S9_MASK),
-      true),                     /* pcrel_offset */
-  HOWTO (R_FLARE32_G3_S32_PCREL_SUB32,  /* type */
-      1,                          /* rightshift */
-      4,                          /* size (0 = byte, 1 = short, 2 = long) */
-      32,                         /* bitsize */
-      true,                       /* pc_relative */
-      FLARE32_G3_S9_BITPOS,       /* bitpos */
-      complain_overflow_dont,     /* complain_on_overflow */
-      flare32_elf_add_sub_reloc, /* special_function */
-      "R_FLARE32_G3_S32_PCREL_SUB32",   /* name */
-      false,                      /* partial_inplace */
-      0x0,                        /* src_mask */
-      /* dst_mask */
-      (FLARE32_G3_LPRE_EXT_LSMASK | FLARE32_G3_S9_MASK),
-      true),                     /* pcrel_offset */
+  //HOWTO (R_FLARE32_G3_S32_PCREL_ADD32,  /* type */
+  //    1,                          /* rightshift */
+  //    4,                          /* size (0 = byte, 1 = short, 2 = long) */
+  //    32,                         /* bitsize */
+  //    true,                       /* pc_relative */
+  //    FLARE32_G3_S9_BITPOS,       /* bitpos */
+  //    complain_overflow_dont,     /* complain_on_overflow */
+  //    flare32_elf_add_sub_reloc, /* special_function */
+  //    "R_FLARE32_G3_S32_PCREL_ADD32",   /* name */
+  //    false,                      /* partial_inplace */
+  //    0x0,                        /* src_mask */
+  //    /* dst_mask */
+  //    (FLARE32_G3_LPRE_EXT_LSMASK | FLARE32_G3_S9_MASK),
+  //    true),                     /* pcrel_offset */
+  //HOWTO (R_FLARE32_G3_S32_PCREL_SUB32,  /* type */
+  //    1,                          /* rightshift */
+  //    4,                          /* size (0 = byte, 1 = short, 2 = long) */
+  //    32,                         /* bitsize */
+  //    true,                       /* pc_relative */
+  //    FLARE32_G3_S9_BITPOS,       /* bitpos */
+  //    complain_overflow_dont,     /* complain_on_overflow */
+  //    flare32_elf_add_sub_reloc, /* special_function */
+  //    "R_FLARE32_G3_S32_PCREL_SUB32",   /* name */
+  //    false,                      /* partial_inplace */
+  //    0x0,                        /* src_mask */
+  //    /* dst_mask */
+  //    (FLARE32_G3_LPRE_EXT_LSMASK | FLARE32_G3_S9_MASK),
+  //    true),                     /* pcrel_offset */
   /* -------- */
   /* 8-bit in-place addition, for local label subtraction.  */
   HOWTO (R_FLARE32_PSEUDO_ADD8,                /* type */
@@ -440,8 +440,8 @@ static const struct flare32_reloc_map flare32_reloc_map [] =
   { BFD_RELOC_FLARE32_G3_S9_PCREL, R_FLARE32_G3_S9_PCREL },
   { BFD_RELOC_FLARE32_G3_S21_PCREL, R_FLARE32_G3_S21_PCREL },
   { BFD_RELOC_FLARE32_G3_S32_PCREL, R_FLARE32_G3_S32_PCREL },
-  { BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32, R_FLARE32_G3_S32_PCREL_ADD32 },
-  { BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32, R_FLARE32_G3_S32_PCREL_SUB32 },
+  //{ BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32, R_FLARE32_G3_S32_PCREL_ADD32 },
+  //{ BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32, R_FLARE32_G3_S32_PCREL_SUB32 },
   /* -------- */
   //{ BFD_RELOC_CTOR, R_FLARE32_32 },
   /* -------- */
@@ -481,7 +481,7 @@ flare32_reloc_name_lookup (bfd *abfd ATTRIBUTE_UNUSED, const char *r_name)
   /* -------- */
   unsigned int i;
   /* -------- */
-  for (i=0; i<FLARE32_ARRAY_SIZE(flare32_elf_howto_table); ++i)
+  for (i=0; i<FLARE32_ARRAY_SIZE (flare32_elf_howto_table); ++i)
   {
     if (flare32_elf_howto_table[i].name != NULL
       && strcasecmp (flare32_elf_howto_table[i].name, r_name) == 0)
@@ -558,6 +558,14 @@ flare32_elf_ext_or_g3_s9_reloc (bfd *abfd,
                                 bfd *output_bfd,
                                 char **error_message)
 {
+  if (output_bfd != NULL
+    && (symbol->flags & BSF_SECTION_SYM) == 0
+    && (!reloc_entry->howto->partial_inplace
+    || reloc_entry->addend == 0))
+  {
+    reloc_entry->address += input_section->output_offset;
+    return bfd_reloc_ok;
+  }
   /* If this isn't a final relocation, then just use the generic
     relocation function. */
   if (output_bfd != NULL)
@@ -580,10 +588,10 @@ flare32_elf_ext_or_g3_s9_reloc (bfd *abfd,
 }
 static bfd_reloc_status_type
 flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
-                                    reloc_howto_type *howto,
-                                    asection *input_section,
-                                    void *contents, bfd_vma address,
-                                    bfd_vma relocation, bfd_vma addend)
+                                  reloc_howto_type *howto,
+                                  asection *input_section,
+                                  void *contents, bfd_vma address,
+                                  bfd_vma relocation, bfd_vma addend)
 {
   /* -------- */
   //reloc_howto_type *howto = reloc_entry->howto;
@@ -591,13 +599,6 @@ flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
   bfd_size_type octets
     = address * bfd_octets_per_byte (input_bfd, input_section);
   /* -------- */
-  //if (output_bfd != NULL
-  //  && (symbol->flags & BSF_SECTION_SYM) == 0
-  //  && (!howto->partial_inplace || reloc_entry->addend == 0))
-  //{
-  //  reloc_entry->address += input_section->output_offset;
-  //  return bfd_reloc_ok;
-  //}
   /* -------- */
   /* -------- */
   /* -------- */
@@ -620,29 +621,32 @@ flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
 
   if (!howto->pc_relative)
   {
-    BFD_ASSERT(
+    BFD_ASSERT (
       howto->type == R_FLARE32_G1G5G6_S17
       || howto->type == R_FLARE32_G1G5G6_S32
     );
 
+    //printf ("flare32_elf_do_ext_or_g3_s9_reloc: !pc_relative: %i\n",
+    //  (signed) relocation);
+
     if (howto->type == R_FLARE32_G1G5G6_S17)
     {
-      prefix_insn = bfd_get_16(input_bfd, contents + address);
-      insn = bfd_get_16(input_bfd, contents + address + 2U);
+      prefix_insn = bfd_get_16 (input_bfd, contents + address);
+      insn = bfd_get_16 (input_bfd, contents + address + 2U);
       relocation += flare32_sign_extend
-        (flare32_get_g1g5g6_s17(prefix_insn, insn), 32);
-      flare32_put_g1g5g6_s17(&prefix_insn, &insn, relocation);
-      bfd_put_16(input_bfd, prefix_insn, contents + address);
-      bfd_put_16(input_bfd, insn, contents + address + 2U);
+        (flare32_get_g1g5g6_s17 (prefix_insn, insn), 32);
+      flare32_put_g1g5g6_s17 (&prefix_insn, &insn, relocation);
+      bfd_put_16 (input_bfd, prefix_insn, contents + address);
+      bfd_put_16 (input_bfd, insn, contents + address + 2U);
     }
     else // if (howto->type == R_FLARE32_G1G5G6_S32)
     {
-      prefix_insn = bfd_get_32(input_bfd, contents + address);
-      insn = bfd_get_16(input_bfd, contents + address + 4U);
-      relocation += flare32_get_g1g5g6_s32(prefix_insn, insn);
-      flare32_put_g1g5g6_s32(&prefix_insn, &insn, relocation);
-      bfd_put_32(input_bfd, prefix_insn, contents + address);
-      bfd_put_16(input_bfd, insn, contents + address + 4U);
+      prefix_insn = bfd_get_32 (input_bfd, contents + address);
+      insn = bfd_get_16 (input_bfd, contents + address + 4U);
+      relocation += flare32_get_g1g5g6_s32 (prefix_insn, insn);
+      flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+      bfd_put_32 (input_bfd, prefix_insn, contents + address);
+      bfd_put_16 (input_bfd, insn, contents + address + 4U);
     }
   }
   else // if (howto->pc_relative)
@@ -653,6 +657,9 @@ flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
     {
       relocation -= address;
     }
+
+    //printf ("flare32_elf_do_ext_or_g3_s9_reloc: pc_relative: %i\n",
+    //  (signed) relocation);
     BFD_ASSERT (
       howto->type == R_FLARE32_G3_S9_PCREL
       || howto->type == R_FLARE32_G3_S21_PCREL
@@ -668,18 +675,29 @@ flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
     if (howto->type == R_FLARE32_G3_S9_PCREL)
     {
       insn = bfd_get_16 (input_bfd, contents + address);
-      relocation += flare32_sign_extend
-        (flare32_get_insn_field (&flare32_enc_info_g3_s9, insn), 32ull)
-        - 2ull;
-      flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
+      //relocation += flare32_sign_extend
+      //  (flare32_get_insn_field
+      //    (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn), 
+      //    FLARE32_G3_S9_BITSIZE)
+      //  - 2ull
+      //  ;
+      relocation -= 2ull;
+      //flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
+      flare32_set_insn_field (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
+        insn, relocation);
       bfd_put_16 (input_bfd, insn, contents + address);
     }
     else if (howto->type == R_FLARE32_G3_S21_PCREL)
     {
       prefix_insn = bfd_get_16 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + 2ull);
-      relocation += flare32_sign_extend
-        (flare32_get_g3_s21 (prefix_insn, insn), 32ull) - 4ull;
+      //relocation += flare32_sign_extend
+      //  (flare32_get_g3_s21 (prefix_insn, insn),
+      //  FLARE32_G3_S9_BITSIZE + FLARE32_G0_PRE_S12_BITSIZE)
+      //  - 4ull
+      //  //- 2ull
+      //  ;
+      relocation -= 4ull;
       flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
       bfd_put_16 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + 2ull);
@@ -688,7 +706,13 @@ flare32_elf_do_ext_or_g3_s9_reloc (bfd *input_bfd,
     {
       prefix_insn = bfd_get_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + 4ull);
-      relocation += flare32_get_g3_s32 (prefix_insn, insn) - 6ull;
+      //relocation += 
+      //  flare32_sign_extend (flare32_get_g3_s32 (prefix_insn, insn),
+      //    FLARE32_G3_S9_BITSIZE + FLARE32_G3_G0_LPRE_S23_BITSIZE)
+      //  - 6ull
+      //  //- 4ull
+      //  ;
+      relocation -= 6ull;
       flare32_put_g3_s32 (&prefix_insn, &insn, relocation);
       bfd_put_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + 4ull);
@@ -727,9 +751,9 @@ flare32_elf_add_sub_reloc (bfd *abfd,
   if (output_bfd != NULL)
   {
     //return bfd_reloc_continue;
-    //return bfd_elf_generic_reloc (abfd, reloc_entry, symbol, data,
-    //  input_section, output_bfd, error_message);
-    return bfd_reloc_continue;
+    return bfd_elf_generic_reloc (abfd, reloc_entry, symbol, data,
+      input_section, output_bfd, error_message);
+    //return bfd_reloc_continue;
   }
   //relocation = symbol->value + symbol->section->output_section->vma
   //  + symbol->section->output_offset + reloc_entry->addend;
@@ -743,7 +767,6 @@ flare32_elf_add_sub_reloc (bfd *abfd,
       + symbol->section->output_offset
     ),
     reloc_entry->addend);
-
 }
 static bfd_reloc_status_type
 flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
@@ -769,10 +792,11 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
   {
     case R_FLARE32_G1G5G6_S32_ADD32:
     case R_FLARE32_G1G5G6_S32_SUB32:
-    case R_FLARE32_G3_S32_PCREL_ADD32:
-    case R_FLARE32_G3_S32_PCREL_SUB32:
+    //case R_FLARE32_G3_S32_PCREL_ADD32:
+    //case R_FLARE32_G3_S32_PCREL_SUB32:
     {
-      flare32_temp_t prefix_insn, insn;
+      //bfd_vma old_relocation = relocation;
+      flare32_temp_t prefix_insn, insn, simm = 0;
 
       prefix_insn = bfd_get_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + 4U);
@@ -780,23 +804,56 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
       //relocation = (howto->type == R_FLARE32_G1G5G6_S32_ADD32)
       //  ? (relocation + flare32_get_g1g5g6_s32 (prefix_insn, insn))
       //  : (relocation - flare32_get_g1g5g6_s32 (prefix_insn, insn));
+      //printf ("do add sub reloc 0: 0x%x; ; 0x%x 0x%x; %s\n",
+      //  (unsigned) old_relocation,
+      //  (unsigned) prefix_insn, (unsigned) insn,
+      //  howto->name);
 
       switch (howto->type)
       {
         case R_FLARE32_G1G5G6_S32_ADD32:
-          relocation += flare32_get_g1g5g6_s32 (prefix_insn, insn);
+          simm = flare32_get_g1g5g6_s32 (prefix_insn, insn);
+          relocation += simm;
+          flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
           break;
         case R_FLARE32_G1G5G6_S32_SUB32:
-          relocation -= flare32_get_g1g5g6_s32 (prefix_insn, insn);
+          simm = flare32_get_g1g5g6_s32 (prefix_insn, insn);
+          //relocation -= simm;
+          relocation = simm - relocation;
+          flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
           break;
-        case R_FLARE32_G3_S32_PCREL_ADD32:
-          relocation += flare32_get_g3_s32 (prefix_insn, insn);
-          break;
-        case R_FLARE32_G3_S32_PCREL_SUB32:
-          relocation -= flare32_get_g3_s32 (prefix_insn, insn);
-          break;
+        //case R_FLARE32_G3_S32_PCREL_ADD32:
+        //  simm = flare32_get_g3_s32 (prefix_insn, insn);
+        //  relocation = simm + relocation;
+        //  //relocation -= (input_section->output_section->vma
+        //  //  + input_section->output_offset);
+        //  //relocation -= 6ull;
+        //  //if (howto->pcrel_offset)
+        //  //{
+        //  //  relocation -= address;
+        //  //}
+        //  flare32_put_g3_s32 (&prefix_insn, &insn, relocation);
+        //  break;
+        //case R_FLARE32_G3_S32_PCREL_SUB32:
+        //  simm = flare32_get_g3_s32 (prefix_insn, insn);;
+        //  //relocation -= simm;
+        //  relocation = simm - relocation;
+        //  relocation -= (input_section->output_section->vma
+        //    + input_section->output_offset);
+        //  //relocation -= 6ull;
+        //  if (howto->pcrel_offset)
+        //  {
+        //    relocation -= address;
+        //  }
+        //  flare32_put_g3_s32 (&prefix_insn, &insn, relocation);
+        //  break;
       }
-      flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+      //printf ("do add sub reloc 1: 0x%x; %i; 0x%x 0x%x; %s\n",
+      //  (unsigned) relocation,
+      //  (signed) simm,
+      //  (unsigned) prefix_insn, (unsigned) insn,
+      //  howto->name);
+
       bfd_put_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + 4U);
     }
@@ -821,6 +878,17 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
       break;
   }
 
+  //switch (howto->type)
+  //{
+  //  case R_FLARE32_G1G5G6_S32_ADD32:
+  //  case R_FLARE32_G3_S32_PCREL_ADD32:
+  //  case R_FLARE32_PSEUDO_ADD8:
+  //  case R_FLARE32_PSEUDO_ADD16:
+  //  case R_FLARE32_PSEUDO_ADD32:
+  //  case R_FLARE32_PSEUDO_ADD64:
+  //    return bfd_reloc_continue;
+  //}
+
   return bfd_reloc_ok;
 }
 
@@ -844,6 +912,8 @@ flare32_elf_relocate_section (bfd *output_bfd,
   symtab_hdr = &elf_tdata (input_bfd)->symtab_hdr;
   sym_hashes = elf_sym_hashes (input_bfd);
   relend = relocs + input_section->reloc_count;
+  //printf ("flare32_elf_relocate_section: %d\n",
+  //  input_section->reloc_count);
 
   for (rel=relocs; rel<relend; ++rel)
   {
@@ -863,6 +933,8 @@ flare32_elf_relocate_section (bfd *output_bfd,
 
     // TODO
     howto = flare32_lookup_howto ((unsigned) ELF32_R_TYPE (rel->r_info));
+    //printf ("flare32_elf_relocate_section howto: %s\n",
+    //  howto->name);
     h = NULL;
     sym = NULL;
     sec = NULL;
@@ -930,8 +1002,8 @@ flare32_elf_relocate_section (bfd *output_bfd,
 
         case R_FLARE32_G1G5G6_S32_ADD32:
         case R_FLARE32_G1G5G6_S32_SUB32:
-        case R_FLARE32_G3_S32_PCREL_ADD32:
-        case R_FLARE32_G3_S32_PCREL_SUB32:
+        //case R_FLARE32_G3_S32_PCREL_ADD32:
+        //case R_FLARE32_G3_S32_PCREL_SUB32:
         case R_FLARE32_PSEUDO_ADD8:
         case R_FLARE32_PSEUDO_ADD16:
         case R_FLARE32_PSEUDO_ADD32:
@@ -946,7 +1018,14 @@ flare32_elf_relocate_section (bfd *output_bfd,
                 rel->r_addend);
           break;
 
+        //case R_FLARE32_G1G5G6_S32_ADD32:
+        //case R_FLARE32_G3_S32_PCREL_ADD32:
+        //  r = bfd_reloc_ok;
+        //  break;
+
         default:
+          printf ("relocate_section default howto name: %s\n",
+            howto->name);
           BFD_ASSERT (0);
           break;
       }
@@ -1028,12 +1107,37 @@ flare32_relax_can_shrink_value (bfd_vma value,
                                 flare32_temp_t curr_bitsize,
                                 flare32_temp_t target_bitsize)
 {
+  //bool ret = (
+  //  (bfd_signed_vma) value
+  //    == ((
+  //      (bfd_signed_vma) value
+  //      << (curr_bitsize - target_bitsize)
+  //    ) >> (curr_bitsize - target_bitsize))
+  //);
+
+
+  //flare32_temp_t shift_amount = curr_bitsize - target_bitsize;
+  //bfd_vma
+  //  target_value = value 
+  //    & (((bfd_vma) 1ull << shift_amount) - (bfd_vma) 1ull),
+  //  target_value_se
+  //    = flare32_sign_extend (target_value, target_bitsize);
+  //printf ("flare32 relax can shrink: 0x%x; 0x%x 0x%x; %d %d\n",
+  //  (unsigned) value,
+  //  (unsigned) target_value, (unsigned) target_value_se,
+  //  (unsigned) curr_bitsize, (unsigned) target_bitsize);
+  flare32_temp_t
+    curr_value_se = flare32_sign_extend (value, curr_bitsize),
+    target_value_se = flare32_sign_extend (value, target_bitsize);
+
+  //printf ("flare32_relax_can_shrink_value: 0x%x; 0x%x 0x%x; %d\n",
+  //  (unsigned) value,
+  //  (unsigned) curr_value_se, (unsigned) target_value_se,
+  //  (uint32_t) curr_value_se == (uint32_t) target_value_se);
+
   return (
-    (bfd_signed_vma) value
-      == ((
-        (bfd_signed_vma) value
-        >> (curr_bitsize - target_bitsize)
-      ) << (curr_bitsize - target_bitsize))
+    (uint32_t) curr_value_se
+    == (uint32_t) target_value_se
   );
 }
 typedef struct flare32_relax_temp_t
@@ -1046,8 +1150,10 @@ typedef struct flare32_relax_temp_t
   Elf_Internal_Rela *irel;
   bfd_byte *contents;
   bfd_vma value;
+  //bfd_vma value_pcrel_offset;
   //bfd_vma dot;
   //bfd_vma gap;
+  reloc_howto_type *howto;
   bool is_pc_relative;
   bool rm_prefix;
   bool was_lpre;
@@ -1209,31 +1315,33 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
   isym = (Elf_Internal_Sym *) symtab_hdr->contents;
   /* Fix PR 9841, there may be no local symbols.  */
   if (isym != NULL)
+  {
+    Elf_Internal_Sym *isymend;
+
+    isymend = isym + symtab_hdr->sh_info;
+    for (; isym<isymend; ++isym)
     {
-      Elf_Internal_Sym *isymend;
-
-      isymend = isym + symtab_hdr->sh_info;
-      for (; isym<isymend; ++isym)
+      if (isym->st_shndx == sec_shndx)
+      {
+        if (isym->st_value > addr
+            && isym->st_value <= toaddr)
         {
-          if (isym->st_shndx == sec_shndx)
-            {
-              if (isym->st_value > addr
-                  && isym->st_value <= toaddr)
-                isym->st_value -= count;
-
-              if (isym->st_value <= addr
-                  && isym->st_value + isym->st_size > addr)
-                {
-                  /* If this assert fires then we have a symbol that ends
-                     part way through an instruction.  Does that make
-                     sense?  */
-                  BFD_ASSERT (isym->st_value + isym->st_size
-                              >= addr + count);
-                  isym->st_size -= count;
-                }
-            }
+          isym->st_value -= count;
         }
+
+        if (isym->st_value <= addr
+            && isym->st_value + isym->st_size > addr)
+        {
+          /* If this assert fires then we have a symbol that ends
+              part way through an instruction.  Does that make
+              sense?  */
+          BFD_ASSERT (isym->st_value + isym->st_size
+                      >= addr + count);
+          isym->st_size -= count;
+        }
+      }
     }
+  }
 
   /* Now adjust the global symbols defined in this section.  */
   symcount = (symtab_hdr->sh_size / sizeof (Elf32_External_Sym)
@@ -1270,8 +1378,9 @@ flare32_elf_relax_delete_bytes (bfd *abfd,
 }
 
 static bool
-flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
+flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
 {
+  //printf ("flare32_do_relax_prefix_innards\n");
   /* Note that we'vve changed the relocs, section contents. */
   elf_section_data (args->sec)->relocs = args->internal_relocs;
   elf_section_data (args->sec)-> this_hdr.contents = args->contents;
@@ -1281,6 +1390,32 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
   {
     if (args->rm_prefix) // remove the `lpre` instruction
     {
+      //printf ("flare32_do_relax_prefix_innards: "
+      //  "was_lpre && rm_prefix: %s\n",
+      //  args->howto->name);
+
+      if (args->is_pc_relative)
+      {
+        flare32_temp_t
+          insn = bfd_get_16 (args->abfd,
+            args->contents + args->irel->r_offset + 4),
+          //simm = flare32_get_insn_field
+          //  (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn);
+          simm = args->value;
+            
+          //if (args->is_pc_relative)
+          {
+            (void) flare32_set_insn_field_p
+              (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
+              &insn,
+              simm //- 4ull
+              );
+          }
+
+        bfd_put_16 (args->abfd, insn,
+          args->contents + args->irel->r_offset + 4);
+      }
+
       if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
         args->irel->r_offset, 4))
       {
@@ -1294,10 +1429,41 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
     }
     else // if (!args->rm_prefix) // convert the `lpre` to a `pre`
     {
-      bfd_put_16 (args->abfd,
-        flare32_enc_temp_insn_pre (bfd_get_16 (args->abfd,
+      //printf ("flare32_do_relax_prefix_innards: "
+      //  "was_lpre && !rm_prefix: %s\n",
+      //  args->howto->name);
+      if (!args->is_pc_relative)
+      {
+        bfd_put_16 (args->abfd,
+          flare32_enc_temp_insn_pre (bfd_get_16 (args->abfd,
             args->contents + args->irel->r_offset + 2)),
-        args->contents + args->irel->r_offset + 2);
+          args->contents + args->irel->r_offset + 2);
+      }
+      else // if (args->is_pc_relative)
+      {
+        flare32_temp_t
+          //curr_prefix_insn = bfd_get_32 (args->abfd,
+          //  args->contents + args->irel->r_offset),
+          insn = bfd_get_16 (args->abfd,
+            args->contents + args->irel->r_offset + 4),
+          //simm = flare32_get_g3_s32 (curr_prefix_insn, insn),
+          simm = args->value,
+          prefix_insn = flare32_enc_temp_insn_pre (0x0);
+
+        flare32_put_g3_s21 (&prefix_insn, &insn,
+          simm
+          //- 2ull
+        );
+        //simm = flare32_get_g3_s21 (prefix_insn, insn)
+        //  //- 2ull
+        //  ;
+        //flare32_put_g3_s21 (&prefix_insn, &insn, simm);
+
+        bfd_put_16 (args->abfd, prefix_insn,
+          args->contents + args->irel->r_offset + 2);
+        bfd_put_16 (args->abfd, insn,
+          args->contents + args->irel->r_offset + 4);
+      }
 
       if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
         args->irel->r_offset, 2U))
@@ -1314,6 +1480,28 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
   }
   else // if (!args->was_lpre) // remove the `pre` instruction
   {
+    //printf ("flare32_do_relax_prefix_innards: "
+    //  "!was_lpre: %s\n",
+    //  args->howto->name);
+    if (args->is_pc_relative)
+    {
+      flare32_temp_t
+        insn = bfd_get_16 (args->abfd,
+          args->contents + args->irel->r_offset + 2),
+        //simm = flare32_get_insn_field
+        //  (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn);
+        simm = args->value;
+          
+        (void) flare32_set_insn_field_p
+          (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
+          &insn,
+          //simm - 2ull
+          simm
+          );
+
+      bfd_put_16 (args->abfd, insn,
+        args->contents + args->irel->r_offset + 2);
+    }
     if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
       args->irel->r_offset, 2))
     {
@@ -1330,15 +1518,15 @@ flare32_do_partial_relax_prefix_innards (flare32_relax_temp_t *args)
 }
 
 static bool
-flare32_do_partial_relax_prefix (bfd *abfd,
-                                asection *sec,
-                                bool *again,
-                                Elf_Internal_Shdr *symtab_hdr,
-                                Elf_Internal_Sym *isymbuf,
-                                Elf_Internal_Rela *internal_relocs,
-                                Elf_Internal_Rela *irel,
-                                bfd_byte *contents,
-                                bfd_vma symval)
+flare32_do_relax_prefix (bfd *abfd,
+                        asection *sec,
+                        bool *again,
+                        Elf_Internal_Shdr *symtab_hdr,
+                        Elf_Internal_Sym *isymbuf,
+                        Elf_Internal_Rela *internal_relocs,
+                        Elf_Internal_Rela *irel,
+                        bfd_byte *contents,
+                        bfd_vma symval)
 {
   reloc_howto_type *howto;
   howto = flare32_lookup_howto (ELF32_R_TYPE (irel->r_info));
@@ -1352,110 +1540,105 @@ flare32_do_partial_relax_prefix (bfd *abfd,
       the linker is run.  */
   /* Check if we can convert an `lpre` instruction to a `pre`
     instruction, or otherwise to there being neither `pre` nor `lpre` */
+  //if (howto->type == R_FLARE32_G3_S9_PCREL)
+  //{
+  //}
+  //else
   if (howto->type == R_FLARE32_G1G5G6_S17
     || howto->type == R_FLARE32_G1G5G6_S32
+    //|| howto->type == R_FLARE32_G1G5G6_S32_SUB32
     || howto->type == R_FLARE32_G3_S21_PCREL
-    || howto->type == R_FLARE32_G3_S32_PCREL)
+    || howto->type == R_FLARE32_G3_S32_PCREL
+    //|| howto->type == R_FLARE32_G3_S32_PCREL_SUB32
+  )
   {
+    //printf ("flare32_do_relax_prefix howto found: 0x%x 0x%x; %s\n",
+    //  (unsigned) symval, (unsigned) irel->r_addend,
+    //  howto->name);
     bfd_vma
-      value = symval + irel->r_addend;
-      //dot = 0, gap;
+      value = symval + irel->r_addend,
+      //value_pcrel_offset = 0;
+      dot = 0, gap;
 
     flare32_temp_t
       //prefix_insn,
       //insn,
-      prefix_insn_bitsize, //prefix_insn_bitpos, prefix_insn_mask,
-      insn_bitsize, //insn_bitpos, insn_mask, 
-      curr_bitsize, target_bitsize;
+      prefix_insn_bitsize = 0, //prefix_insn_bitpos, prefix_insn_mask,
+      insn_bitsize = 0, //insn_bitpos, insn_mask, 
+      curr_bitsize, target_bitsize = 0;
       //target_value = 0;
     bool
       was_lpre = false;
 
-    //if (howto->pc_relative)
-    //{
-    //  /* Get the address of this instruction. */
-    //  dot = sec->output_section->vma
-    //    + sec->output_offset + irel->r_offset;
-    //}
+    if (howto->pc_relative)
+    {
+      /* Get the address of this instruction. */
+      dot = sec->output_section->vma
+        + sec->output_offset + irel->r_offset;
+    }
 
-    ///* Compute the distance from this insn to the branch target, if there 
-    //  is one. */
-    //gap = value - dot - 2;
+    /* Compute the distance from this insn to the branch target, if there 
+      is one. */
+    gap = value - dot
+      //+ 4;
+      ;
 
     if (howto->type == R_FLARE32_G1G5G6_S17)
     {
-      //prefix_insn = bfd_get_16 (abfd, contents + irel->r_offset);
-      //insn = bfd_get_16 (abfd, contents + irel->r_offset + 2);
-
-      //prefix_insn_size = 16;
       prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
-      //prefix_insn_bitpos = FLARE32_G0_PRE_S12_BITPOS;
-      //prefix_insn_mask = FLARE32_G0_PRE_S12_MASK;
       insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
-      //insn_bitpos = FLARE32_G1G5G6_S5_BITPOS;
-      //insn_mask = FLARE32_G1G5G6_S5_MASK;
       
       target_bitsize = insn_bitsize;
     }
-    else if (howto->type == R_FLARE32_G1G5G6_S32)
+    else if (howto->type == R_FLARE32_G1G5G6_S32
+      //|| howto->type == R_FLARE32_G1G5G6_S32_SUB32
+    )
     {
       was_lpre = true;
 
-      //prefix_insn = bfd_get_32 (abfd, contents + irel->r_offset);
-      //insn = bfd_get_16 (abfd, contents + irel->r_offset + 4);
-
-      //prefix_insn_size = 32;
       prefix_insn_bitsize = FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE;
-      //prefix_insn_bitpos = FLARE32_G1G5G6_G0_LPRE_S27_BITPOS;
-      //prefix_insn_mask = FLARE32_G1G5G6_g0_LPRE_S27_MASK;
       insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
-      //insn_bitpos = FLARE32_G1G5G6_S5_BITPOS;
-      //insn_mask = FLARE32_G1G5G6_S5_MASK;
 
       target_bitsize = FLARE32_G0_PRE_S12_BITSIZE + insn_bitsize;
     }
     else if (howto->type == R_FLARE32_G3_S21_PCREL)
     {
-      //prefix_insn = bfd_get_16 (abfd, contents + irel->r_offset);
-      //insn = bfd_get_16 (abfd, contents + irel->r_offset + 2);
-
-      //flare32_put_g3_s21 (&prefix_insn,
-      //                    &insn,
-      //                    value);
-
-      //prefix_insn_size = 16;
       prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
-      //prefix_insn_bitpos = FLARE32_G0_PRE_S12_BITPOS;
-      //prefix_insn_mask = FLARE32_G0_PRE_S12_MASK;
       insn_bitsize = FLARE32_G3_S9_BITSIZE;
-      //insn_bitpos = FLARE32_G3_S9_BITPOS;
-      //insn_mask = FLARE32_G3_S9_MASK;
 
       target_bitsize = insn_bitsize;
     }
-    else // if (howto->type == R_FLARE32_G3_S32_PCREL)
+    else if (howto->type == R_FLARE32_G3_S32_PCREL
+      //|| howto->type == R_FLARE32_G3_S32_PCREL_SUB32
+    )
     {
       was_lpre = true;
 
-      //prefix_insn = bfd_get_32 (abfd, contents + irel->r_offset);
-      //insn = bfd_get_16 (abfd, contents + irel->r_offset + 4);
-
-      //prefix_insn_size = 32;
       prefix_insn_bitsize = FLARE32_G3_G0_LPRE_S23_BITSIZE;
-      //prefix_insn_bitpos = FLARE32_G3_G0_LPRE_S23_BITPOS;
-      //prefix_insn_mask = FLARE32_G3_G0_LPRE_S23_MASK;
       insn_bitsize = FLARE32_G3_S9_BITSIZE;
-      //insn_bitpos = FLARE32_G3_S9_BITPOS;
-      //insn_mask = FLARE32_G3_S9_MASK;
 
       target_bitsize = FLARE32_G0_PRE_S12_BITSIZE + insn_bitsize;
     }
+    else
+    {
+      BFD_ASSERT (0);
+    }
     curr_bitsize = prefix_insn_bitsize + insn_bitsize;
 
-    if (flare32_relax_can_shrink_value (value, curr_bitsize,
-      target_bitsize))
+    //printf ("flare32 partial relax: have howto: "
+    //  "0x%x 0x%x; %d; %d %d; %d %d\n",
+    //  (unsigned) value, (unsigned) gap,
+    //  (unsigned) was_lpre,
+    //  (unsigned) prefix_insn_bitsize, (unsigned) insn_bitsize,
+    //  (unsigned) target_bitsize, (unsigned) curr_bitsize);
+
+    if (flare32_relax_can_shrink_value
+      (!howto->pc_relative ? value
+        : gap - 2ull,
+        //: gap,
+      curr_bitsize, target_bitsize))
     {
-      *again = true;
+      //printf ("flare32 partial relax: can shrink 0\n");
 
       flare32_relax_temp_t args =
       {
@@ -1466,9 +1649,10 @@ flare32_do_partial_relax_prefix (bfd *abfd,
         internal_relocs, /* internal_relocs */
         irel, /* irel */
         contents, /* contents */
-        value, /* value */
-        //dot,
-        //gap,
+        !howto->pc_relative ? value : gap, /* value */
+        //dot, /* dot */
+        //gap, /* gap */
+        howto,
         howto->pc_relative, /* is_pc_relative */
         true, /* rm_prefix */
         was_lpre, /* was_lpre */
@@ -1479,20 +1663,24 @@ flare32_do_partial_relax_prefix (bfd *abfd,
         //prefix_insn_mask,
         //insn_bitsize,
         //insn_bitpos,
-        //insn_mask
+        //insn_mask,
       };
 
       args.rm_prefix = (
-        !was_lpre
-        || flare32_relax_can_shrink_value (value, target_bitsize,
-          insn_bitsize)
+        !was_lpre 
+        || flare32_relax_can_shrink_value 
+          (!howto->pc_relative ? value
+            : gap - 4ull, 
+            //: gap, 
+          prefix_insn_bitsize, insn_bitsize)
       );
 
-      if (!flare32_do_partial_relax_prefix_innards (&args))
+      if (!flare32_do_relax_prefix_innards (&args))
       {
         //goto error_return;
         return false;
       }
+      *again = true;
     }
   }
   return true;
@@ -1506,6 +1694,7 @@ flare32_elf_relax_section (bfd *abfd,
                           struct bfd_link_info *link_info,
                           bool *again)
 {
+  //printf ("flare32 dbg: flare32_elf_relax_section\n");
   /* -------- */
   Elf_Internal_Shdr *symtab_hdr;
   Elf_Internal_Rela *internal_relocs;
@@ -1518,15 +1707,16 @@ flare32_elf_relax_section (bfd *abfd,
   *again = false;
   /* -------- */
   /* We don't have to do anything for a relocatable link, if
-     this section does not have relocs, or if this is not a
-     code section.  */
+     this section does not have relocs. */
   if (bfd_link_relocatable (link_info)
       || sec->reloc_count == 0
       || (sec->flags & SEC_RELOC) == 0
       || (sec->flags & SEC_HAS_CONTENTS) == 0
-      /* Note that we only relax instructions with immediate values */
-      || (sec->flags & SEC_CODE) == 0)
+      || (sec->flags & SEC_CODE) == 0
+    )
+  {
     return true;
+  }
   /* -------- */
   symtab_hdr = & elf_tdata (abfd)->symtab_hdr;
   /* -------- */
@@ -1631,71 +1821,11 @@ flare32_elf_relax_section (bfd *abfd,
                 + h->root.u.def.section->output_offset);
     }
 
-    if (!flare32_do_partial_relax_prefix (abfd, sec, again, symtab_hdr,
+    if (!flare32_do_relax_prefix (abfd, sec, again, symtab_hdr,
       isymbuf, internal_relocs, irel, contents, symval))
     {
       goto error_return;
     }
-
-
-
-
-    ///* Check if we can remove an LDI instruction from the LDI32
-    //    pseudo instruction if the upper 16 operand bits are zero.  */
-    //if (ELF32_R_TYPE (irel->r_info) == (int) R_PRU_LDI32)
-    //{
-    //  bfd_vma value = symval + irel->r_addend;
-
-    //  if (debug_relax)
-    //  {
-    //    printf ("R_PRU_LDI32 with value=0x%lx\n", (long) value);
-    //  }
-
-    //  if ((long) value >> 16 == 0)
-    //  {
-    //    unsigned long insn;
-
-    //    /* Note that we've changed the relocs, section contents.  */
-    //    elf_section_data (sec)->relocs = internal_relocs;
-    //    elf_section_data (sec)->this_hdr.contents = contents;
-    //    symtab_hdr->contents = (unsigned char *) isymbuf;
-
-    //    /* Make the second instruction load the 16-bit constant
-    //        into the full 32-bit register.  */
-    //    insn = bfd_get_32 (abfd, contents + irel->r_offset + 4);
-
-    //    /* Old GAS and LD versions have a bug, where the two
-    //        LDI instructions are swapped.  Detect such object
-    //        files and bail.  */
-    //    if (GET_INSN_FIELD (RDSEL, insn) != RSEL_15_0)
-    //      {
-    //        /* xgettext:c-format */
-    //        _bfd_error_handler (_("error: %pB: old incompatible object file detected"),
-    //                            abfd);
-    //        goto error_return;
-    //      }
-
-    //    SET_INSN_FIELD (RDSEL, insn, RSEL_31_0);
-    //    bfd_put_32 (abfd, insn, contents + irel->r_offset + 4);
-
-    //    /* Delete the first LDI instruction.  Note that there should
-    //        be no relocations or symbols pointing to the second LDI
-    //        instruction.  */
-    //    if (!pru_elf_relax_delete_bytes (abfd, sec, irel->r_offset, 4))
-    //      goto error_return;
-
-    //    /* We're done with deletion of the first instruction.
-    //        Set a regular LDI relocation for the second instruction
-    //        we left to load the 16-bit value into the 32-bit
-    //        register.  */
-    //    irel->r_info = ELF32_R_INFO (ELF32_R_SYM (irel->r_info),
-    //                                  R_PRU_U16);
-
-    //    /* That will change things, so, we should relax again.
-    //        Note that this is not required, and it may be slow.  */
-    //    *again = true;
-    //  }
-    //}
   }
 
   if (isymbuf != NULL && symtab_hdr->contents != (unsigned char *) isymbuf)
@@ -1765,6 +1895,8 @@ flare32_elf_relax_section (bfd *abfd,
 //
 #define elf_backend_can_gc_sections   1
 #define elf_backend_rela_normal       1
+
+#define elf_backend_default_execstack  0
 
 #define bfd_elf32_bfd_reloc_type_lookup flare32_reloc_type_lookup
 #define bfd_elf32_bfd_reloc_name_lookup flare32_reloc_name_lookup

@@ -79,11 +79,11 @@ do_snprintf_insn_flare32_maybe_pre_lpre (int length,
   }
   else if (length == 4)
   {
-    snprintf(cbuf, FLARE32_DIS_CBUF_LIM,
-      " ; pre #0x%x",
+    snprintf (cbuf, FLARE32_DIS_CBUF_LIM,
+      " // pre #0x%x",
       //(unsigned) GET_INSN_FIELD (FLARE32_PRE_S12_MASK,
       //  FLARE32_PRE_S12_BITPOS, iword)
-      (unsigned) flare32_get_insn_field
+      (unsigned) flare32_get_insn_field_ei
         (&flare32_enc_info_g0_pre_s12,
         iword >> FLARE32_ONE_EXT_BITPOS)
     );
@@ -92,22 +92,22 @@ do_snprintf_insn_flare32_maybe_pre_lpre (int length,
   {
     if (grp != FLARE32_G3_GRP_VALUE) /* groups 1, 5, or 6 */
     {
-      snprintf(cbuf, FLARE32_DIS_CBUF_LIM,
-        " ; lpre #0x%x",
+      snprintf (cbuf, FLARE32_DIS_CBUF_LIM,
+        " // lpre #0x%x",
         //(unsigned) GET_INSN_FIELD (FLARE32_G1G5G6_LPRE_S27_MASK,
         //  FLARE32_G1G5G6_LPRE_S27_BITPOS, iword)
-        (unsigned) flare32_get_insn_field
+        (unsigned) flare32_get_insn_field_ei
           (&flare32_enc_info_g1g5g6_g0_lpre_s27,
           iword >> FLARE32_ONE_EXT_BITPOS)
       );
     }
     else /* if (grp == FLARE32_G3_GRP_VALUE) */
     {
-      snprintf(cbuf, FLARE32_DIS_CBUF_LIM,
-        " ; lpre #0x%x",
+      snprintf (cbuf, FLARE32_DIS_CBUF_LIM,
+        " // lpre #0x%x",
         //(unsigned) GET_INSN_FIELD (FLARE32_G3_LPRE_S23_MASK,
         //  FLARE32_G3_LPRE_S23_BITPOS, iword)
-        (unsigned) flare32_get_insn_field
+        (unsigned) flare32_get_insn_field_ei
           (&flare32_enc_info_g3_g0_lpre_s23,
           iword >> FLARE32_ONE_EXT_BITPOS)
       );
@@ -131,30 +131,30 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
     /* -------- */
     case FLARE32_OA_RA_S5:
     {
-      fpr (stream, "%s\t%s, #0x%x%s",
-        opc_info->names[fw], gprs[ra_ind].name, (unsigned) simm,
-        do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+      fpr (stream, "%s\t%s, #%i%s",
+        opc_info->names[fw], gprs[ra_ind].name, (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     case FLARE32_OA_RA_PC_S5:
     {
-      fpr (stream, "%s\t%s, pc, #0x%x%s",
-        opc_info->names[fw], gprs[ra_ind].name, (unsigned) simm,
-        do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+      fpr (stream, "%s\t%s, pc, #%i%s",
+        opc_info->names[fw], gprs[ra_ind].name, (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     case FLARE32_OA_RA_SP_S5:
     {
-      fpr (stream, "%s\t%s, sp, #0x%x%s",
-        opc_info->names[fw], gprs[ra_ind].name, (unsigned)simm,
-        do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+      fpr (stream, "%s\t%s, sp, #%i%s",
+        opc_info->names[fw], gprs[ra_ind].name, (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     case FLARE32_OA_RA_FP_S5:
     {
-      fpr (stream, "%s\t%s, fp, #0x%x%s",
-        opc_info->names[fw], gprs[ra_ind].name, (unsigned)simm,
-        do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+      fpr (stream, "%s\t%s, fp, #%i%s",
+        opc_info->names[fw], gprs[ra_ind].name, (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     case FLARE32_OA_RA:
@@ -223,9 +223,9 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
       break;
     case FLARE32_OA_PCREL_S9:
     {
-      fpr (stream, "%s\t#0x%x%s",
-        opc_info->names[fw], (unsigned)simm,
-        do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+      fpr (stream, "%s\t#%i%s",
+        opc_info->names[fw], (signed) simm,
+        do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     case FLARE32_OA_IRA:
@@ -296,10 +296,10 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
     //  break;
     case FLARE32_OA_RA_RB_S5_LDST:
     {
-        fpr (stream, "%s\t%s, [%s, #0x%x]%s",
+        fpr (stream, "%s\t%s, [%s, #%i]%s",
           opc_info->names[fw], gprs[ra_ind].name, gprs[rb_ind].name,
-          (unsigned)simm,
-          do_snprintf_insn_flare32_maybe_pre_lpre(length, iword, grp));
+          (signed) simm,
+          do_snprintf_insn_flare32_maybe_pre_lpre (length, iword, grp));
     }
       break;
     //case FLARE32_OA_RA_RB_RC_S5_LDST:
@@ -337,7 +337,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
   }
   iword = bfd_getb16 (buffer);
 
-  if (flare32_get_insn_field (&flare32_enc_info_g0_pre_fullgrp, iword)
+  if (flare32_get_insn_field_ei (&flare32_enc_info_g0_pre_fullgrp, iword)
     == FLARE32_G0_PRE_FULLGRP_VALUE)
   {
     /* `pre` */
@@ -351,7 +351,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
   }
   //else if (GET_INSN_FIELD (FLARE32_LPRE_FULL_GRP_16_MASK,
   //  FLARE32_LPRE_FULL_GRP_16_BITPOS, iword) == FLARE32_LPRE_FULL_GRP_VALUE)
-  else if (flare32_get_insn_field (&flare32_enc_info_g0_lpre_fullgrp_16,
+  else if (flare32_get_insn_field_ei (&flare32_enc_info_g0_lpre_fullgrp_16,
     iword)
     == FLARE32_G0_LPRE_FULLGRP_VALUE)
   {
@@ -378,15 +378,15 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
   grp
     //= GET_INSN_FIELD (flare32_enc_info_grp_16.mask,
     //flare32_enc_info_grp_16.bitpos, iword);
-    = flare32_get_insn_field (&flare32_enc_info_grp_16, iword);
+    = flare32_get_insn_field_ei (&flare32_enc_info_grp_16, iword);
   ra_ind
     //= GET_INSN_FIELD (flare32_enc_info_ra_ind.mask,
     //flare32_enc_info_ra_ind.bitpos, iword);
-    = flare32_get_insn_field (&flare32_enc_info_ra_ind, iword);
+    = flare32_get_insn_field_ei (&flare32_enc_info_ra_ind, iword);
   rb_ind
     //= GET_INSN_FIELD (flare32_enc_info_rb_ind.mask,
     //flare32_enc_info_rb_ind.bitpos, iword);
-    = flare32_get_insn_field (&flare32_enc_info_rb_ind, iword);
+    = flare32_get_insn_field_ei (&flare32_enc_info_rb_ind, iword);
 
   switch (grp)
   {
@@ -399,22 +399,28 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         simm
           //= GET_INSN_FIELD (FLARE32_G1G5G6_S5_MASK,
           //FLARE32_G1G5G6_S5_BITPOS, iword);
-          = flare32_get_insn_field (&flare32_enc_info_g1g5g6_s5, iword);
+          = flare32_sign_extend (flare32_get_insn_field_ei 
+            (&flare32_enc_info_g1g5g6_s5, iword),
+            flare32_enc_info_g1g5g6_s5.bitsize);
       }
       else if (length == 4) /* `pre` */
       {
-        simm = flare32_get_g1g5g6_s17
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s17
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g0_pre_s12.bitsize);
       }
       else if (length == 6) /* `lpre` */
       {
-        simm = flare32_get_g1g5g6_s32
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s32
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
       }
       /* -------- */
       opc_info = &flare32_opc_info_g1
         //[GET_INSN_FIELD (FLARE32_G1_OP_MASK, FLARE32_G1_OP_BITPOS, iword)];
-        [flare32_get_insn_field (&flare32_enc_info_g1_op, iword)];
+        [flare32_get_insn_field_ei (&flare32_enc_info_g1_op, iword)];
       /* -------- */
       do_print_insn_flare32
         (opc_info,
@@ -434,11 +440,11 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       /* -------- */
       opc_info = &flare32_opc_info_g2
         //[GET_INSN_FIELD (FLARE32_G2_OP_MASK, FLARE32_G2_OP_BITPOS, iword)];
-        [flare32_get_insn_field (&flare32_enc_info_g2_op, iword)];
+        [flare32_get_insn_field_ei (&flare32_enc_info_g2_op, iword)];
 
       fw
         //= GET_INSN_FIELD (FLARE32_G2_F_MASK, FLARE32_G2_F_BITPOS, iword);
-        = flare32_get_insn_field (&flare32_enc_info_g2_f, iword);
+        = flare32_get_insn_field_ei (&flare32_enc_info_g2_f, iword);
       /* -------- */
       do_print_insn_flare32
         (opc_info,
@@ -459,24 +465,30 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       if (length == 2)
       {
         simm
-          //= GET_INSN_FIELD (FLARE32_G3_S9_MASK,
-          //FLARE32_G3_S9_BITPOS, iword);
-          = flare32_get_insn_field (&flare32_enc_info_g3_s9, iword);
+          //= GET_INSN_FIELD (FLARE32_G1G5G6_S5_MASK,
+          //FLARE32_G1G5G6_S5_BITPOS, iword);
+          = flare32_sign_extend (flare32_get_insn_field_ei 
+            (&flare32_enc_info_g3_s9, iword),
+            flare32_enc_info_g3_s9.bitsize);
       }
       else if (length == 4) /* `pre` */
       {
-        simm = flare32_get_g3_s21
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g3_s21
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g3_s9.bitsize
+            + flare32_enc_info_g0_pre_s12.bitsize);
       }
       else if (length == 6) /* `lpre` */
       {
-        simm = flare32_get_g3_s32
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g3_s32
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g3_s9.bitsize
+            + flare32_enc_info_g3_g0_lpre_s23.bitsize);
       }
       /* -------- */
       opc_info = &flare32_opc_info_g3
         //[GET_INSN_FIELD (FLARE32_G3_OP_MASK, FLARE32_G3_OP_BITPOS, iword)];
-        [flare32_get_insn_field (&flare32_enc_info_g3_op, iword)];
+        [flare32_get_insn_field_ei (&flare32_enc_info_g3_op, iword)];
       /* -------- */
       do_print_insn_flare32
         (opc_info,
@@ -496,7 +508,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       /* -------- */
       opc_info = &flare32_opc_info_g4
         //[GET_INSN_FIELD (FLARE32_G4_OP_MASK, FLARE32_G4_OP_BITPOS, iword)];
-        [flare32_get_insn_field (&flare32_enc_info_g4_op, iword)];
+        [flare32_get_insn_field_ei (&flare32_enc_info_g4_op, iword)];
       /* -------- */
       do_print_insn_flare32
         (opc_info,
@@ -519,17 +531,23 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         simm
           //= GET_INSN_FIELD (FLARE32_G1G5G6_S5_MASK,
           //FLARE32_G1G5G6_S5_BITPOS, iword);
-          = flare32_get_insn_field (&flare32_enc_info_g1g5g6_s5, iword);
+          = flare32_sign_extend (flare32_get_insn_field_ei 
+            (&flare32_enc_info_g1g5g6_s5, iword),
+            flare32_enc_info_g1g5g6_s5.bitsize);
       }
       else if (length == 4) /* `pre` */
       {
-        simm = flare32_get_g1g5g6_s17
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s17
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g0_pre_s12.bitsize);
       }
       else if (length == 6) /* `lpre` */
       {
-        simm = flare32_get_g1g5g6_s32
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s32
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
       }
       /* -------- */
       opc_info = &flare32_opc_info_g5[0];
@@ -554,17 +572,23 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
         simm
           //= GET_INSN_FIELD (FLARE32_G1G5G6_S5_MASK,
           //FLARE32_G1G5G6_S5_BITPOS, iword);
-          = flare32_get_insn_field (&flare32_enc_info_g1g5g6_s5, iword);
+          = flare32_sign_extend (flare32_get_insn_field_ei 
+            (&flare32_enc_info_g1g5g6_s5, iword),
+            flare32_enc_info_g1g5g6_s5.bitsize);
       }
       else if (length == 4) /* `pre` */
       {
-        simm = flare32_get_g1g5g6_s17
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s17
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g0_pre_s12.bitsize);
       }
       else if (length == 6) /* `lpre` */
       {
-        simm = flare32_get_g1g5g6_s32
-          ((iword >> FLARE32_ONE_EXT_BITPOS), iword);
+        simm = flare32_sign_extend (flare32_get_g1g5g6_s32
+          ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
+          flare32_enc_info_g1g5g6_s5.bitsize
+            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
       }
       /* -------- */
       opc_info = &flare32_opc_info_g6[0];
@@ -588,16 +612,17 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       flare32_temp_t temp_subgrp;
       /* There is only one subgroup in group 7 for now */
       opc_info = &flare32_opc_info_g7
-        [flare32_get_insn_field (&flare32_enc_info_g7_aluopbh_op,
+        [flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_op,
           iword)];
-      if ((temp_subgrp = flare32_get_insn_field
+      if ((temp_subgrp = flare32_get_insn_field_ei
           (&flare32_enc_info_g7_aluopbh_subgrp, iword))
         != FLARE32_G7_ALUOPBH_SUBGRP_VALUE)
       {
         fpr (stream, "bad (grp 0x%x; unknown subgrp 0x%x)",
           (unsigned) grp, (unsigned) temp_subgrp);
       }
-      fw = flare32_get_insn_field (&flare32_enc_info_g7_aluopbh_w, iword);
+      fw = flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_w,
+        iword);
       do_print_insn_flare32
         (opc_info,
         iword,

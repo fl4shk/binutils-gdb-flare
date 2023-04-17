@@ -56,7 +56,7 @@ flare32_md_end (void);
 #define md_convert_frag(B, S, F) \
   as_fatal (_("convert_frag\n"))
 
-#define GAS_SORT_RELOCS 1
+//#define GAS_SORT_RELOCS 1
 
 /* If you define this macro, and the global variable ‘linkrelax’ is set 
   (because of a command-line option, or unconditionally in md_begin),

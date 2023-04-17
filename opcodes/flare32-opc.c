@@ -45,126 +45,126 @@ const flare32_enc_info_t
     FLARE32_GRP_16_MASK},
   flare32_enc_info_grp_32 = 
     {FLARE32_GRP_BITSIZE,
-	FLARE32_GRP_32_BITPOS,
-	FLARE32_GRP_RSMASK,
-	FLARE32_GRP_32_MASK},
+    FLARE32_GRP_32_BITPOS,
+    FLARE32_GRP_RSMASK,
+    FLARE32_GRP_32_MASK},
   /* -------- */
   flare32_enc_info_g0_pre_subgrp =
     {FLARE32_G0_PRE_SUBGRP_BITSIZE, 
-	FLARE32_G0_PRE_SUBGRP_BITPOS,
-	FLARE32_G0_PRE_SUBGRP_RSMASK,
-	FLARE32_G0_PRE_SUBGRP_MASK},
+    FLARE32_G0_PRE_SUBGRP_BITPOS,
+    FLARE32_G0_PRE_SUBGRP_RSMASK,
+    FLARE32_G0_PRE_SUBGRP_MASK},
 
   flare32_enc_info_g0_pre_fullgrp =
     {FLARE32_G0_PRE_FULLGRP_BITSIZE,
-	FLARE32_G0_PRE_FULLGRP_BITPOS,
-	FLARE32_G0_PRE_FULLGRP_RSMASK,
-	FLARE32_G0_PRE_FULLGRP_MASK},
+    FLARE32_G0_PRE_FULLGRP_BITPOS,
+    FLARE32_G0_PRE_FULLGRP_RSMASK,
+    FLARE32_G0_PRE_FULLGRP_MASK},
   flare32_enc_info_g0_pre_s12 =
     {FLARE32_G0_PRE_S12_BITSIZE,
-	FLARE32_G0_PRE_S12_BITPOS,
-	FLARE32_G0_PRE_S12_RSMASK,
-	FLARE32_G0_PRE_S12_MASK},
+    FLARE32_G0_PRE_S12_BITPOS,
+    FLARE32_G0_PRE_S12_RSMASK,
+    FLARE32_G0_PRE_S12_MASK},
   /* -------- */
   flare32_enc_info_g0_lpre_subgrp =
     {FLARE32_G0_LPRE_SUBGRP_BITSIZE,
-	FLARE32_G0_LPRE_SUBGRP_BITPOS,
-	FLARE32_G0_LPRE_SUBGRP_RSMASK,
-	FLARE32_G0_LPRE_SUBGRP_MASK},
+    FLARE32_G0_LPRE_SUBGRP_BITPOS,
+    FLARE32_G0_LPRE_SUBGRP_RSMASK,
+    FLARE32_G0_LPRE_SUBGRP_MASK},
   flare32_enc_info_g0_lpre_fullgrp =
     {FLARE32_G0_LPRE_FULLGRP_BITSIZE,
-	FLARE32_G0_LPRE_FULLGRP_BITPOS,
-	FLARE32_G0_LPRE_FULLGRP_RSMASK,
-	FLARE32_G0_LPRE_FULLGRP_MASK},
+    FLARE32_G0_LPRE_FULLGRP_BITPOS,
+    FLARE32_G0_LPRE_FULLGRP_RSMASK,
+    FLARE32_G0_LPRE_FULLGRP_MASK},
   flare32_enc_info_g0_lpre_subgrp_16 =
     {FLARE32_G0_LPRE_SUBGRP_BITSIZE,
-	FLARE32_G0_LPRE_SUBGRP_16_BITPOS,
-	FLARE32_G0_LPRE_SUBGRP_RSMASK,
-	FLARE32_G0_LPRE_SUBGRP_16_MASK},
+    FLARE32_G0_LPRE_SUBGRP_16_BITPOS,
+    FLARE32_G0_LPRE_SUBGRP_RSMASK,
+    FLARE32_G0_LPRE_SUBGRP_16_MASK},
   flare32_enc_info_g0_lpre_fullgrp_16 =
     {FLARE32_G0_LPRE_FULLGRP_BITSIZE,
-	FLARE32_G0_LPRE_FULLGRP_16_BITPOS,
-	FLARE32_G0_LPRE_FULLGRP_RSMASK,
-	FLARE32_G0_LPRE_FULLGRP_16_MASK},
+    FLARE32_G0_LPRE_FULLGRP_16_BITPOS,
+    FLARE32_G0_LPRE_FULLGRP_RSMASK,
+    FLARE32_G0_LPRE_FULLGRP_16_MASK},
 
   flare32_enc_info_g1g5g6_g0_lpre_s27 =
     {FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE,
-	FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
-	FLARE32_G1G5G6_G0_LPRE_S27_RSMASK,
-	FLARE32_G1G5G6_G0_LPRE_S27_MASK},
+    FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
+    FLARE32_G1G5G6_G0_LPRE_S27_RSMASK,
+    FLARE32_G1G5G6_G0_LPRE_S27_MASK},
   flare32_enc_info_g3_g0_lpre_s23 =
     {FLARE32_G3_G0_LPRE_S23_BITSIZE,
-	FLARE32_G3_G0_LPRE_S23_BITPOS,
-	FLARE32_G3_G0_LPRE_S23_RSMASK,
-	FLARE32_G3_G0_LPRE_S23_MASK},
+    FLARE32_G3_G0_LPRE_S23_BITPOS,
+    FLARE32_G3_G0_LPRE_S23_RSMASK,
+    FLARE32_G3_G0_LPRE_S23_MASK},
   /* -------- */
   flare32_enc_info_g1g5g6_s5 =
     {FLARE32_G1G5G6_S5_BITSIZE,
-	FLARE32_G1G5G6_S5_BITPOS,
-	FLARE32_G1G5G6_S5_RSMASK,
-	FLARE32_G1G5G6_S5_MASK},
+    FLARE32_G1G5G6_S5_BITPOS,
+    FLARE32_G1G5G6_S5_RSMASK,
+    FLARE32_G1G5G6_S5_MASK},
   flare32_enc_info_g1_op =
     {FLARE32_G1_OP_BITSIZE,
-	FLARE32_G1_OP_BITPOS,
-	FLARE32_G1_OP_RSMASK,
-	FLARE32_G1_OP_MASK},
+    FLARE32_G1_OP_BITPOS,
+    FLARE32_G1_OP_RSMASK,
+    FLARE32_G1_OP_MASK},
   flare32_enc_info_g2_f =
     {FLARE32_G2_F_BITSIZE,
-	FLARE32_G2_F_BITPOS,
-	FLARE32_G2_F_RSMASK,
-	FLARE32_G2_F_MASK},
+    FLARE32_G2_F_BITPOS,
+    FLARE32_G2_F_RSMASK,
+    FLARE32_G2_F_MASK},
   flare32_enc_info_g2_op =
     {FLARE32_G2_OP_BITSIZE,
-	FLARE32_G2_OP_BITPOS,
-	FLARE32_G2_OP_RSMASK,
-	FLARE32_G2_OP_MASK},
+    FLARE32_G2_OP_BITPOS,
+    FLARE32_G2_OP_RSMASK,
+    FLARE32_G2_OP_MASK},
   flare32_enc_info_g3_s9 =
     {FLARE32_G3_S9_BITSIZE,
-	FLARE32_G3_S9_BITPOS,
-	FLARE32_G3_S9_RSMASK,
-	FLARE32_G3_S9_MASK},
+    FLARE32_G3_S9_BITPOS,
+    FLARE32_G3_S9_RSMASK,
+    FLARE32_G3_S9_MASK},
   flare32_enc_info_g3_op =
     {FLARE32_G3_OP_BITSIZE,
-	FLARE32_G3_OP_BITPOS,
-	FLARE32_G3_OP_RSMASK,
-	FLARE32_G3_OP_MASK},
+    FLARE32_G3_OP_BITPOS,
+    FLARE32_G3_OP_RSMASK,
+    FLARE32_G3_OP_MASK},
   flare32_enc_info_g4_op =
     {FLARE32_G4_OP_BITSIZE,
-	FLARE32_G4_OP_BITPOS,
-	FLARE32_G4_OP_RSMASK,
-	FLARE32_G4_OP_MASK},
+    FLARE32_G4_OP_BITPOS,
+    FLARE32_G4_OP_RSMASK,
+    FLARE32_G4_OP_MASK},
   /* -------- */
   flare32_enc_info_g7_aluopbh_subgrp =
     {FLARE32_G7_ALUOPBH_SUBGRP_BITSIZE,
-	FLARE32_G7_ALUOPBH_SUBGRP_BITPOS,
-	FLARE32_G7_ALUOPBH_SUBGRP_RSMASK,
-	FLARE32_G7_ALUOPBH_SUBGRP_MASK},
+    FLARE32_G7_ALUOPBH_SUBGRP_BITPOS,
+    FLARE32_G7_ALUOPBH_SUBGRP_RSMASK,
+    FLARE32_G7_ALUOPBH_SUBGRP_MASK},
   flare32_enc_info_g7_aluopbh_fullgrp =
     {FLARE32_G7_ALUOPBH_FULLGRP_BITSIZE,
-	FLARE32_G7_ALUOPBH_FULLGRP_BITPOS,
-	FLARE32_G7_ALUOPBH_FULLGRP_RSMASK,
-	FLARE32_G7_ALUOPBH_FULLGRP_MASK},
+    FLARE32_G7_ALUOPBH_FULLGRP_BITPOS,
+    FLARE32_G7_ALUOPBH_FULLGRP_RSMASK,
+    FLARE32_G7_ALUOPBH_FULLGRP_MASK},
   flare32_enc_info_g7_aluopbh_w =
     {FLARE32_G7_ALUOPBH_W_BITSIZE,
-	FLARE32_G7_ALUOPBH_W_BITPOS,
-	FLARE32_G7_ALUOPBH_W_RSMASK,
-	FLARE32_G7_ALUOPBH_W_MASK},
+    FLARE32_G7_ALUOPBH_W_BITPOS,
+    FLARE32_G7_ALUOPBH_W_RSMASK,
+    FLARE32_G7_ALUOPBH_W_MASK},
   flare32_enc_info_g7_aluopbh_op =
     {FLARE32_G7_ALUOPBH_OP_BITSIZE,
-	FLARE32_G7_ALUOPBH_OP_BITPOS,
-	FLARE32_G7_ALUOPBH_OP_RSMASK,
-	FLARE32_G7_ALUOPBH_OP_MASK},
+    FLARE32_G7_ALUOPBH_OP_BITPOS,
+    FLARE32_G7_ALUOPBH_OP_RSMASK,
+    FLARE32_G7_ALUOPBH_OP_MASK},
   /* -------- */
   flare32_enc_info_ra_ind =
     {FLARE32_RA_IND_BITSIZE,
-	FLARE32_RA_IND_BITPOS,
-	FLARE32_RA_IND_RSMASK,
-	FLARE32_RA_IND_MASK},
+    FLARE32_RA_IND_BITPOS,
+    FLARE32_RA_IND_RSMASK,
+    FLARE32_RA_IND_MASK},
   flare32_enc_info_rb_ind =
     {FLARE32_RB_IND_BITSIZE,
-	FLARE32_RB_IND_BITPOS,
-	FLARE32_RB_IND_RSMASK,
-	FLARE32_RB_IND_MASK};
+    FLARE32_RB_IND_BITPOS,
+    FLARE32_RB_IND_RSMASK,
+    FLARE32_RB_IND_MASK};
   /* -------- */
 /* -------- */
 //char flare32_opc_info_htab_key_buf[FLARE32_HTAB_KEY_BUF_LIM];
@@ -365,72 +365,72 @@ const flare32_opc_info_t
   flare32_opc_info_g2[FLARE32_G2_OPC_INFO_LIM] =
 {
   /* -------- */
-  /* add rA, rC */
+  /* add rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ADD_RA_RB, FLARE32_OA_RA_RB,
     {"add", "add.f"}},
 
-  /* sub rA, rC */
+  /* sub rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_SUB_RA_RB, FLARE32_OA_RA_RB,
     {"sub", "sub.f"}},
 
-  /* add rA, sp, rC */
+  /* add rA, sp, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ADD_RA_SP_RB, FLARE32_OA_RA_SP_RB, 
     {"add", "add.f"}},
 
-  /* add rA, fp, rC */
+  /* add rA, fp, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ADD_RA_FP_RB, FLARE32_OA_RA_FP_RB,
     {"add", "add.f"}},
   /* -------- */
-  /* cmp rA, rC */
+  /* cmp rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_CMP_RA_RB, FLARE32_OA_RA_RB,
     {"cmp", "cmp.f"}},
 
-  /* cpy rA, rC */
+  /* cpy rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_CPY_RA_RB, FLARE32_OA_RA_RB,
     {"cpy", "cpy.f"}},
 
-  /* lsl rA, rC */
+  /* lsl rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_LSL_RA_RB, FLARE32_OA_RA_RB,
     {"lsl", "lsl.f"}},
 
-  /* lsr rA, rC */
+  /* lsr rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_LSR_RA_RB, FLARE32_OA_RA_RB,
     {"lsr", "lsr.f"}},
   /* -------- */
-  /* asr rA, rC */
+  /* asr rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ASR_RA_RB, FLARE32_OA_RA_RB, 
     {"asr", "asr.f"}},
 
-  /* and rA, rC */
+  /* and rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_AND_RA_RB, FLARE32_OA_RA_RB,
     {"and", "and.f"}},
 
-  /* orr rA, rC */
+  /* orr rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ORR_RA_RB, FLARE32_OA_RA_RB,
     {"orr", "orr.f"}},
 
-  /* xor rA, rC */
+  /* xor rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_XOR_RA_RB, FLARE32_OA_RA_RB,
     {"xor", "xor.f"}},
   /* -------- */
-  /* adc rA, rC  */
+  /* adc rA, rB  */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_ADC_RA_RB, FLARE32_OA_RA_RB,
     {"adc", "adc.f"}},
 
-  /* sbc rA, rC */
+  /* sbc rA, rB */
   {&flare32_grp_info_g2,
     FLARE32_G2_OP_ENUM_SBC_RA_RB, FLARE32_OA_RA_RB,
     {"sbc", "sbc.f"}},
@@ -562,7 +562,7 @@ const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_JMP_RA, FLARE32_OA_RA,
     {"jmp", "jmp"}},
 
-  /* jmp rA, rC */
+  /* jmp rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_JMP_RA_RB, FLARE32_OA_RA_RB,
     {"jmp", "jmp"}},
@@ -577,12 +577,12 @@ const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_RETI, FLARE32_OA_NONE,
     {"reti", "reti"}},
 
-  /* cpy rA, sC */
+  /* cpy rA, sB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_CPY_RA_SB, FLARE32_OA_RA_SB,
     {"cpy", "cpy"}},
 
-  /* cpy sA, rC */
+  /* cpy sA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_CPY_SA_RB, FLARE32_OA_SA_RB,
     {"cpy", "cpy"}},
@@ -597,22 +597,22 @@ const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_DI, FLARE32_OA_NONE,
     {"di", "di"}},
 
-  /* push rA, rC */
+  /* push rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_PUSH_RA_RB, FLARE32_OA_RA_RB,
     {"push", "push"}},
 
-  /* pop rA, rC */
+  /* pop rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_POP_RA_RB, FLARE32_OA_RA_RB,
     {"pop", "pop"}},
 
-  /* push sA, rC */
+  /* push sA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_PUSH_SA_RB, FLARE32_OA_SA_RB,
     {"push", "push"}},
   /* -------- */
-  /* pop sA, rC */
+  /* pop sA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_POP_SA_RB, FLARE32_OA_SA_RB,
     {"pop", "pop"}},
@@ -622,89 +622,89 @@ const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA,
     {"index", "index"}},
 
-  /* mul rA, rC */
+  /* mul rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_MUL_RA_RB, FLARE32_OA_RA_RB,
     {"mul", "mul"}},
 
-  /* udiv rA, rC */
+  /* udiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_UDIV_RA_RB, FLARE32_OA_RA_RB,
     {"udiv", "udiv"}},
 
   /* -------- */
 
-  /* sdiv rA, rC */
+  /* sdiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_SDIV_RA_RB, FLARE32_OA_RA_RB,
     {"sdiv", "sdiv"}},
 
-  /* umod rA, rC */
+  /* umod rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_UMOD_RA_RB, FLARE32_OA_RA_RB,
     {"umod", "umod"}},
 
-  /* smod rA, rC */
+  /* smod rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_SMOD_RA_RB, FLARE32_OA_RA_RB,
     {"smod", "smod"}},
 
-  /* lumul rA, rC */
+  /* lumul rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUMUL_RA_RB, FLARE32_OA_RA_RB,
     {"lumul", "lumul"}},
   /* -------- */
-  /* lsmul rA, rC */
+  /* lsmul rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LSMUL_RA_RB, FLARE32_OA_RA_RB,
     {"lsmul", "lsmul"}},
 
-  /* ludiv rA, rC */
+  /* ludiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUDIV_RA_RB, FLARE32_OA_RA_RB,
     {"ludiv", "ludiv"}},
 
-  /* lsdiv rA, rC */
+  /* lsdiv rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LSDIV_RA_RB, FLARE32_OA_RA_RB,
     {"lsdiv", "lsdiv"}},
 
-  /* lumod rA, rC */
+  /* lumod rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LUMOD_RA_RB, FLARE32_OA_RA_RB,
     {"lumod", "lumod"}},
   /* -------- */
-  /* lsmod rA, rC */
+  /* lsmod rA, rB */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LSMOD_RA_RB, FLARE32_OA_RA_RB,
     {"lsmod", "lsmod"}},
 
-  /* ldub rA, [rC] */
+  /* ldub rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDUB_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"ldub", "ldub"}},
 
-  /* ldsb rA, [rC] */
+  /* ldsb rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDSB_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"ldsb", "ldsb"}},
 
-  /* lduh rA, [rC] */
+  /* lduh rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDUH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"lduh", "lduh"}},
   /* -------- */
-  /* ldsh rA, [rC] */
+  /* ldsh rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_LDSH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"ldsh", "ldsh"}},
 
-  /* stb rA, [rC] */
+  /* stb rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_STB_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"stb", "stb"}},
 
-  /* sth rA, [rC] */
+  /* sth rA, [rB] */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_STH_RA_RB, FLARE32_OA_RA_RB_LDST,
     {"sth", "sth"}},
@@ -715,32 +715,32 @@ const flare32_opc_info_t
     {"bad", "bad"}},
   /* -------- */
   /* Following are some pseudo instructions. */
-  /* ldub rA, [rC, rB] */
+  /* ldub rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"ldub", "ldub"}},
 
-  /* ldsb rA, [rC, rB] */
+  /* ldsb rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"ldsb", "ldsb"}},
 
-  /* lduh rA, [rC, rB] */
+  /* lduh rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"lduh", "lduh"}},
 
-  /* ldsh rA, [rC, rB] */
+  /* ldsh rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"ldsh", "ldsh"}},
   /* -------- */
-  /* stb rA, [rC, rB] */
+  /* stb rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"stb", "stb"}},
 
-  /* sth rA, [rC, rB] */
+  /* sth rA, [rB, rC] */
   {&flare32_grp_info_g4,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"sth", "sth"}},
@@ -758,23 +758,23 @@ const flare32_opc_info_t
   flare32_opc_info_g5[FLARE32_G5_OPC_INFO_LIM] =
 {
   /* -------- */
-  /* ldr rA, [rC, #simm] */
+  /* ldr rA, [rB, #simm] */
   {&flare32_grp_info_g5,
     FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_S5_LDST,
     {"ldr", "ldr"}},
   /* -------- */
   /* Following are some pseudo instructions */
-  /* ldr rA, [rC] */
+  /* ldr rA, [rB] */
   {&flare32_grp_info_g5,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_LDST,
     {"ldr", "ldr"}},
 
-  /* ldr rA, [rC, rB] */
+  /* ldr rA, [rB, rC] */
   {&flare32_grp_info_g5,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"ldr", "ldr"}},
 
-  /* ldr rA, [rC, rB, #simm] */
+  /* ldr rA, [rB, rC, #simm] */
   {&flare32_grp_info_g5,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
     {"ldr", "ldr"}},
@@ -793,23 +793,23 @@ const flare32_opc_info_t
   flare32_opc_info_g6[FLARE32_G6_OPC_INFO_LIM] =
 {
   /* -------- */
-  /* str rA, [rC, #simm] */
+  /* str rA, [rB, #simm] */
   {&flare32_grp_info_g6,
     FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_S5_LDST,
     {"str", "str"}},
   /* -------- */
   /* Following are some pseudo instructions */
-  /* st rA, [rC] */
+  /* st rA, [rB] */
   {&flare32_grp_info_g6,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_LDST,
     {"str", "str"}},
 
-  /* str rA, [rC, rB] */
+  /* str rA, [rB, rC] */
   {&flare32_grp_info_g6,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_LDST,
     {"str", "str"}},
 
-  /* str rA, [rC, rB, #simm] */
+  /* str rA, [rB, rC, #simm] */
   {&flare32_grp_info_g6,
     FLARE32_OPC_INFO_PSEUDO_OP, FLARE32_OA_RA_RB_RC_S5_LDST,
     {"str", "str"}},
@@ -848,205 +848,3 @@ const flare32_opc_info_t
   /* -------- */
 };
 /* -------- */
-flare32_temp_t
-flare32_sign_extend (flare32_temp_t value,
-                    flare32_temp_t bits)
-{
-  if (value & (1ull << (bits - 1ull)))
-  {
-    /* VALUE is negative.  */
-    value |= ((flare32_temp_t) - 1ll) << bits;
-  }
-
-  return value;
-}
-
-static flare32_temp_t
-flare32_get_ext_imm_worker (flare32_temp_t prefix_mask,
-                            flare32_temp_t prefix_bitpos,
-                            flare32_temp_t prefix_insn,
-                            flare32_temp_t insn_mask,
-                            flare32_temp_t insn_bitsize,
-                            flare32_temp_t insn_bitpos,
-                            flare32_temp_t insn)
-{
-  return (flare32_temp_t)(
-    (((prefix_insn & prefix_mask) >> prefix_bitpos) << insn_bitsize)
-    | ((insn & insn_mask) >> insn_bitpos)
-  );
-}
-
-flare32_temp_t
-flare32_get_ext_imm (const flare32_enc_info_t *prefix_enc_info,
-                    flare32_temp_t prefix_insn,
-                    const flare32_enc_info_t *insn_enc_info,
-                    flare32_temp_t insn)
-{
-  return flare32_get_ext_imm_worker
-    (prefix_enc_info->mask, /* prefix_mask, */
-    prefix_enc_info->bitpos, /* prefix_bitpos, */
-    prefix_insn, /* prefix_insn, */
-    insn_enc_info->mask, /* insn_mask, */
-    insn_enc_info->bitsize, /* insn_bitsize, */
-    insn_enc_info->bitpos, /* insn_bitpos, */
-    insn /* insn */);
-}
-
-flare32_temp_t
-flare32_get_g1g5g6_s17 (flare32_temp_t prefix_insn,
-                        flare32_temp_t insn)
-{
-  return flare32_get_ext_imm (&flare32_enc_info_g0_pre_subgrp,
-                             prefix_insn,
-                             &flare32_enc_info_g1g5g6_s5,
-                             insn);
-}
-flare32_temp_t
-flare32_get_g1g5g6_s32 (flare32_temp_t prefix_insn,
-                        flare32_temp_t insn)
-{
-  return flare32_get_ext_imm (&flare32_enc_info_g1g5g6_g0_lpre_s27,
-                             prefix_insn,
-                             &flare32_enc_info_g1g5g6_s5,
-                             insn);
-}
-flare32_temp_t
-flare32_get_g3_s21 (flare32_temp_t prefix_insn,
-                    flare32_temp_t insn)
-{
-  return flare32_get_ext_imm
-    (&flare32_enc_info_g0_pre_s12,
-    prefix_insn,
-    &flare32_enc_info_g3_s9,
-    insn);
-}
-
-flare32_temp_t
-flare32_get_g3_s32 (flare32_temp_t prefix_insn,
-                    flare32_temp_t insn)
-{
-  return flare32_get_ext_imm
-    (&flare32_enc_info_g3_g0_lpre_s23,
-    prefix_insn,
-    &flare32_enc_info_g3_s9,
-    insn);
-}
-
-flare32_temp_t
-flare32_get_g5g6_s32_index (flare32_temp_t index_insn,
-                            flare32_temp_t prefix_insn,
-                            flare32_temp_t insn)
-{
-  return (
-    (index_insn << FLARE32_INDEX_LPRE_EXT_BITPOS)
-    | flare32_get_g1g5g6_s32 (prefix_insn, insn)
-  );
-}
-
-static void
-flare32_put_ext_imm_worker (flare32_temp_t prefix_mask,
-                            flare32_temp_t *prefix_insn,
-                            flare32_temp_t insn_mask,
-                            flare32_temp_t insn_bitsize,
-                            flare32_temp_t insn_bitpos,
-                            flare32_temp_t *insn,
-                            flare32_temp_t combined)
-{
-  *insn &= ~insn_mask;
-  *insn |= (combined << insn_bitpos) & insn_mask;
-
-  *prefix_insn &= ~prefix_mask;
-  *prefix_insn |= (combined >> insn_bitsize) & prefix_mask;
-}
-
-void
-flare32_put_ext_imm (const flare32_enc_info_t *prefix_enc_info,
-                    flare32_temp_t *prefix_insn,
-                    const flare32_enc_info_t *insn_enc_info,
-                    flare32_temp_t *insn,
-                    flare32_temp_t combined)
-{
-
-  flare32_put_ext_imm_worker
-    (prefix_enc_info->mask, /* prefix_mask, */
-    prefix_insn, /* prefix_insn, */
-    insn_enc_info->mask, /* insn_mask, */
-    insn_enc_info->bitsize, /* insn_bitsize, */
-    insn_enc_info->bitpos, /* insn_bitpos, */
-    insn, /* insn, */
-    combined /* combined */);
-}
-void
-flare32_put_g1g5g6_s17 (flare32_temp_t *prefix_insn,
-                        flare32_temp_t *insn,
-                        flare32_temp_t combined)
-{
-  //flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G1G5G6_S5_MASK,
-  //                    FLARE32_G1G5G6_S5_BITSIZE,
-  //                    FLARE32_G1G5G6_S5_BITPOS,
-  //                    insn,
-  //                    combined);
-  flare32_put_ext_imm (&flare32_enc_info_g0_pre_s12,
-                      prefix_insn,
-                      &flare32_enc_info_g1g5g6_s5,
-                      insn,
-                      combined);
-}
-void
-flare32_put_g1g5g6_s32 (flare32_temp_t *prefix_insn,
-                        flare32_temp_t *insn,
-                        flare32_temp_t combined)
-{
-  //flare32_put_ext_imm (FLARE32_G1G5G6_LPRE_S27_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G1G5G6_S5_MASK,
-  //                    FLARE32_G1G5G6_S5_BITSIZE,
-  //                    FLARE32_G1G5G6_S5_BITPOS,
-  //                    insn,
-  //                    combined);
-  flare32_put_ext_imm (&flare32_enc_info_g1g5g6_g0_lpre_s27,
-                      prefix_insn,
-                      &flare32_enc_info_g1g5g6_s5,
-                      insn,
-                      combined);
-}
-
-void
-flare32_put_g3_s21 (flare32_temp_t *prefix_insn,
-                    flare32_temp_t *insn,
-                    flare32_temp_t combined)
-{
-  /* flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,*/ /* prefix_mask */
-  /*                     prefix_insn,*/  /* prefix_insn */
-  /*                     FLARE32_G3_S9_MASK,*/ /* insn_mask */
-  /*                     FLARE32_G3_S9_BITSIZE,*/ /* insn_bitsize */
-  /*                     FLARE32_G3_S9_BITPOS,*/ /* insn_bitpos */
-  /*                     insn,*/ /* insn */
-  /*                     combined);*/ /* combined */
-
-  flare32_put_ext_imm (&flare32_enc_info_g0_pre_s12,
-                      prefix_insn,
-                      &flare32_enc_info_g3_s9,
-                      insn,
-                      combined);
-}
-void
-flare32_put_g3_s32 (flare32_temp_t *prefix_insn,
-                    flare32_temp_t *insn,
-                    flare32_temp_t combined)
-{
-  //flare32_put_ext_imm (FLARE32_G3_LPRE_S23_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G3_S9_MASK,
-  //                    FLARE32_G3_S9_BITSIZE,
-  //                    FLARE32_G3_S9_BITPOS,
-  //                    insn,
-  //                    combined);
-  flare32_put_ext_imm (&flare32_enc_info_g3_g0_lpre_s23,
-                      prefix_insn,
-                      &flare32_enc_info_g3_s9,
-                      insn,
-                      combined);
-}

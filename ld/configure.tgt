@@ -631,6 +631,8 @@ moxie-*-moxiebox*)	targ_emul=moxiebox
 			;;
 moxie-*-*)		targ_emul=elf32moxie
 			;;
+flare32-*-*)		targ_emul=elf32flare32
+			;;
 msp430-*-*)		targ_emul=msp430elf
 			targ_extra_emuls="msp430X"
 			targ_extra_ofiles=ldelfgen.o

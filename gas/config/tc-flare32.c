@@ -65,12 +65,97 @@ static htab_t flare32_opci_list_hash = NULL;
 #define flare32_opci_list_lookup(key) \
   ((flare32_opci_list_t *) str_hash_find (flare32_opci_list_hash, (key)))
 
+static htab_t flare32_opci_list_end_hash = NULL;
+#define flare32_opci_list_end_lookup(key) \
+  ((flare32_opci_list_t *) \
+    str_hash_find (flare32_opci_list_end_hash, (key)))
+
+
 static htab_t flare32_reg_hash = NULL;
 #define flare32_reg_lookup(key) \
   ((const flare32_reg_t *) str_hash_find (flare32_reg_hash, (key)))
 
-static flare32_opci_list_t *flare32_opci_list_vec = NULL;
+static flare32_opci_list_t **flare32_opci_list_vec = NULL;
 static size_t flare32_opci_list_vec_size = 0;
+
+//static void
+//flare32_print_hash_opci_list (const char *key)
+//{
+//  for (flare32_opci_list_t *opci_list=flare32_opci_list_lookup (key);
+//    opci_list!=NULL;
+//    opci_list=opci_list->next)
+//  {
+//    printf ("flare32 md_begin (): {%s, %s} ",
+//      opci_list->opc_info->names[0],
+//      opci_list->opc_info->names[1]);
+//    switch (opci_list->opc_info->oparg)
+//    {
+//      case FLARE32_OA_BAD:
+//        printf ("FLARE32_OA_BAD\n");
+//        break;
+//      case FLARE32_OA_NONE:
+//        printf ("FLARE32_OA_NONE\n");
+//        break;
+//      case FLARE32_OA_PRE:
+//        printf ("FLARE32_OA_PRE\n");
+//        break;
+//      case FLARE32_OA_LPRE:
+//        printf ("FLARE32_OA_LPRE\n");
+//        break;
+//      case FLARE32_OA_RA_S5:
+//        printf ("FLARE32_OA_RA_S5\n");
+//        break;
+//      case FLARE32_OA_RA_PC_S5:
+//        printf ("FLARE32_OA_RA_PC_S5\n");
+//        break;
+//      case FLARE32_OA_RA_SP_S5:
+//        printf ("FLARE32_OA_RA_SP_S5\n");
+//        break;
+//      case FLARE32_OA_RA_FP_S5:
+//        printf ("FLARE32_OA_RA_FP_S5\n");
+//        break;
+//      case FLARE32_OA_RA:
+//        printf ("FLARE32_OA_RA\n");
+//        break;
+//      case FLARE32_OA_RA_RB:
+//        printf ("FLARE32_OA_RA_RB\n");
+//        break;
+//      case FLARE32_OA_RA_SP_RB:
+//        printf ("FLARE32_OA_RA_SP_RB\n");
+//        break;
+//      case FLARE32_OA_RA_FP_RB:
+//        printf ("FLARE32_OA_RA_FP_RB\n");
+//        break;
+//      case FLARE32_OA_PCREL_S9:
+//        printf ("FLARE32_OA_PCREL_S9\n");
+//        break;
+//      case FLARE32_OA_IRA:
+//        printf ("FLARE32_OA_IRA\n");
+//        break;
+//      case FLARE32_OA_RA_SB:
+//        printf ("FLARE32_OA_RA_SB\n");
+//        break;
+//      case FLARE32_OA_SA_RB:
+//        printf ("FLARE32_OA_SA_RB\n");
+//        break;
+//      case FLARE32_OA_RA_RB_LDST:
+//        printf ("FLARE32_OA_RA_RB_LDST\n");
+//        break;
+//      case FLARE32_OA_RA_RB_RC_LDST:
+//        printf ("FLARE32_OA_RA_RB_RC_LDST\n");
+//        break;
+//      case FLARE32_OA_RA_RB_S5_LDST:
+//        printf ("FLARE32_OA_RA_RB_S5_LDST\n");
+//        break;
+//      case FLARE32_OA_RA_RB_RC_S5_LDST:
+//        printf ("FLARE32_OA_RA_RB_RC_S5_LDST\n");
+//        break;
+//      default:
+//        printf ("unknown oparg\n");
+//        break;
+//    }
+//  }
+//}
 
 static void
 flare32_opci_list_vec_create (void)
@@ -79,30 +164,34 @@ flare32_opci_list_vec_create (void)
   flare32_opci_list_vec_size = 0;
 }
 static flare32_opci_list_t *
-flare32_opci_list_vec_append(flare32_opci_list_t *to_append)
+flare32_opci_list_vec_append (flare32_opci_list_t *to_append)
 {
   const size_t
     old_size = flare32_opci_list_vec_size;
   ++flare32_opci_list_vec_size;
 
-  flare32_opci_list_vec = (flare32_opci_list_t *)reallocarray
-    (flare32_opci_list_vec,
-    sizeof (flare32_opci_list_t),
-    flare32_opci_list_vec_size);
+  //printf ("flare32_opci_list_vec_append dbg: %d\n",
+  //  (unsigned) flare32_opci_list_vec_size);
 
-  return (flare32_opci_list_t *)memcpy
-    (flare32_opci_list_vec + old_size,
-    to_append,
-    sizeof (flare32_opci_list_t));
+  flare32_opci_list_vec = (flare32_opci_list_t **)realloc
+    (flare32_opci_list_vec,
+    sizeof (flare32_opci_list_t *) * flare32_opci_list_vec_size);
+  flare32_opci_list_vec[old_size] = to_append;
+
+  //return (flare32_opci_list_t *)memcpy
+  //  (flare32_opci_list_vec + old_size,
+  //  to_append,
+  //  sizeof (flare32_opci_list_t));
+  return flare32_opci_list_vec[old_size];
 }
 static void
 flare32_opci_list_vec_delete (void)
 {
   for (size_t i=0; i<flare32_opci_list_vec_size; ++i)
   {
-    flare32_opci_list_delete(flare32_opci_list_vec + i);
+    flare32_opci_list_delete (flare32_opci_list_vec[i]);
   }
-  free(flare32_opci_list_vec);
+  free (flare32_opci_list_vec);
 }
 static void
 flare32_opci_list_hnv_append
@@ -114,23 +203,45 @@ flare32_opci_list_hnv_append
   }
 
   flare32_opci_list_t
-    *opci_list = flare32_opci_list_lookup (opc_info->names[names_ind]);
+    *opci_list = flare32_opci_list_lookup (opc_info->names[names_ind]),
+    *opci_list_end = flare32_opci_list_end_lookup
+      (opc_info->names[names_ind]);
 
   if (opci_list == NULL)
   {
-    opci_list = flare32_opci_list_append
-      (flare32_opci_list_create (), opc_info);
+    opci_list = flare32_opci_list_create ();
+    opci_list->opc_info = opc_info;
+
+    opci_list_end = opci_list;
+
+    //printf ("flare32 dbg hnv: %d %s %d %d 0x%jx\n",
+    //  names_ind,
+    //  opc_info->names[names_ind],
+    //  //(unsigned) opc_info->oparg == FLARE32_OA_RA_RB
+    //  (unsigned) opc_info->oparg,
+    //  (unsigned) opc_info->opcode,
+    //  (uintmax_t) opci_list
+    //);
+    //printf ("flare32 dbg: %jx\n", (uintmax_t) opci_list);
 
     flare32_opci_list_vec_append (opci_list);
 
     str_hash_insert (flare32_opci_list_hash,
       opc_info->names[names_ind],
-      opc_info,
+      opci_list,
+      0);
+    str_hash_insert (flare32_opci_list_end_hash,
+      opc_info->names[names_ind],
+      opci_list_end,
       0);
   }
   else
   {
-    flare32_opci_list_append (opci_list, opc_info);
+    opci_list_end = flare32_opci_list_append (opci_list_end, opc_info);
+    str_hash_insert (flare32_opci_list_end_hash,
+      opc_info->names[names_ind],
+      opci_list_end,
+      1);
   }
 
   //return opci_list;
@@ -226,49 +337,92 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
   if (fixP->fx_addsy && fixP->fx_subsy)
   {
     bfd_reloc_code_real_type
-      r_add,
-      r_sub;
-    switch (fixP->fx_r_type)
+      old_r_type = fixP->fx_r_type,
+      r_type_add,
+      r_type_sub;
+    //fixS
+      //*fixP_next;
+      //*fixP_last;
+    switch (old_r_type)
     {
       case BFD_RELOC_8:
-        r_add = BFD_RELOC_FLARE32_PSEUDO_ADD8;
-        r_sub = BFD_RELOC_FLARE32_PSEUDO_SUB8;
+        r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD8;
+        r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB8;
         break;
       case BFD_RELOC_16:
-        r_add = BFD_RELOC_FLARE32_PSEUDO_ADD16;
-        r_sub = BFD_RELOC_FLARE32_PSEUDO_SUB16;
+        r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD16;
+        r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB16;
         break;
       case BFD_RELOC_32:
-        r_add = BFD_RELOC_FLARE32_PSEUDO_ADD32;
-        r_sub = BFD_RELOC_FLARE32_PSEUDO_SUB32;
+        r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD32;
+        r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB32;
         break;
       case BFD_RELOC_64:
-        r_add = BFD_RELOC_FLARE32_PSEUDO_ADD64;
-        r_sub = BFD_RELOC_FLARE32_PSEUDO_SUB64;
+        r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD64;
+        r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB64;
         break;
 
       case BFD_RELOC_FLARE32_G1G5G6_S32:
-        r_add = BFD_RELOC_FLARE32_G1G5G6_S32_ADD32;
-        r_sub = BFD_RELOC_FLARE32_G1G5G6_S32_SUB32;
+        r_type_add = BFD_RELOC_FLARE32_G1G5G6_S32_ADD32;
+        r_type_sub = BFD_RELOC_FLARE32_G1G5G6_S32_SUB32;
         break;
       case BFD_RELOC_FLARE32_G3_S32_PCREL:
-        r_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
-        r_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
-        //as_bad (_("can't subtract symbols in PC-relative immediate"));
+        //r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
+        //r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
+        as_bad (_("can't subtract symbols in PC-relative immediate"));
         //as_bad_subtract (fixP);
+        return false;
         break;
       default:
         abort ();
         break;
     }
-    /* Blindly copied from RISC-V's `md_apply_fix()` */
-    fixP->fx_next = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
-    fixP->fx_next->fx_addsy = fixP->fx_subsy;
-    fixP->fx_next->fx_subsy = NULL;
-    fixP->fx_next->fx_offset = 0;
+    /* Adapted from RISC-V's `md_apply_fix ()` */
+    //if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+    //  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
+    //{
+    //  fixP_last = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
+    //}
+
+    //printf ("flare32_fix_addsy_subsy_handler (): %d %d 0x%x\n",
+    //  fixP == NULL,
+    //  fixP != NULL ? (fixP->fx_next == NULL) : -1,
+    //  (unsigned) fixP->fx_offset
+    //);
+    //fixP->fx_next = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
+
+    //fixP->fx_next->fx_addsy = fixP->fx_subsy;
+    //fixP->fx_next->fx_subsy = NULL;
+    //fixP->fx_next->fx_offset = 0;
+    //fixP->fx_subsy = NULL;
+
+    //fixP->fx_r_type = r_type_add;
+    //fixP->fx_next->fx_r_type = r_type_sub;
+    (void) fix_new
+      (fixP->fx_frag, /* frag */
+      fixP->fx_where, /* where */
+      fixP->fx_size,  /* size */
+      fixP->fx_subsy, /* add_symbol */
+      0u,             /* offset */
+      fixP->fx_pcrel, /* pcrel */
+      r_type_sub);    /* r_type */
+
+    fixP->fx_r_type = r_type_add;
     fixP->fx_subsy = NULL;
-    fixP->fx_r_type = r_add;
-    fixP->fx_next->fx_r_type = r_sub;
+
+
+    //symbol_mark_used_in_reloc (fixP->fx_addsy);
+    //symbol_mark_used_in_reloc (fixP->fx_next->fx_addsy);
+
+    //if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+    //  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
+    //{
+    //  fixP_last->fx_addsy = NULL;
+    //  fixP_last->fx_subsy = NULL;
+    //  fixP_last->fx_offset = 0;
+    //  fixP->fx_next->fx_next = fixP_last;
+    //}
+
     return true;
   }
   return false;
@@ -726,6 +880,7 @@ md_begin (void)
   flare32_opci_list_vec_create ();
 
   flare32_opci_list_hash = str_htab_create ();
+  flare32_opci_list_end_hash = str_htab_create ();
   //flare32_op_oa_hash = str_htab_create ();
   flare32_reg_hash = str_htab_create ();
   /* -------- */
@@ -754,6 +909,9 @@ md_begin (void)
   {
     flare32_opci_list_hnv_append (opc_info, 0);
   }
+  //printf ("post g1\n");
+  //flare32_print_hash_opci_list ("cpy");
+
 
   for (count=0, opc_info=flare32_opc_info_g2;
     count++<FLARE32_G2_OPC_INFO_LIM;
@@ -762,6 +920,8 @@ md_begin (void)
     flare32_opci_list_hnv_append (opc_info, 0);
     flare32_opci_list_hnv_append (opc_info, 1);
   }
+  //printf ("post g2\n");
+  //flare32_print_hash_opci_list ("cpy");
 
   for (count=0, opc_info=flare32_opc_info_g3;
     count++<FLARE32_G3_OPC_INFO_LIM;
@@ -776,6 +936,9 @@ md_begin (void)
   {
     flare32_opci_list_hnv_append (opc_info, 0);
   }
+
+  //printf ("post g4\n");
+  //flare32_print_hash_opci_list ("cpy");
 
   for (count=0, opc_info=flare32_opc_info_g5;
     count++<FLARE32_G5_OPC_INFO_LIM;
@@ -905,10 +1068,89 @@ md_assemble (char *str)
     as_bad (_("unknown opcode %s"), op_start);
   }
 
+#define FLARE32_SKIP_ISSPACE() \
+  do \
+  { \
+    while (ISSPACE (*op_end)) \
+    { \
+      ++op_end; \
+    } \
+  } while (0)
+#define FLARE32_PARSE_COMMA()  \
+  do \
+  { \
+    if (*op_end != ',') \
+    { \
+      goto post_oa_switch; \
+    } \
+    ++op_end; \
+    FLARE32_SKIP_ISSPACE (); \
+  } while (0)
+#define FLARE32_PARSE_GPR(some_reg) \
+  do \
+  { \
+    some_reg = parse_register_operand (&op_end); \
+    if (some_reg == NULL || some_reg->kind != FLARE32_REG_KIND_GPR) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+#define FLARE32_PARSE_SPR(some_reg) \
+  do \
+  { \
+    some_reg = parse_register_operand (&op_end); \
+    if (some_reg == NULL || some_reg->kind != FLARE32_REG_KIND_SPR) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+#define FLARE32_PARSE_NOENC_REG(name) \
+  do \
+  { \
+    if (parse_register_operand (&op_end) \
+      != flare32_reg_lookup (name)) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+#define FLARE32_PARSE_PC() \
+  do \
+  { \
+    if (parse_register_operand (&op_end) != &reg_pc) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+
+#define FLARE32_PARSE_EXP() \
+  do \
+  { \
+    if (*op_end != '#') \
+    { \
+      goto post_oa_switch; \
+    } \
+    ++op_end; \
+    op_end = clear_and_parse_exp_save_ilp (op_end, &ex); \
+    if (ex.X_op == O_illegal || ex.X_op == O_absent) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
+
   for (opc_info=opci_list->opc_info;
     opci_list!=NULL;
-    opci_list=opci_list->next, opc_info=opci_list->opc_info)
+    opci_list=opci_list->next//,
+      //opc_info=opci_list->opc_info
+    )
   {
+    opc_info = opci_list->opc_info;
+    //printf ("flare32 dbg: %s %s %d %d\n",
+    //  opc_info->names[0],
+    //  opc_info->names[1],
+    //  //(unsigned) opc_info->oparg == FLARE32_OA_RA_RB
+    //  (unsigned) opc_info->oparg,
+    //  (unsigned) opc_info->opcode
+    //);
     op_end = op_end_prev;
     is_pcrel = false;
     reg_a = (const flare32_reg_t *) NULL;
@@ -926,74 +1168,6 @@ md_assemble (char *str)
           FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       )
     );
-
-    #define FLARE32_SKIP_ISSPACE() \
-      do \
-      { \
-        while (ISSPACE (*op_end)) \
-        { \
-          ++op_end; \
-        } \
-      } while (0)
-    #define FLARE32_PARSE_COMMA()  \
-      do \
-      { \
-        if (*op_end != ',') \
-        { \
-          goto post_oa_switch; \
-        } \
-        ++op_end; \
-        FLARE32_SKIP_ISSPACE (); \
-      } while (0)
-    #define FLARE32_PARSE_GPR(some_reg) \
-      do \
-      { \
-        some_reg = parse_register_operand (&op_end); \
-        if (some_reg == NULL || some_reg->kind == FLARE32_REG_KIND_GPR) \
-        { \
-          goto post_oa_switch; \
-        } \
-      } while (0)
-    #define FLARE32_PARSE_SPR(some_reg) \
-      do \
-      { \
-        some_reg = parse_register_operand (&op_end); \
-        if (some_reg == NULL || some_reg->kind == FLARE32_REG_KIND_SPR) \
-        { \
-          goto post_oa_switch; \
-        } \
-      } while (0)
-    #define FLARE32_PARSE_NOENC_REG(name) \
-      do \
-      { \
-        if (parse_register_operand (&op_end) \
-          != flare32_reg_lookup (name)) \
-        { \
-          goto post_oa_switch; \
-        } \
-      } while (0)
-    #define FLARE32_PARSE_PC() \
-      do \
-      { \
-        if (parse_register_operand (&op_end) != &reg_pc) \
-        { \
-          goto post_oa_switch; \
-        } \
-      } while (0)
-
-    #define FLARE32_PARSE_EXP() \
-      do \
-      { \
-        if (*op_end != '#') \
-        { \
-          goto post_oa_switch; \
-        } \
-        op_end = clear_and_parse_exp_save_ilp (op_end, &ex); \
-        if (ex.X_op == O_illegal || ex.X_op == O_absent) \
-        { \
-          goto post_oa_switch; \
-        } \
-      } while (0)
 
     switch (opc_info->oparg)
     {
@@ -1085,10 +1259,13 @@ md_assemble (char *str)
       {
         FLARE32_SKIP_ISSPACE ();
 
+        //printf ("flare32 dbg: testificate\n");
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_b);
+        //printf ("flare32 dbg: %s %s, %s\n",
+        //  opc_info->names[0], reg_a->name, reg_b->name);
 
         parse_good = true;
       }
@@ -1282,18 +1459,14 @@ md_assemble (char *str)
         abort ();
         break;
     }
-    #undef FLARE32_SKIP_ISSPACE
-    #undef FLARE32_PARSE_COMMA
-    #undef FLARE32_PARSE_GPR
-    #undef FLARE32_PARSE_SPR
-    #undef FLARE32_PARSE_NOENC_REG
-    #undef FLARE32_PARSE_PC
-    #undef FLARE32_PARSE_EXP
 
   post_oa_switch:
+    FLARE32_SKIP_ISSPACE ();
+
     /* This seems to be necessary */
     if (*op_end != '\0')
     {
+      //printf ("testificate\n");
       parse_good = false;
       continue;
     }
@@ -1303,6 +1476,13 @@ md_assemble (char *str)
       break;
     }
   }
+  #undef FLARE32_SKIP_ISSPACE
+  #undef FLARE32_PARSE_COMMA
+  #undef FLARE32_PARSE_GPR
+  #undef FLARE32_PARSE_SPR
+  #undef FLARE32_PARSE_NOENC_REG
+  #undef FLARE32_PARSE_PC
+  #undef FLARE32_PARSE_EXP
 
   if (!parse_good)
   {
@@ -1406,6 +1586,8 @@ tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixp)
       bfd_get_reloc_code_name (fixp->fx_r_type));
     return NULL;
   }
+  //printf ("tc_gen_reloc: %s\n",
+  //  reloc->howto->name);
 
   return reloc;
 }

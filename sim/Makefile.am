@@ -138,6 +138,7 @@ include example-synacor/local.mk
 endif
 if SIM_ENABLE_ARCH_flare32
 include flare32/local.mk
+endif
 if SIM_ENABLE_ARCH_frv
 include frv/local.mk
 endif

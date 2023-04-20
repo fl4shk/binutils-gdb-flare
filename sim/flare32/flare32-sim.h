@@ -32,4 +32,4 @@ struct flare32_sim_cpu_t
 #define FLARE32_SIM_CPU(cpu)\
   ((struct flare32_sim_cpu_t *) CPU_ARCH_DATA (cpu))
 
-#endif    FLARE32_SIM_H
+#endif    /* FLARE32_SIM_H */

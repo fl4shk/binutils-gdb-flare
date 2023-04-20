@@ -25,6 +25,7 @@
 #include "dw2gencfi.h"
 #include "opcode/flare32.h"
 #include "elf/flare32.h"
+#include "opcode/flare32-opc-decls.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -949,7 +950,10 @@ md_begin (void)
     count++<FLARE32_G4_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    if (opc_info->opcode != FLARE32_G4_OP_ENUM_INDEX_RA)
+    {
+      flare32_opci_list_hnv_append (opc_info, 0);
+    }
   }
 
   //printf ("post g4\n");
@@ -969,8 +973,8 @@ md_begin (void)
     flare32_opci_list_hnv_append (opc_info, 0);
   }
 
-  for (count=0, opc_info=flare32_opc_info_g7;
-    count++<FLARE32_G7_OPC_INFO_LIM;
+  for (count=0, opc_info=flare32_opc_info_g7_aluopbh;
+    count++<FLARE32_G7_ALUOPBH_OPC_INFO_LIM;
     ++opc_info)
   {
     flare32_opci_list_hnv_append (opc_info, 0);
@@ -1372,6 +1376,26 @@ md_assemble (char *str)
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_b);
+
+        parse_good = true;
+      }
+        break;
+      case FLARE32_OA_RA_IMPLICIT_SP:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        reg_b = flare32_reg_lookup ("sp");
+
+        parse_good = true;
+      }
+        break;
+      case FLARE32_OA_SA_IMPLICIT_SP:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_SPR (reg_a);
+        reg_b = flare32_reg_lookup ("sp");
 
         parse_good = true;
       }

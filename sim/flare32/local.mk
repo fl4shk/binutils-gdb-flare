@@ -27,7 +27,6 @@ nodist_%C%_libsim_a_SOURCES = \
 	$(patsubst %,%D%/dv-%.o,$(SIM_HW_DEVICES)) \
 	%D%/interp.o \
 	%D%/sim-resume.o
-	#%D%/sim-main.o
 $(%C%_libsim_a_OBJECTS) $(%C%_libsim_a_LIBADD): %D%/hw-config.h
 
 noinst_LIBRARIES += %D%/libsim.a

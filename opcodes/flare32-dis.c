@@ -26,6 +26,7 @@
 #define DEFINE_TABLE
 
 #include "opcode/flare32.h"
+#include "opcode/flare32-opc-decls.h"
 #include "disassemble.h"
 
 static fprintf_ftype fpr;
@@ -599,7 +600,7 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
       /* -------- */
       flare32_temp_t temp_subgrp;
       /* There is only one subgroup in group 7 for now */
-      opc_info = &flare32_opc_info_g7
+      opc_info = &flare32_opc_info_g7_aluopbh
         [flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_op,
           iword)];
       if ((temp_subgrp = flare32_get_insn_field_ei

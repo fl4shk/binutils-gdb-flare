@@ -106,38 +106,38 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 }
 
 
-extern const flare32_enc_info_t
-  /* -------- */
-  flare32_enc_info_grp_16,
-  flare32_enc_info_grp_32,
-  /* -------- */
-  flare32_enc_info_g0_pre_subgrp,
-  flare32_enc_info_g0_pre_fullgrp,
-  flare32_enc_info_g0_pre_s12,
-  /* -------- */
-  flare32_enc_info_g0_lpre_subgrp,
-  flare32_enc_info_g0_lpre_fullgrp,
-  flare32_enc_info_g0_lpre_subgrp_16,
-  flare32_enc_info_g0_lpre_fullgrp_16,
-  flare32_enc_info_g1g5g6_g0_lpre_s27,
-  flare32_enc_info_g3_g0_lpre_s23,
-  /* -------- */
-  flare32_enc_info_g1g5g6_s5,
-  flare32_enc_info_g1_op,
-  flare32_enc_info_g2_f,
-  flare32_enc_info_g2_op,
-  flare32_enc_info_g3_s9,
-  flare32_enc_info_g3_op,
-  flare32_enc_info_g4_op,
-  /* -------- */
-  flare32_enc_info_g7_aluopbh_subgrp,
-  flare32_enc_info_g7_aluopbh_fullgrp,
-  flare32_enc_info_g7_aluopbh_w,
-  flare32_enc_info_g7_aluopbh_op,
-  /* -------- */
-  flare32_enc_info_ra_ind,
-  flare32_enc_info_rb_ind;
-  /* -------- */
+//extern const flare32_enc_info_t
+//  /* -------- */
+//  flare32_enc_info_grp_16,
+//  flare32_enc_info_grp_32,
+//  /* -------- */
+//  flare32_enc_info_g0_pre_subgrp,
+//  flare32_enc_info_g0_pre_fullgrp,
+//  flare32_enc_info_g0_pre_s12,
+//  /* -------- */
+//  flare32_enc_info_g0_lpre_subgrp,
+//  flare32_enc_info_g0_lpre_fullgrp,
+//  flare32_enc_info_g0_lpre_subgrp_16,
+//  flare32_enc_info_g0_lpre_fullgrp_16,
+//  flare32_enc_info_g1g5g6_g0_lpre_s27,
+//  flare32_enc_info_g3_g0_lpre_s23,
+//  /* -------- */
+//  flare32_enc_info_g1g5g6_s5,
+//  flare32_enc_info_g1_op,
+//  flare32_enc_info_g2_f,
+//  flare32_enc_info_g2_op,
+//  flare32_enc_info_g3_s9,
+//  flare32_enc_info_g3_op,
+//  flare32_enc_info_g4_op,
+//  /* -------- */
+//  flare32_enc_info_g7_aluopbh_subgrp,
+//  flare32_enc_info_g7_aluopbh_fullgrp,
+//  flare32_enc_info_g7_aluopbh_w,
+//  flare32_enc_info_g7_aluopbh_op,
+//  /* -------- */
+//  flare32_enc_info_ra_ind,
+//  flare32_enc_info_rb_ind;
+//  /* -------- */
 /* -------- */
 #define FLARE32_ENC_RSMASK(name) \
   (FLARE32_N_ONES (FLARE32_##name##_BITSIZE))
@@ -160,11 +160,11 @@ extern const flare32_enc_info_t
   ((FLARE32_GRP_RSMASK) << (FLARE32_GRP_32_BITPOS))
   //(FLARE32_ENC_MASK (GRP_32))
 
-#define FLARE32_FULLGRP_VALUE(subgrp_enc_info, grp_value, subgrp_value) \
+#define FLARE32_FULLGRP_VALUE(subgrp_inner_name, grp_value, subgrp_value) \
   ( \
-    (((grp_value) & flare32_enc_info_grp_16.rsmask) \
-      << ((subgrp_enc_info)->bitsize)) \
-    | ((subgrp_value) & ((subgrp_enc_info)->rsmask)) \
+    (((grp_value) & FLARE32_GRP_RSMASK) \
+      << (FLARE32_##subgrp_inner_name##_BITSIZE)) \
+    | ((subgrp_value) & (FLARE32_##subgrp_inner_name##_RSMASK)) \
   )
 /* -------- */
 #define FLARE32_G0_GRP_VALUE (0x0ull)
@@ -183,7 +183,8 @@ extern const flare32_enc_info_t
 /* `pre` full group */
 #define FLARE32_G0_PRE_FULLGRP_BITSIZE \
   (FLARE32_GRP_BITSIZE + FLARE32_G0_PRE_SUBGRP_BITSIZE)
-#define FLARE32_G0_PRE_FULLGRP_BITPOS (FLARE32_G0_PRE_SUBGRP_BITPOS)
+#define FLARE32_G0_PRE_FULLGRP_BITPOS \
+  (FLARE32_G0_PRE_SUBGRP_BITPOS)
 #define FLARE32_G0_PRE_FULLGRP_RSMASK \
   (FLARE32_ENC_RSMASK (G0_PRE_FULLGRP))
 #define FLARE32_G0_PRE_FULLGRP_MASK \
@@ -192,7 +193,7 @@ extern const flare32_enc_info_t
 /* `pre`-specific group values */
 #define FLARE32_G0_PRE_SUBGRP_VALUE (0x0ull)
 #define FLARE32_G0_PRE_FULLGRP_VALUE \
-  (FLARE32_FULLGRP_VALUE(&flare32_enc_info_g0_pre_subgrp, \
+  (FLARE32_FULLGRP_VALUE(G0_PRE_SUBGRP, \
     FLARE32_G0_GRP_VALUE, \
     FLARE32_G0_PRE_SUBGRP_VALUE))
 
@@ -237,7 +238,7 @@ extern const flare32_enc_info_t
 /* `lpre`-specific group values */
 #define FLARE32_G0_LPRE_SUBGRP_VALUE (0x2ull)
 #define FLARE32_G0_LPRE_FULLGRP_VALUE \
-  (FLARE32_FULLGRP_VALUE(&flare32_enc_info_g0_lpre_subgrp, \
+  (FLARE32_FULLGRP_VALUE(G0_LPRE_SUBGRP, \
     FLARE32_G0_GRP_VALUE, \
     FLARE32_G0_LPRE_SUBGRP_VALUE))
 
@@ -483,7 +484,7 @@ extern const flare32_enc_info_t
 /* Constant fields of Group 7 8-bit/16-bit ALU Ops */
 #define FLARE32_G7_ALUOPBH_SUBGRP_VALUE (0x0ull)
 #define FLARE32_G7_ALUOPBH_FULLGRP_VALUE \
-  (FLARE32_FULLGRP_VALUE(&flare32_enc_info_g7_aluopbh_subgrp, \
+  (FLARE32_FULLGRP_VALUE(G7_ALUOPBH_SUBGRP, \
     FLARE32_G7_GRP_VALUE, \
     FLARE32_G7_ALUOPBH_SUBGRP_VALUE))
 /* -------- */
@@ -533,48 +534,103 @@ typedef struct flare32_reg_t
 /* general-purpose registers */
 #define FLARE32_NUM_GPRS (16ull)
 extern const flare32_reg_t gprs[FLARE32_NUM_GPRS];
+
+#define FLARE32_GPR_ENUM_R0 (0x0ull)
+#define FLARE32_GPR_ENUM_R1 (0x1ull)
+#define FLARE32_GPR_ENUM_R2 (0x2ull)
+#define FLARE32_GPR_ENUM_R3 (0x3ull)
+#define FLARE32_GPR_ENUM_R4 (0x4ull)
+#define FLARE32_GPR_ENUM_R5 (0x5ull)
+#define FLARE32_GPR_ENUM_R6 (0x6ull)
+#define FLARE32_GPR_ENUM_R7 (0x7ull)
+#define FLARE32_GPR_ENUM_R8 (0x8ull)
+#define FLARE32_GPR_ENUM_R9 (0x9ull)
+#define FLARE32_GPR_ENUM_R10 (0xaull)
+#define FLARE32_GPR_ENUM_R11 (0xbull)
+#define FLARE32_GPR_ENUM_R12 (0xcull)
+#define FLARE32_GPR_ENUM_LR (0xdull)
+#define FLARE32_GPR_ENUM_FP (0xeull)
+#define FLARE32_GPR_ENUM_SP (0xfull)
+
 #define FLARE32_INST_GPRS() \
   { \
-    {"r0", 0x0, FLARE32_REG_KIND_GPR}, \
-    {"r1", 0x1, FLARE32_REG_KIND_GPR}, \
-    {"r2", 0x2, FLARE32_REG_KIND_GPR}, \
-    {"r3", 0x3, FLARE32_REG_KIND_GPR}, \
-    {"r4", 0x4, FLARE32_REG_KIND_GPR}, \
-    {"r5", 0x5, FLARE32_REG_KIND_GPR}, \
-    {"r6", 0x6, FLARE32_REG_KIND_GPR}, \
-    {"r7", 0x7, FLARE32_REG_KIND_GPR}, \
-    {"r8", 0x8, FLARE32_REG_KIND_GPR}, \
-    {"r9", 0x9, FLARE32_REG_KIND_GPR}, \
-    {"r10", 0xa, FLARE32_REG_KIND_GPR}, \
-    {"r11", 0xb, FLARE32_REG_KIND_GPR}, \
-    {"r12", 0xc, FLARE32_REG_KIND_GPR}, \
-    {"lr", 0xd, FLARE32_REG_KIND_GPR}, \
-    {"fp", 0xe, FLARE32_REG_KIND_GPR}, \
-    {"sp", 0xf, FLARE32_REG_KIND_GPR}, \
+    {"r0", FLARE32_GPR_ENUM_R0, FLARE32_REG_KIND_GPR}, \
+    {"r1", FLARE32_GPR_ENUM_R1, FLARE32_REG_KIND_GPR}, \
+    {"r2", FLARE32_GPR_ENUM_R2, FLARE32_REG_KIND_GPR}, \
+    {"r3", FLARE32_GPR_ENUM_R3, FLARE32_REG_KIND_GPR}, \
+    {"r4", FLARE32_GPR_ENUM_R4, FLARE32_REG_KIND_GPR}, \
+    {"r5", FLARE32_GPR_ENUM_R5, FLARE32_REG_KIND_GPR}, \
+    {"r6", FLARE32_GPR_ENUM_R6, FLARE32_REG_KIND_GPR}, \
+    {"r7", FLARE32_GPR_ENUM_R7, FLARE32_REG_KIND_GPR}, \
+    {"r8", FLARE32_GPR_ENUM_R8, FLARE32_REG_KIND_GPR}, \
+    {"r9", FLARE32_GPR_ENUM_R9, FLARE32_REG_KIND_GPR}, \
+    {"r10", FLARE32_GPR_ENUM_R10, FLARE32_REG_KIND_GPR}, \
+    {"r11", FLARE32_GPR_ENUM_R11, FLARE32_REG_KIND_GPR}, \
+    {"r12", FLARE32_GPR_ENUM_R12, FLARE32_REG_KIND_GPR}, \
+    {"lr", FLARE32_GPR_ENUM_LR, FLARE32_REG_KIND_GPR}, \
+    {"fp", FLARE32_GPR_ENUM_FP, FLARE32_REG_KIND_GPR}, \
+    {"sp", FLARE32_GPR_ENUM_SP, FLARE32_REG_KIND_GPR}, \
   }
 
 /* special-purpose registers */
 //#define FLARE32_NUM_SPRS (16ull)
-//#define FLARE32_REAL_NUM_SPRS (6ull)
-#define FLARE32_NUM_SPRS (7ull)
+//#define FLARE32_REAL_NUM_SPRS (8ull)
+#define FLARE32_NUM_SPRS (8ull)
 extern const flare32_reg_t sprs[FLARE32_NUM_SPRS];
+
+#define FLARE32_SPR_ENUM_FLAGS (0x0ull)
+#define FLARE32_SPR_ENUM_HI (0x1ull)
+#define FLARE32_SPR_ENUM_LO (0x2ull)
+#define FLARE32_SPR_ENUM_IDS (0x3ull)
+#define FLARE32_SPR_ENUM_IRA (0x4ull)
+#define FLARE32_SPR_ENUM_IE (0x5ull)
+#define FLARE32_SPR_ENUM_ITY (0x6ull)
+#define FLARE32_SPR_ENUM_STY (0x7ull)
+
 #define FLARE32_INST_SPRS() \
   { \
-    {"flags", 0x0, FLARE32_REG_KIND_SPR}, \
-    {"hi", 0x1, FLARE32_REG_KIND_SPR}, \
-    {"lo", 0x2, FLARE32_REG_KIND_SPR}, \
-    {"ids", 0x3, FLARE32_REG_KIND_SPR}, \
-    {"ira", 0x4, FLARE32_REG_KIND_SPR}, \
-    {"ie", 0x5, FLARE32_REG_KIND_SPR}, \
-    {"ity", 0x6, FLARE32_REG_KIND_SPR}, \
+    {"flags", FLARE32_SPR_ENUM_FLAGS, FLARE32_REG_KIND_SPR}, \
+    {"hi", FLARE32_SPR_ENUM_HI, FLARE32_REG_KIND_SPR}, \
+    {"lo", FLARE32_SPR_ENUM_LO, FLARE32_REG_KIND_SPR}, \
+    {"ids", FLARE32_SPR_ENUM_IDS, FLARE32_REG_KIND_SPR}, \
+    {"ira", FLARE32_SPR_ENUM_IRA, FLARE32_REG_KIND_SPR}, \
+    {"ie", FLARE32_SPR_ENUM_IE, FLARE32_REG_KIND_SPR}, \
+    {"ity", FLARE32_SPR_ENUM_ITY, FLARE32_REG_KIND_SPR}, \
+    {"sty", FLARE32_SPR_ENUM_STY, FLARE32_REG_KIND_SPR}, \
   }
+
+/* bits of `flags` */
+#define FLARE32_FLAGS_Z_BITPOS ((flare32_temp_t) 0x0ull)
+#define FLARE32_FLAGS_C_BITPOS ((flare32_temp_t) 0x1ull)
+#define FLARE32_FLAGS_V_BITPOS ((flare32_temp_t) 0x2ull)
+#define FLARE32_FLAGS_N_BITPOS ((flare32_temp_t) 0x3ull)
+
+#define FLARE32_FLAGS_Z_MASK \
+  (((flare32_temp_t) 0x1ull) << FLARE32_FLAGS_Z_BITPOS) 
+#define FLARE32_FLAGS_C_MASK \
+  (((flare32_temp_t) 0x1ull) << FLARE32_FLAGS_C_BITPOS) 
+#define FLARE32_FLAGS_V_MASK \
+  (((flare32_temp_t) 0x1ull) << FLARE32_FLAGS_V_BITPOS) 
+#define FLARE32_FLAGS_N_MASK \
+  (((flare32_temp_t) 0x1ull) << FLARE32_FLAGS_N_BITPOS) 
+
+#define FLARE32_SIM_FLAGS_VN_MASK(bits) \
+  ((uint64_t) 0x1ull << (uint64_t) bits)
+#define FLARE32_SIM_FLAGS_Z_MASK(bits) \
+  (FLARE32_SIM_FLAGS_VN_MASK (bits) - (int64_t) 0x1ll)
+#define FLARE32_SIM_FLAGS_C_MASK(bits) \
+  (FLARE32_SIM_FLAGS_VN_MASK (bits) << (uint64_t) 0x1ull)
 
 extern const flare32_reg_t reg_pc;
 #define FLARE32_INST_REG_PC() \
   {"pc", 0x0, FLARE32_REG_KIND_PC}
 
+#define FLARE32_SIM_FIRST_SPR_REGNO \
+  (FLARE32_NUM_GPRS)
+#define FLARE32_TOTAL_NUM_NON_PC_REGS \
+  (FLARE32_NUM_GPRS + FLARE32_NUM_SPRS)
 #define FLARE32_TOTAL_NUM_REGS \
-  (FLARE32_NUM_GPRS + FLARE32_NUM_SPRS + 1ull)
+  (FLARE32_TOTAL_NUM_NON_PC_REGS + 1ull)
 /* -------- */
 typedef enum flare32_oparg_t
 {
@@ -595,6 +651,8 @@ typedef enum flare32_oparg_t
   FLARE32_OA_IRA,
   FLARE32_OA_RA_SB,
   FLARE32_OA_SA_RB,
+  FLARE32_OA_RA_IMPLICIT_SP,
+  FLARE32_OA_SA_IMPLICIT_SP,
   FLARE32_OA_RA_RB_LDST,
   FLARE32_OA_RA_RB_RC_LDST,
   FLARE32_OA_RA_RB_S5_LDST,
@@ -622,16 +680,16 @@ typedef struct flare32_grp_info_t
     //subgrp_mask,
     subgrp_value;
 } flare32_grp_info_t;
-extern const flare32_grp_info_t
-  flare32_grp_info_g0_pre,
-  flare32_grp_info_g0_lpre,
-  flare32_grp_info_g1,
-  flare32_grp_info_g2,
-  flare32_grp_info_g3,
-  flare32_grp_info_g4,
-  flare32_grp_info_g5,
-  flare32_grp_info_g6,
-  flare32_grp_info_g7_aluopbh;
+//extern const flare32_grp_info_t
+//  flare32_grp_info_g0_pre,
+//  flare32_grp_info_g0_lpre,
+//  flare32_grp_info_g1,
+//  flare32_grp_info_g2,
+//  flare32_grp_info_g3,
+//  flare32_grp_info_g4,
+//  flare32_grp_info_g5,
+//  flare32_grp_info_g6,
+//  flare32_grp_info_g7_aluopbh;
 
 #define FLARE32_OPC_INFO_NAME_MAX_LEN (15ull)
 #define FLARE32_OPC_INFO_NAMES_LIM (2ull)
@@ -675,39 +733,39 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 
 
 #define FLARE32_OPC_INFO_NULL_OP (-1ull)
-#define FLARE32_OPC_INFO_PSEUDO_OP (-2ull)
+//#define FLARE32_OPC_INFO_PSEUDO_OP (-2ull)
 
 #define FLARE32_G0_OPC_INFO_LIM (2ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g0[FLARE32_G0_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g0[FLARE32_G0_OPC_INFO_LIM];
 
 #define FLARE32_G1_OPC_INFO_LIM (16ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g1[FLARE32_G1_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g1[FLARE32_G1_OPC_INFO_LIM];
 
 #define FLARE32_G2_OPC_INFO_LIM (16ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g2[FLARE32_G2_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g2[FLARE32_G2_OPC_INFO_LIM];
 
 #define FLARE32_G3_OPC_INFO_LIM (16ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g3[FLARE32_G3_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g3[FLARE32_G3_OPC_INFO_LIM];
 
-#define FLARE32_G4_OPC_INFO_LIM (32ull + 6ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g4[FLARE32_G4_OPC_INFO_LIM];
+#define FLARE32_G4_OPC_INFO_LIM (32ull + 4ull + 6ull)
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g4[FLARE32_G4_OPC_INFO_LIM];
 
 #define FLARE32_G5_OPC_INFO_LIM (4ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g5[FLARE32_G5_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g5[FLARE32_G5_OPC_INFO_LIM];
 
 #define FLARE32_G6_OPC_INFO_LIM (4ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g6[FLARE32_G6_OPC_INFO_LIM];
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g6[FLARE32_G6_OPC_INFO_LIM];
 
-#define FLARE32_G7_OPC_INFO_LIM (4ull)
-extern const flare32_opc_info_t
-  flare32_opc_info_g7[FLARE32_G7_OPC_INFO_LIM];
+#define FLARE32_G7_ALUOPBH_OPC_INFO_LIM (4ull)
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g7_aluopbh[FLARE32_G7_ALUOPBH_OPC_INFO_LIM];
 /* -------- */
 /* -------- */
 static inline flare32_temp_t
@@ -928,9 +986,17 @@ flare32_sign_extend (flare32_temp_t value,
   else
   {
     value &= ~(((flare32_temp_t) -1ll) << bits)
-		| ((((flare32_temp_t) 1ull) << bits) - 1ll);
+		  | ((((flare32_temp_t) 1ull) << bits) - 1ll);
   }
 
+  return value;
+}
+static inline flare32_temp_t
+flare32_zero_extend (flare32_temp_t value,
+                    flare32_temp_t bits)
+{
+  value &= ~(((flare32_temp_t) -1ll) << bits)
+    | ((((flare32_temp_t) 1ull) << bits) - 1ll);
   return value;
 }
 

@@ -22,7 +22,9 @@
 #include "elf32-flare32.h"
 #include "opcode/flare32.h"
 #include "elf/flare32.h"
-
+/* -------- */
+#include "opcode/flare32-opc-decls.h"
+/* -------- */
 #define USE_RELA
 
 /* Forward declarations. */
@@ -634,8 +636,8 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     {
       insn = bfd_get_16 (input_bfd, contents + address);
       relocation += flare32_sign_extend
-        (flare32_get_insn_field
-          (FLARE32_G1G5G6_S5_MASK, FLARE32_G1G5G6_S5_BITPOS, insn),
+        (flare32_get_insn_field_ei
+          (&flare32_enc_info_g1g5g6_s5, insn),
         FLARE32_G1G5G6_S5_BITSIZE);
       bfd_put_16 (input_bfd, insn, contents + address);
     }
@@ -687,15 +689,14 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     {
       insn = bfd_get_16 (input_bfd, contents + address);
       //relocation += flare32_sign_extend
-      //  (flare32_get_insn_field
-      //    (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn), 
+      //  (flare32_get_insn_field_ei (&flare32_enc_info_g3_s9, insn), 
       //    FLARE32_G3_S9_BITSIZE)
       //  - 2ull
       //  ;
       relocation -= 2ull;
       //flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
-      flare32_set_insn_field (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
-        insn, relocation);
+      flare32_set_insn_field_ei_p (&flare32_enc_info_g3_s9, &insn,
+        relocation);
       bfd_put_16 (input_bfd, insn, contents + address);
     }
     else if (howto->type == R_FLARE32_G3_S21_PCREL)
@@ -1412,24 +1413,19 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
         flare32_temp_t
           insn = bfd_get_16 (args->abfd,
             args->contents + args->irel->r_offset + 4),
-          //simm = flare32_get_insn_field
-          //  (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn);
+          //simm = flare32_get_insn_field_ei
+          //  (&flare32_enc_info_g3_s9, insn);
           simm = args->value;
             
           if (!args->is_pc_relative)
           {
-            (void) flare32_set_insn_field_p
-              (FLARE32_G1G5G6_S5_MASK, FLARE32_G1G5G6_S5_BITPOS,
-              &insn,
-              simm);
+            (void) flare32_set_insn_field_ei_p
+              (&flare32_enc_info_g1g5g6_s5, &insn, simm);
           }
           else // if (args->is_pc_relative)
           {
-            (void) flare32_set_insn_field_p
-              (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
-              &insn,
-              simm - 4ull
-              );
+            (void) flare32_set_insn_field_ei_p
+              (&flare32_enc_info_g3_s9, &insn, simm - 4ull);
           }
 
         bfd_put_16 (args->abfd, insn,
@@ -1508,26 +1504,20 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
       flare32_temp_t
         insn = bfd_get_16 (args->abfd,
           args->contents + args->irel->r_offset + 2),
-        //simm = flare32_get_insn_field
-        //  (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS, insn);
+        //simm = flare32_get_insn_field_ei
+        //  (&flare32_enc_info_g3_s9, insn);
         simm = args->value;
           
         
         if (!args->is_pc_relative)
         {
-          (void) flare32_set_insn_field_p
-            (FLARE32_G1G5G6_S5_MASK, FLARE32_G1G5G6_S5_BITPOS,
-            &insn,
-            simm);
+          (void) flare32_set_insn_field_ei_p
+            (&flare32_enc_info_g1g5g6_s5, &insn, simm);
         }
         else // if (args->is_pc_relative)
         {
-          (void) flare32_set_insn_field_p
-            (FLARE32_G3_S9_MASK, FLARE32_G3_S9_BITPOS,
-            &insn,
-            simm
-              - 2ull
-            );
+          (void) flare32_set_insn_field_ei_p
+            (&flare32_enc_info_g3_s9, &insn, simm - 2ull);
         }
 
       bfd_put_16 (args->abfd, insn,
@@ -1909,7 +1899,7 @@ flare32_elf_relax_section (bfd *abfd,
 
   return false;
 }
-
+/* -------- */
 #define ELF_ARCH            bfd_arch_flare32
 #define ELF_MACHINE_CODE    EM_FLARE32_UNOFFICIAL
 #define ELF_MAXPAGESIZE     0x1

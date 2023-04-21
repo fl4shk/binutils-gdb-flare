@@ -35,6 +35,7 @@ SECTIONS
 {
   .text :
   {
+    _text_start = . ;
     *(.text)
     ${RELOCATING+KEEP (*(SORT_NONE(.init)))
     KEEP (*(SORT_NONE(.fini)))
@@ -46,6 +47,7 @@ SECTIONS
 
   .data :
   {
+    ${RELOCATING+ _data_start = . ; }
     *(.data)
     ${RELOCATING+ _edata = . ; }
   } ${RELOCATING+ > ram}
@@ -55,14 +57,17 @@ SECTIONS
     ${RELOCATING+ _bss_start = . ; }
     *(.bss)
     *(COMMON)
-    ${RELOCATING+ _end = . ;  }
+    ${RELOCATING+ _bss_end = . ; }
+    ${RELOCATING+ _end = . ; }
   } ${RELOCATING+ > ram}
 
+  /*
   .stack ${RELOCATING+ 0x30000 }  :
   {
     ${RELOCATING+ _stack = . ; }
     *(.stack)
   } ${RELOCATING+ > ram}
+  */
 
   .stab 0 ${RELOCATING+(NOLOAD)} :
   {

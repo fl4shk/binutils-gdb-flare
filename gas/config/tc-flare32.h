@@ -124,7 +124,7 @@ flare32_md_end (void);
 
 
 /* Let the linker resolve all the relocs due to relaxation. */
-//#define tc_fix_adjustable(fixP) 0
+#define tc_fix_adjustable(fixP) 0
 #define md_allow_local_subtract(l, r, s) 0
 // flare32_allow_local_subtract (l, r, s)
 //extern bool flare32_allow_local_subtract
@@ -143,13 +143,38 @@ flare32_cons_fix_new (struct frag *frag,
                       struct expressionS *ex,
                       const int unused_arg ATTRIBUTE_UNUSED);
 
-#define tc_regname_to_dw2regnum \
-  flare32_regname_to_dw2regnum
+#define tc_regname_to_dw2regnum flare32_regname_to_dw2regnum
 extern int
 flare32_regname_to_dw2regnum (char *name);
 #define tc_cfi_frame_initial_instructions \
-  flare32_frame_initial_instructions
+  flare32_cfi_frame_initial_instructions
 extern void
-flare32_frame_initial_instructions (void);
+flare32_cfi_frame_initial_instructions (void);
+
+/* If defined, GAS will check this macro before performing any
+  optimizations on the DWARF call frame debug information that is emitted.
+  Targets which im- plement link time relaxation may need to define this
+  macro and set it to zero if it is possible to change the size of a
+  function’s prologue. */
+//#define md_allow_eh_opt 0
+
+/* Stack alignment is 4 bytes */
+#define DWARF2_CIE_DATA_ALIGNMENT -4
+
+/* We want .cfi_* pseudo-ops for generating unwind info.  */
+#define TARGET_USE_CFIPOP 1
+
+/* Adjust debug_line after relaxation.  */
+/* If linker relaxation might change offsets in the code, the DWARF special
+   opcodes and variable-length operands cannot be used.  If this macro is
+   nonzero, use the DW_LNS_fixed_advance_pc opcode instead.  */
+#define DWARF2_USE_FIXED_ADVANCE_PC 1
+
+/* RISC-V uses the `ra` register for this, so I guess I should use my `lr`
+  register.
+  However, some other use the program counter for it? I don't yet know if
+  that is the correct option for my case. */
+#define DWARF2_DEFAULT_RETURN_COLUMN \
+  (flare32_regname_to_dw2regnum ((char *)"lr"))
 
 #endif    /* __TC_FLARE32_H__ */

@@ -335,8 +335,17 @@ flare32_enc_temp_insn_non_pre_lpre
 static flare32_temp_t
 flare32_enc_temp_insn_index (flare32_temp_t rc_ind)
 {
+  const flare32_opc_info_t
+    *opc_info;
+
+  /* The below line doesn't work because we are no longer storing this 
+    `opc_info` in `flare32_opci_list_hash`. */
+  //opc_info = flare32_opci_list_lookup ("index")->opc_info;
+
+  opc_info = &flare32_opc_info_g4[FLARE32_G4_OP_ENUM_INDEX_RA];
+
   return flare32_enc_temp_insn_non_pre_lpre
-    (flare32_opci_list_lookup ("index")->opc_info, /* opc_info */
+    (opc_info, /* opc_info */
     rc_ind, /* ra_ind */
     0, /* rb_ind */
     0, /* simm */
@@ -1724,7 +1733,14 @@ flare32_regname_to_dw2regnum (char *name)
   }
   return -1;
 }
+
+/* Implement tc_cfi_frame_initial_instructions, to initialize the DWARF-2
+   unwind information for this procedure.  */
 void
-flare32_frame_initial_instructions (void)
+flare32_cfi_frame_initial_instructions (void)
 {
+  unsigned sp_regno;
+  sp_regno = (unsigned) flare32_regname_to_dw2regnum ((char *)"sp");
+
+  cfi_add_CFA_def_cfa (sp_regno, 0);
 }

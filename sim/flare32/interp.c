@@ -37,6 +37,7 @@
 #include "sim-options.h"
 #include "sim-io.h"
 #include "sim-signal.h"
+#include "sim/callback.h"
 #include "target-newlib-syscall.h"
 
 #include "flare32-sim.h"
@@ -290,7 +291,7 @@ sim_open (SIM_OPEN_KIND kind, host_callback *cb,
     return 0;
   }
 
-  sim_do_command (sd, " memory region 0x00000000,0x4000000") ; 
+  sim_do_command (sd, " memory region 0x00000000,0x40000000") ; 
   sim_do_command (sd, " memory region 0xE0000000,0x10000") ; 
 
   /* Check for/establish the a reference program image.  */
@@ -336,8 +337,9 @@ sim_open (SIM_OPEN_KIND kind, host_callback *cb,
   if (tflags & T) \
   { \
     hflags |= H; \
-    tflags ^= T;  \
+    tflags ^= T; \
   }
+//#define CHECK_FLAG(T,H) if (tflags & T) { hflags |= H; tflags ^= T; }
 
 static unsigned int
 convert_target_flags (unsigned int tflags)
@@ -364,15 +366,16 @@ convert_target_flags (unsigned int tflags)
 }
 /* TODO: Split this up into finger trace levels than just insn.  */
 #define FLARE32_TRACE_INSN(str) \
-  TRACE_INSN (scpu, "0x%x %s; " \
-    "pc=0x%x ;" \
+  TRACE_INSN (scpu, \
+    "0x%08x %s; " \
+    "pc=0x%x; " \
     "r0=0x%x r1=0x%x r2=0x%x} r3=0x%x " \
       "r4=0x%x r5=0x%x r6=0x%x r7=0x%x " \
       "r8=0x%x r9=0x%x r10=0x%x r11=0x%x " \
       "r12=0x%x lr=0x%x fp=0x%x sp=0x%x; " \
     "flags=0x%x hi=0x%x lo=0x%x " \
     "ids=0x%x ira=0x%x ie=0x%x ity=0x%x sty=0x%x", \
-  ((unsigned) opc), str, \
+  opc, str, \
   /* -------- */ \
   cpu.pc, \
   /* -------- */ \
@@ -534,6 +537,8 @@ sim_engine_run (SIM_DESC sd,
       prefix_insn = insn
         = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
         | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+      grp = flare32_get_insn_field_ei (&flare32_enc_info_grp_16, insn);
     }
 
     if ((have_pre_insn = (
@@ -591,6 +596,8 @@ sim_engine_run (SIM_DESC sd,
           break;
       }
     }
+
+    nbytes += 2;
 
     /* Decode instruction.  */
     ra_ind = flare32_get_insn_field_ei (&flare32_enc_info_ra_ind, insn);
@@ -777,63 +784,112 @@ sim_engine_run (SIM_DESC sd,
             {
               case TARGET_NEWLIB_SYS_exit:
               {
-                sim_engine_halt (sd, scpu, NULL, pc, sim_exited,
-                    cpu.gprs[FLARE32_GPR_ENUM_R0]);
-                break;
+                int32_t
+                  r0 = cpu.gprs[FLARE32_GPR_ENUM_R0];
+
+                sim_engine_halt (sd, scpu, NULL, pc, sim_exited, r0);
               }
+                break;
               case TARGET_NEWLIB_SYS_open:
               {
+                int32_t
+                  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+                  r1 = cpu.gprs[FLARE32_GPR_ENUM_R1],
+                  r2 = cpu.gprs[FLARE32_GPR_ENUM_R2];
+
                 char fname[1024];
-                int mode = (int) convert_target_flags
-                  ((unsigned) cpu.gprs[FLARE32_GPR_ENUM_R1]);
-                int perm = (int) cpu.gprs[FLARE32_GPR_ENUM_R2];
-                int fd;
-                sim_core_read_buffer (sd, scpu, read_map, fname,
-                    cpu.gprs[FLARE32_GPR_ENUM_R0], 1024);
+                int
+                  mode
+                    = (int) convert_target_flags ((unsigned) r1),
+                    //= (int) r1,
+                  perm = (int) r2,
+                  fd;
+                sim_core_read_buffer (sd, scpu, read_map, fname, *r0,
+                  1024);
                 fd = sim_io_open (sd, fname, mode);
+                printf ("%d; opened \"%s\"\n",
+                  fd, fname);
+
                 /* FIXME - set errno */
-                cpu.gprs[FLARE32_GPR_ENUM_R0] = fd;
-                break;
+                *r0 = fd;
               }
+                break;
+              case TARGET_NEWLIB_SYS_close:
+              {
+                int32_t
+                  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0];
+
+                int
+                  fd = *r0,
+                  rv;
+
+                if (fd > 2)
+                {
+                  rv = sim_io_close (sd, fd);
+                }
+                else
+                {
+                  rv = 0;
+                }
+
+                *r0 = rv;
+              }
+                break;
               case TARGET_NEWLIB_SYS_read:
               {
-                int fd = cpu.gprs[FLARE32_GPR_ENUM_R0];
-                unsigned len = (unsigned) cpu.gprs[FLARE32_GPR_ENUM_R2];
+                int32_t
+                  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+                  r1 = cpu.gprs[FLARE32_GPR_ENUM_R1],
+                  r2 = cpu.gprs[FLARE32_GPR_ENUM_R2];
+
+                int
+                  fd = *r0,
+                  read_ret = 0;
+                unsigned len = (unsigned) r2;
+
                 char *buf = malloc (len);
-                cpu.gprs[FLARE32_GPR_ENUM_R0]
-                  = sim_io_read (sd, fd, buf, len);
-                sim_core_write_buffer (sd, scpu, write_map, buf,
-                    cpu.gprs[FLARE32_GPR_ENUM_R1], len);
+                read_ret = sim_io_read (sd, fd, buf, len);
+                sim_core_write_buffer (sd, scpu, write_map, buf, r1, len);
                 free (buf);
-                break;
+
+                *r0 = read_ret;
               }
+                break;
               case TARGET_NEWLIB_SYS_write:
               {
+                int32_t
+                  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+                  r1 = cpu.gprs[FLARE32_GPR_ENUM_R1],
+                  r2 = cpu.gprs[FLARE32_GPR_ENUM_R2];
+
                 char *str;
-                /* String length is at 0x12($fp) */
                 unsigned
                   count,
-                  len = (unsigned) cpu.gprs[FLARE32_GPR_ENUM_R2];
+                  len = (unsigned) r2;
                 str = malloc (len);
-                sim_core_read_buffer (sd, scpu, read_map, str,
-                    cpu.gprs[FLARE32_GPR_ENUM_R1], len);
-                count = sim_io_write (sd, cpu.gprs[FLARE32_GPR_ENUM_R0],
-                  str, len);
+                sim_core_read_buffer (sd, scpu, read_map, str, r1, len);
+                count = sim_io_write (sd, *r0, str, len);
                 free (str);
-                cpu.gprs[FLARE32_GPR_ENUM_R0] = count;
-                break;
+
+                *r0 = count;
               }
+                break;
               case TARGET_NEWLIB_SYS_unlink:
               {
-                char fname[1024];
-                int fd;
-                sim_core_read_buffer (sd, scpu, read_map, fname,
-                    cpu.gprs[FLARE32_GPR_ENUM_R0], 1024);
+                int32_t
+                  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0];
+
+                char
+                  fname[1024];
+                  int fd;
+                sim_core_read_buffer
+                  (sd, scpu, read_map, fname, *r0, 1024);
                 fd = sim_io_unlink (sd, fname);
+
                 /* FIXME - set errno */
-                cpu.gprs[FLARE32_GPR_ENUM_R0] = fd;
-                break;
+                *r0 = fd;
               }
+                break;
               //case 0xffffffff: /* Linux System Call */
               //{
               //  unsigned int handler = cpu.asregs.sregs[1];
@@ -1948,16 +2004,16 @@ sim_engine_run (SIM_DESC sd,
   } while (1);
 }
 SIM_RC
-sim_create_inferior (SIM_DESC sd, struct bfd *prog_bfd,
+sim_create_inferior (SIM_DESC sd, struct bfd *abfd,
                     char * const *argv, char * const *env)
 {
   char * const *avp;
   int l, argc, i, tp;
   sim_cpu *scpu = STATE_CPU (sd, 0); /* FIXME */
 
-  if (prog_bfd != NULL)
+  if (abfd != NULL)
   {
-    cpu.pc = bfd_get_start_address (prog_bfd);
+    cpu.pc = bfd_get_start_address (abfd);
   }
 
   /* Copy args into target memory.  */

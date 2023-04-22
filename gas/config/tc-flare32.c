@@ -1348,8 +1348,8 @@ md_assemble (char *str)
       {
         FLARE32_SKIP_ISSPACE ();
 
-        //FLARE32_PARSE_EXP ();
-        FLARE32_PARSE_EXP_POST_POUND ();
+        FLARE32_PARSE_EXP ();
+        //FLARE32_PARSE_EXP_POST_POUND ();
 
         parse_good = true;
         is_pcrel = true;

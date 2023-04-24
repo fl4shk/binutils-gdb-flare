@@ -272,6 +272,8 @@ flare32_enc_temp_insn_lpre_rshift
   (const flare32_opc_info_t *opc_info,
   flare32_temp_t simm)
 {
+  //printf ("flare32_enc_temp_insn_lpre_rshift(): %i\n",
+  //  (int) opc_info->grp_info->grp_value);
   switch (opc_info->grp_info->grp_value)
   {
     case FLARE32_G1_GRP_VALUE:
@@ -1276,6 +1278,8 @@ md_assemble (char *str)
         FLARE32_PARSE_NOENC_REG ("fp");
         FLARE32_PARSE_COMMA ();
 
+        FLARE32_PARSE_EXP ();
+
         parse_good = true;
         have_lpre = true;
       }
@@ -1348,8 +1352,8 @@ md_assemble (char *str)
       {
         FLARE32_SKIP_ISSPACE ();
 
-        FLARE32_PARSE_EXP ();
-        //FLARE32_PARSE_EXP_POST_POUND ();
+        //FLARE32_PARSE_EXP ();
+        FLARE32_PARSE_EXP_POST_POUND ();
 
         parse_good = true;
         is_pcrel = true;

@@ -1743,8 +1743,9 @@ flare32_regname_to_dw2regnum (char *name)
 void
 flare32_cfi_frame_initial_instructions (void)
 {
-  unsigned sp_regno;
-  sp_regno = (unsigned) flare32_regname_to_dw2regnum ((char *)"sp");
+  //unsigned sp_regno;
+  //sp_regno = (unsigned) flare32_regname_to_dw2regnum ((char *)"sp");
 
-  cfi_add_CFA_def_cfa (sp_regno, 0);
+  //cfi_add_CFA_def_cfa (sp_regno, 0);
+  cfi_add_CFA_def_cfa (FLARE32_GPR_ENUM_SP, 0);
 }

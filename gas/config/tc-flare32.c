@@ -142,6 +142,9 @@ static size_t flare32_opci_list_vec_size = 0;
 //      case FLARE32_OA_SA_RB:
 //        printf ("FLARE32_OA_SA_RB\n");
 //        break;
+//      case FLARE32_OA_SA_SB:
+//        printf ("FLARE32_OA_SA_SB\n");
+//        break;
 //      case FLARE32_OA_RA_RB_LDST:
 //        printf ("FLARE32_OA_RA_RB_LDST\n");
 //        break;
@@ -1389,6 +1392,18 @@ md_assemble (char *str)
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_b);
+
+        parse_good = true;
+      }
+        break;
+      case FLARE32_OA_SA_SB:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_SPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_SPR (reg_b);
 
         parse_good = true;
       }

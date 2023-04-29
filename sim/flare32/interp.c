@@ -1391,46 +1391,6 @@ sim_engine_run (SIM_DESC sd,
             pc = ira;
           }
             break;
-          case FLARE32_G4_OP_ENUM_CPY_RA_SB:
-          {
-            if (rb_ind < FLARE32_NUM_SPRS)
-            {
-              int32_t
-                *ra = &cpu.gprs[ra_ind],
-                sb = cpu.sprs[rb_ind];
-
-              FLARE32_TRACE_INSN (opc_info->names[fw]);
-
-              *ra = sb;
-            }
-            else
-            {
-              FLARE32_TRACE_INSN ("SIGILL_G4_CPY_RA_SB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE32_G4_OP_ENUM_CPY_SA_RB:
-          {
-            if (ra_ind < FLARE32_NUM_SPRS)
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                rb = cpu.gprs[rb_ind];
-
-              FLARE32_TRACE_INSN (opc_info->names[fw]);
-
-              *sa = rb;
-            }
-            else
-            {
-              FLARE32_TRACE_INSN ("SIGILL_G4_CPY_SA_RB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
           case FLARE32_G4_OP_ENUM_EI:
           {
             int32_t
@@ -1462,17 +1422,6 @@ sim_engine_run (SIM_DESC sd,
             *rb -= sizeof (*ra);
           }
             break;
-          case FLARE32_G4_OP_ENUM_POP_RA_RB:
-          {
-            int32_t
-              *ra = &cpu.sprs[ra_ind],
-              *rb = &cpu.gprs[rb_ind];
-
-            FLARE32_TRACE_INSN (opc_info->names[fw]);
-            *rb += sizeof (*ra);
-            *ra = rd32 (scpu, opc, *rb);
-          }
-            break;
           case FLARE32_G4_OP_ENUM_PUSH_SA_RB:
           {
             if (ra_ind < FLARE32_NUM_SPRS)
@@ -1491,6 +1440,17 @@ sim_engine_run (SIM_DESC sd,
               sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
                 SIM_SIGILL);
             }
+          }
+            break;
+          case FLARE32_G4_OP_ENUM_POP_RA_RB:
+          {
+            int32_t
+              *ra = &cpu.sprs[ra_ind],
+              *rb = &cpu.gprs[rb_ind];
+
+            FLARE32_TRACE_INSN (opc_info->names[fw]);
+            *rb += sizeof (*ra);
+            *ra = rd32 (scpu, opc, *rb);
           }
             break;
           case FLARE32_G4_OP_ENUM_POP_SA_RB:
@@ -1817,8 +1777,68 @@ sim_engine_run (SIM_DESC sd,
             wr16 (scpu, opc, addr, ra);
           }
             break;
+          case FLARE32_G4_OP_ENUM_CPY_RA_SB:
+          {
+            if (rb_ind < FLARE32_NUM_SPRS)
+            {
+              int32_t
+                *ra = &cpu.gprs[ra_ind],
+                sb = cpu.sprs[rb_ind];
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              *ra = sb;
+            }
+            else
+            {
+              FLARE32_TRACE_INSN ("SIGILL_G4_CPY_RA_SB");
+              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+                SIM_SIGILL);
+            }
+          }
+            break;
+          case FLARE32_G4_OP_ENUM_CPY_SA_RB:
+          {
+            if (ra_ind < FLARE32_NUM_SPRS)
+            {
+              int32_t
+                *sa = &cpu.sprs[ra_ind],
+                rb = cpu.gprs[rb_ind];
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              *sa = rb;
+            }
+            else
+            {
+              FLARE32_TRACE_INSN ("SIGILL_G4_CPY_SA_RB");
+              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+                SIM_SIGILL);
+            }
+          }
+            break;
+          case FLARE32_G4_OP_ENUM_CPY_SA_SB:
+          {
+            if (ra_ind < FLARE32_NUM_SPRS
+              && rb_ind < FLARE32_NUM_SPRS)
+            {
+              int32_t
+                *sa = &cpu.sprs[ra_ind],
+                sb = cpu.gprs[rb_ind];
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              *sa = sb;
+            }
+            else
+            {
+              FLARE32_TRACE_INSN ("SIGILL_G4_CPY_SA_SB");
+              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+                SIM_SIGILL);
+            }
+          }
+            break;
           case FLARE32_G4_OP_ENUM_INDEX_RA:
-          case FLARE32_G4_OP_ENUM_RESERVED_30:
           case FLARE32_G4_OP_ENUM_RESERVED_31:
           default:
           {

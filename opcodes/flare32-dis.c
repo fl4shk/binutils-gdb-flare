@@ -263,6 +263,25 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
       }
     }
       break;
+    case FLARE32_OA_SA_SB:
+    {
+      if (length != 2
+        || ra_ind >= FLARE32_NUM_SPRS
+        || rb_ind >= FLARE32_NUM_SPRS)
+      {
+        fpr (stream, "bad (grp 0x%x; `FLARE32_OA_SA_SB`: %s; %s; %s;)",
+          (unsigned) grp,
+          ((length != 2) ? "`pre`/lpre`" : ""),
+          ((ra_ind >= FLARE32_NUM_SPRS) ? "ra_ind" : ""),
+          ((rb_ind >= FLARE32_NUM_SPRS) ? "rb_ind" : ""));
+      }
+      else
+      {
+        fpr (stream, "%s\t%s, %s",
+          opc_info->names[fw], sprs[ra_ind].name, sprs[rb_ind].name);
+      }
+    }
+      break;
     case FLARE32_OA_RA_RB_LDST:
     {
       if (length != 2)

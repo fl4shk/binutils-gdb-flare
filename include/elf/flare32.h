@@ -41,6 +41,7 @@ START_RELOC_NUMBERS (elf_flare32_reloc_type)
   RELOC_NUMBER (R_FLARE32_G1G5G6_S5, 5) /* no `pre`/`lpre` */
   RELOC_NUMBER (R_FLARE32_G1G5G6_S17, 6) /* `pre` */
   RELOC_NUMBER (R_FLARE32_G1G5G6_S32, 7) /* `lpre` */
+  //RELOC_NUMBER (R_FLARE32_FDE_G1G5G6_S32_PCREL, 8) /* `.eh_frame` stuff */
   RELOC_NUMBER (R_FLARE32_G1G5G6_S32_ADD32, 8) /* local label sub */
   RELOC_NUMBER (R_FLARE32_G1G5G6_S32_SUB32, 9) /* local label sub */
   /* -------- */
@@ -48,8 +49,11 @@ START_RELOC_NUMBERS (elf_flare32_reloc_type)
   RELOC_NUMBER (R_FLARE32_G3_S9_PCREL, 10) /* no `pre`/`lpre` */
   RELOC_NUMBER (R_FLARE32_G3_S21_PCREL, 11) /* `pre` */
   RELOC_NUMBER (R_FLARE32_G3_S32_PCREL, 12) /* `lpre` */
-  //RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_ADD32, 13) /* local label sub */
-  //RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_SUB32, 14) /* local label sub */
+  //RELOC_NUMBER (R_FLARE32_FDE_G3_S32_PCREL, 13) /* `.eh_frame` stuff */
+  //RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_ADD32, 14) /* local label sub */
+  //RELOC_NUMBER (R_FLARE32_G3_S32_PCREL_SUB32, 15) /* local label sub */
+  /* -------- */
+  //RELOC_NUMBER (R_FLARE32_FDE_32_PCREL, 13) /* `.eh_frame` stuff */
   /* -------- */
   /* Local label subtraction within a pseudo-op */
   RELOC_NUMBER (R_FLARE32_PSEUDO_ADD8, 13)

@@ -357,7 +357,26 @@ flare32_enc_temp_insn_index (flare32_temp_t rc_ind)
     0 /* fw */);
 }
 /* -------- */
-static bool
+/* Helper function for `flare32_fix_addsy_subsy_handler ()`. */
+static void
+flare32_fix_addsy_subsy_handler_1
+  (fixS *fixP,
+  bfd_reloc_code_real_type r_type_add,
+  bfd_reloc_code_real_type r_type_sub)
+{
+  (void) fix_new
+    (fixP->fx_frag, /* frag */
+    fixP->fx_where, /* where */
+    fixP->fx_size,  /* size */
+    fixP->fx_subsy, /* add_symbol */
+    0u,             /* offset */
+    fixP->fx_pcrel, /* pcrel */
+    r_type_sub);    /* r_type */
+
+  fixP->fx_r_type = r_type_add;
+  fixP->fx_subsy = NULL;
+}
+static void
 flare32_fix_addsy_subsy_handler (fixS *fixP)
 {
   if (fixP->fx_addsy && fixP->fx_subsy)
@@ -380,8 +399,30 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
         r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB16;
         break;
       case BFD_RELOC_32:
-        r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD32;
-        r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB32;
+      {
+        //segT sub_segment;
+        ///* Per RISC-V: */
+        ///* Use pc-relative relocation for FDE initial location.
+        //  The symbol address in .eh_frame may be adjusted in
+        //  _bfd_elf_discard_section_eh_frame, and the content of
+        //  .eh_frame will be adjusted in _bfd_elf_write_section_eh_frame.
+        //  Therefore, we cannot insert a relocation whose addend symbol is
+        //  in .eh_frame.  Othrewise, the value may be adjusted twice.  */
+        //if ((sub_segment = S_GET_SEGMENT (fixP->fx_subsy))
+        //  && strcmp (sub_segment->name, ".eh_frame") == 0
+        //  && S_GET_VALUE (fixP->fx_subsy)
+        //    == fixP->fx_frag->fr_address + fixP->fx_where)
+        //{
+        //  fixP->fx_r_type = BFD_RELOC_FLARE32_FDE_32_PCREL;
+        //  fixP->fx_subsy = NULL;
+        //  return;
+        //}
+        //else
+        {
+          r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD32;
+          r_type_sub = BFD_RELOC_FLARE32_PSEUDO_SUB32;
+        }
+      }
         break;
       case BFD_RELOC_64:
         r_type_add = BFD_RELOC_FLARE32_PSEUDO_ADD64;
@@ -389,69 +430,93 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
         break;
 
       case BFD_RELOC_FLARE32_G1G5G6_S32:
-        r_type_add = BFD_RELOC_FLARE32_G1G5G6_S32_ADD32;
-        r_type_sub = BFD_RELOC_FLARE32_G1G5G6_S32_SUB32;
+      {
+        //segT sub_segment;
+        ///* Per RISC-V: */
+        ///* Use pc-relative relocation for FDE initial location.
+        //  The symbol address in .eh_frame may be adjusted in
+        //  _bfd_elf_discard_section_eh_frame, and the content of
+        //  .eh_frame will be adjusted in _bfd_elf_write_section_eh_frame.
+        //  Therefore, we cannot insert a relocation whose addend symbol is
+        //  in .eh_frame.  Othrewise, the value may be adjusted twice.  */
+        //if ((sub_segment = S_GET_SEGMENT (fixP->fx_subsy))
+        //  && strcmp (sub_segment->name, ".eh_frame") == 0
+        //  && S_GET_VALUE (fixP->fx_subsy)
+        //    == fixP->fx_frag->fr_address + fixP->fx_where)
+        //{
+        //  fixP->fx_r_type = BFD_RELOC_FLARE32_FDE_G1G5G6_S32_PCREL;
+        //  fixP->fx_subsy = NULL;
+        //  return;
+        //}
+        //else
+        {
+          r_type_add = BFD_RELOC_FLARE32_G1G5G6_S32_ADD32;
+          r_type_sub = BFD_RELOC_FLARE32_G1G5G6_S32_SUB32;
+        }
+      }
         break;
       case BFD_RELOC_FLARE32_G3_S32_PCREL:
         //r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
         //r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
         as_bad (_("can't subtract symbols in PC-relative immediate"));
         //as_bad_subtract (fixP);
-        return false;
+        //return false;
+        return;
         break;
       default:
         abort ();
         break;
     }
-    /* Adapted from RISC-V's `md_apply_fix ()` */
-    //if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
-    //  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
-    //{
-    //  fixP_last = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
-    //}
+    ///* Adapted from RISC-V's `md_apply_fix ()` */
+    ////if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+    ////  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
+    ////{
+    ////  fixP_last = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
+    ////}
 
-    //printf ("flare32_fix_addsy_subsy_handler (): %d %d 0x%x\n",
-    //  fixP == NULL,
-    //  fixP != NULL ? (fixP->fx_next == NULL) : -1,
-    //  (unsigned) fixP->fx_offset
-    //);
-    //fixP->fx_next = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
+    ////printf ("flare32_fix_addsy_subsy_handler (): %d %d 0x%x\n",
+    ////  fixP == NULL,
+    ////  fixP != NULL ? (fixP->fx_next == NULL) : -1,
+    ////  (unsigned) fixP->fx_offset
+    ////);
+    ////fixP->fx_next = xmemdup (fixP, sizeof (*fixP), sizeof (*fixP));
 
-    //fixP->fx_next->fx_addsy = fixP->fx_subsy;
-    //fixP->fx_next->fx_subsy = NULL;
-    //fixP->fx_next->fx_offset = 0;
-    //fixP->fx_subsy = NULL;
+    ////fixP->fx_next->fx_addsy = fixP->fx_subsy;
+    ////fixP->fx_next->fx_subsy = NULL;
+    ////fixP->fx_next->fx_offset = 0;
+    ////fixP->fx_subsy = NULL;
+
+    ////fixP->fx_r_type = r_type_add;
+    ////fixP->fx_next->fx_r_type = r_type_sub;
+    //(void) fix_new
+    //  (fixP->fx_frag, /* frag */
+    //  fixP->fx_where, /* where */
+    //  fixP->fx_size,  /* size */
+    //  fixP->fx_subsy, /* add_symbol */
+    //  0u,             /* offset */
+    //  fixP->fx_pcrel, /* pcrel */
+    //  r_type_sub);    /* r_type */
 
     //fixP->fx_r_type = r_type_add;
-    //fixP->fx_next->fx_r_type = r_type_sub;
-    (void) fix_new
-      (fixP->fx_frag, /* frag */
-      fixP->fx_where, /* where */
-      fixP->fx_size,  /* size */
-      fixP->fx_subsy, /* add_symbol */
-      0u,             /* offset */
-      fixP->fx_pcrel, /* pcrel */
-      r_type_sub);    /* r_type */
-
-    fixP->fx_r_type = r_type_add;
-    fixP->fx_subsy = NULL;
+    //fixP->fx_subsy = NULL;
+    flare32_fix_addsy_subsy_handler_1 (fixP, r_type_add, r_type_sub);
 
 
-    //symbol_mark_used_in_reloc (fixP->fx_addsy);
-    //symbol_mark_used_in_reloc (fixP->fx_next->fx_addsy);
+    ////symbol_mark_used_in_reloc (fixP->fx_addsy);
+    ////symbol_mark_used_in_reloc (fixP->fx_next->fx_addsy);
 
-    //if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
-    //  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
-    //{
-    //  fixP_last->fx_addsy = NULL;
-    //  fixP_last->fx_subsy = NULL;
-    //  fixP_last->fx_offset = 0;
-    //  fixP->fx_next->fx_next = fixP_last;
-    //}
+    ////if (old_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+    ////  || old_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
+    ////{
+    ////  fixP_last->fx_addsy = NULL;
+    ////  fixP_last->fx_subsy = NULL;
+    ////  fixP_last->fx_offset = 0;
+    ////  fixP->fx_next->fx_next = fixP_last;
+    ////}
 
-    return true;
+    //return true;
   }
-  return false;
+  //return false;
 }
 
 /* Parse an expression and then restore the input line pointer.  */
@@ -1613,7 +1678,7 @@ md_assemble (char *str)
                           ? BFD_RELOC_FLARE32_G3_S32_PCREL
                           : BFD_RELOC_FLARE32_G1G5G6_S32) /* r_type */
                         );
-    (void) flare32_fix_addsy_subsy_handler (fixP);
+    flare32_fix_addsy_subsy_handler (fixP);
     prefix_insn = flare32_enc_temp_insn_lpre_rshift (opc_info, simm);
   }
   insn = flare32_enc_temp_insn_non_pre_lpre
@@ -1728,7 +1793,7 @@ flare32_cons_fix_new (fragS *frag,
   }
 
   fixP = fix_new_exp (frag, where, nbytes, ex, 0, r);
-  (void) flare32_fix_addsy_subsy_handler (fixP);
+  flare32_fix_addsy_subsy_handler (fixP);
 }
 
 int

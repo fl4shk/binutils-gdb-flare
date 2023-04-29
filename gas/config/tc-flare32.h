@@ -156,7 +156,7 @@ flare32_cfi_frame_initial_instructions (void);
   Targets which im- plement link time relaxation may need to define this
   macro and set it to zero if it is possible to change the size of a
   function’s prologue. */
-//#define md_allow_eh_opt 0
+#define md_allow_eh_opt 0
 
 /* Stack alignment is 4 bytes */
 #define DWARF2_CIE_DATA_ALIGNMENT -4

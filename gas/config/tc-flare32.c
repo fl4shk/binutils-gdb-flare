@@ -557,22 +557,42 @@ parse_worker (char **ptr,
 
   nlen = 0;
 
+  //fprintf (stderr, "parse_worker (): \"%s\"\n", *ptr);
+
   for (s=*ptr;
     *s
       && !is_end_of_line[*s & 0xff]
       && *s != ' '
-      && *name != '\0';
+      && (ISALNUM (*s) || *s == '_')
+      && *name != '\0'
+      && *s != '\0';
     ++s, ++name)
   {
+    //fprintf (stderr, "parse_worker (): \"%c\" \"%c\"\n", *s, *name);
     if (*s != *name)
     {
+      //fprintf (stderr, "parse_worker (): returning false: %d\n",
+      //  (unsigned) nlen);
       return false;
     }
     ++nlen;
   }
+  //if (
+  //  (*s != '\0' && *name != '\0')
+  //  || (*s == '\0' && *name != '\0')
+  //)
+  //{
+  //  return false;
+  //}
+  if (ISALNUM (*s) || *s == '_')
+  {
+    return false;
+  }
 
   *ptr += nlen;
 
+  //fprintf (stderr, "parse_worker (): returning true: %d\n",
+  //  (unsigned) nlen);
   return true;
 }
 
@@ -589,8 +609,11 @@ parse_register_operand (char **ptr)
   unsigned i;
   for (i=0; i<FLARE32_NUM_GPRS; ++i)
   {
+    //fprintf (stderr, "parse_register_operand (): %s\n", gprs[i].name);
+
     if (parse_register_operand_worker (ptr, gprs + i))
     {
+      //fprintf (stderr, "testificate\n");
       return gprs + i;
     }
   }

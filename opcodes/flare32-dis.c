@@ -298,6 +298,38 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
       }
     }
       break;
+    case FLARE32_OA_SA_RB_LDST:
+    {
+      if (length != 2)
+      {
+        fpr (stream, "%s%x%s",
+          "bad (grp 0x",
+          (unsigned) grp,
+          "; `FLARE32_OA_SA_RB_LDST`; `pre`/`lpre`)");
+      }
+      else
+      {
+        fpr (stream, "%s\t%s, [%s]",
+          opc_info->names[fw], sprs[ra_ind].name, gprs[rb_ind].name);
+      }
+    }
+      break;
+    case FLARE32_OA_SA_SB_LDST:
+    {
+      if (length != 2)
+      {
+        fpr (stream, "%s%x%s",
+          "bad (grp 0x",
+          (unsigned) grp,
+          "; `FLARE32_OA_SA_SB_LDST`; `pre`/`lpre`)");
+      }
+      else
+      {
+        fpr (stream, "%s\t%s, [%s]",
+          opc_info->names[fw], sprs[ra_ind].name, sprs[rb_ind].name);
+      }
+    }
+      break;
     //case FLARE32_OA_RA_RB_RC_LDST:
     //  break;
     case FLARE32_OA_RA_RB_S5_LDST:
@@ -617,20 +649,35 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
     case FLARE32_G7_GRP_VALUE:
     {
       /* -------- */
-      flare32_temp_t temp_subgrp;
-      /* There is only one subgroup in group 7 for now */
-      opc_info = &flare32_opc_info_g7_aluopbh
-        [flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_op,
-          iword)];
-      if ((temp_subgrp = flare32_get_insn_field_ei
-          (&flare32_enc_info_g7_aluopbh_subgrp, iword))
-        != FLARE32_G7_ALUOPBH_SUBGRP_VALUE)
+      flare32_temp_t
+        aluopbh_subgrp, sprldst_subgrp;
+      aluopbh_subgrp = flare32_get_insn_field_ei
+        (&flare32_enc_info_g7_aluopbh_subgrp, iword);
+      sprldst_subgrp = flare32_get_insn_field_ei
+        (&flare32_enc_info_g7_sprldst_subgrp, iword);
+      if (aluopbh_subgrp != FLARE32_G7_ALUOPBH_SUBGRP_VALUE
+        && sprldst_subgrp != FLARE32_G7_SPRLDST_SUBGRP_VALUE)
       {
-        fpr (stream, "bad (grp 0x%x; unknown subgrp 0x%x)",
-          (unsigned) grp, (unsigned) temp_subgrp);
+        fpr (stream, "bad (grp 0x%x; unknown subgrp "
+          "(checked: 0x%x, 0x%x))",
+          (unsigned) grp,
+          (unsigned) aluopbh_subgrp, (unsigned)sprldst_subgrp);
+        break;
       }
-      fw = flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_w,
-        iword);
+      if (aluopbh_subgrp == FLARE32_G7_ALUOPBH_SUBGRP_VALUE)
+      {
+        opc_info = &flare32_opc_info_g7_aluopbh
+          [flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_op,
+            iword)];
+        fw = flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_w,
+          iword);
+      }
+      else // if (sprldst_subgrp == FLARE32_G7_SPRLDST_SUBGRP_VALUE)
+      {
+        opc_info = &flare32_opc_info_g7_sprldst
+          [flare32_get_insn_field_ei (&flare32_enc_info_g7_sprldst_op,
+            iword)];
+      }
       do_print_insn_flare32
         (opc_info,
         iword,

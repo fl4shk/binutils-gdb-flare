@@ -329,9 +329,23 @@ flare32_enc_temp_insn_non_pre_lpre
       return flare32_enc_temp_insn_g6
         (ra_ind, rb_ind, simm);
     case FLARE32_G7_GRP_VALUE:
-      /* For now, there is only one subgroup in group 7 */
-      return flare32_enc_temp_insn_g7_aluopbh
-        (opc_info->opcode, fw, ra_ind, rb_ind);
+      if (opc_info->grp_info->subgrp
+        == &flare32_enc_info_g7_aluopbh_subgrp)
+      {
+        return flare32_enc_temp_insn_g7_aluopbh
+          (opc_info->opcode, fw, ra_ind, rb_ind);
+      }
+      else if (opc_info->grp_info->subgrp
+        == &flare32_enc_info_g7_sprldst_subgrp)
+      {
+        return flare32_enc_temp_insn_g7_sprldst
+          (opc_info->opcode, ra_ind, rb_ind);
+      }
+      else
+      {
+        abort ();
+        break;
+      }
     default:
       abort ();
       break;
@@ -1059,6 +1073,13 @@ md_begin (void)
     flare32_opci_list_hnv_append (opc_info, 0);
     flare32_opci_list_hnv_append (opc_info, 1);
   }
+
+  for (count=0, opc_info=flare32_opc_info_g7_sprldst;
+    count++<FLARE32_G7_SPRLDST_OPC_INFO_LIM;
+    ++opc_info)
+  {
+    flare32_opci_list_hnv_append (opc_info, 0);
+  }
   /* -------- */
   /* Insert `const flare32_reg_t *`s */
   for (count=0, reg=gprs; count++<FLARE32_NUM_GPRS; ++reg)
@@ -1601,6 +1622,52 @@ md_assemble (char *str)
 
         have_index = true;
         have_lpre = true;
+        parse_good = true;
+      }
+        break;
+      case FLARE32_OA_SA_RB_LDST:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_SPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_GPR (reg_b);
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        parse_good = true;
+      }
+        break;
+      case FLARE32_OA_SA_SB_LDST:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_SPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_SPR (reg_b);
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
         parse_good = true;
       }
         break;

@@ -433,7 +433,7 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 /* -------- */
 /* the `grp` field of group 7 instructions */
 #define FLARE32_G7_GRP_VALUE (0x7ull)
-
+/* -------- */
 /* The `subgrp` field of 8-bit/16-bit ALU Ops in group 7 */
 #define FLARE32_G7_ALUOPBH_SUBGRP_BITSIZE (2ull)
 #define FLARE32_G7_ALUOPBH_SUBGRP_BITPOS \
@@ -451,7 +451,6 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
   (FLARE32_ENC_RSMASK (G7_ALUOPBH_FULLGRP))
 #define FLARE32_G7_ALUOPBH_FULLGRP_MASK \
   (FLARE32_ENC_MASK (G7_ALUOPBH_FULLGRP))
-
 
 /* the `width` field of 8-bit/16-bit ALU ops in group 7 */
 #define FLARE32_G7_ALUOPBH_W_BITSIZE (1ull)
@@ -487,6 +486,49 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
   (FLARE32_FULLGRP_VALUE(G7_ALUOPBH_SUBGRP, \
     FLARE32_G7_GRP_VALUE, \
     FLARE32_G7_ALUOPBH_SUBGRP_VALUE))
+
+/* -------- */
+
+/* The `subgrp` field of the extra spr-using `ldr`/`str` instructions in
+  group 7 */
+#define FLARE32_G7_SPRLDST_SUBGRP_BITSIZE (3ull)
+#define FLARE32_G7_SPRLDST_SUBGRP_BITPOS \
+  (FLARE32_GRP_16_BITPOS - FLARE32_G7_SPRLDST_SUBGRP_BITSIZE)
+#define FLARE32_G7_SPRLDST_SUBGRP_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_SPRLDST_SUBGRP))
+#define FLARE32_G7_SPRLDST_SUBGRP_MASK \
+  (FLARE32_ENC_MASK (G7_SPRLDST_SUBGRP))
+
+#define FLARE32_G7_SPRLDST_FULLGRP_BITSIZE \
+  (FLARE32_GRP_BITSIZE + FLARE32_G7_SPRLDST_SUBGRP_BITSIZE)
+#define FLARE32_G7_SPRLDST_FULLGRP_BITPOS \
+  (FLARE32_G7_SPRLDST_SUBGRP_BITPOS)
+#define FLARE32_G7_SPRLDST_FULLGRP_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_SPRLDST_FULLGRP))
+#define FLARE32_G7_SPRLDST_FULLGRP_MASK \
+  (FLARE32_ENC_MASK (G7_SPRLDST_FULLGRP))
+
+/* the `opcode` field of 8-bit/16-bit ALU Ops in group 7 */
+#define FLARE32_G7_SPRLDST_OP_BITSIZE (2ull)
+#define FLARE32_G7_SPRLDST_OP_BITPOS (8ull)
+#define FLARE32_G7_SPRLDST_OP_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_SPRLDST_OP))
+#define FLARE32_G7_SPRLDST_OP_MASK \
+  (FLARE32_ENC_MASK (G7_SPRLDST_OP))
+
+/* the specific opcode values usable with spr-using `ldr`/`str` Ops in 
+  group 7 */
+#define FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_RB (0x0ull)
+#define FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_SB (0x1ull)
+#define FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_RB (0x2ull)
+#define FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_SB (0x3ull)
+
+/* Constant fields of Group 7 spr-using `ldr`/`str` instruction */
+#define FLARE32_G7_SPRLDST_SUBGRP_VALUE (0x02ull)
+#define FLARE32_G7_SPRLDST_FULLGRP_VALUE \
+  (FLARE32_FULLGRP_VALUE(G7_SPRLDST_SUBGRP, \
+    FLARE32_G7_GRP_VALUE, \
+    FLARE32_G7_SPRLDST_SUBGRP_VALUE))
 /* -------- */
 /* encoding of rA */
 #define FLARE32_RA_IND_BITSIZE (4ull)
@@ -658,6 +700,8 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_RB_RC_LDST,
   FLARE32_OA_RA_RB_S5_LDST,
   FLARE32_OA_RA_RB_RC_S5_LDST,
+  FLARE32_OA_SA_RB_LDST,
+  FLARE32_OA_SA_SB_LDST,
 } flare32_oparg_t;
 
 
@@ -767,6 +811,10 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 #define FLARE32_G7_ALUOPBH_OPC_INFO_LIM (4ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g7_aluopbh[FLARE32_G7_ALUOPBH_OPC_INFO_LIM];
+
+#define FLARE32_G7_SPRLDST_OPC_INFO_LIM (4ull)
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g7_sprldst[FLARE32_G7_SPRLDST_OPC_INFO_LIM];
 /* -------- */
 /* -------- */
 static inline flare32_temp_t
@@ -968,6 +1016,23 @@ flare32_enc_temp_insn_g7_aluopbh (flare32_temp_t op,
     FLARE32_G7_ALUOPBH_OP_BITPOS, &ret, op);
   flare32_set_insn_field_p (FLARE32_G7_ALUOPBH_W_MASK,
     FLARE32_G7_ALUOPBH_W_BITPOS, &ret, w);
+  flare32_set_insn_field_p (FLARE32_RA_IND_MASK, FLARE32_RA_IND_BITPOS, 
+    &ret, ra_ind);
+  flare32_set_insn_field_p (FLARE32_RB_IND_MASK, FLARE32_RB_IND_BITPOS, 
+    &ret, rb_ind);
+  return ret;
+}
+static inline flare32_temp_t
+flare32_enc_temp_insn_g7_sprldst (flare32_temp_t op,
+                                  flare32_temp_t ra_ind,
+                                  flare32_temp_t rb_ind)
+{
+  flare32_temp_t ret = 0;
+  flare32_set_insn_field_p (FLARE32_G7_SPRLDST_FULLGRP_MASK,
+    FLARE32_G7_SPRLDST_FULLGRP_BITPOS, &ret,
+    FLARE32_G7_SPRLDST_FULLGRP_VALUE);
+  flare32_set_insn_field_p (FLARE32_G7_SPRLDST_OP_MASK,
+    FLARE32_G7_SPRLDST_OP_BITPOS, &ret, op);
   flare32_set_insn_field_p (FLARE32_RA_IND_MASK, FLARE32_RA_IND_BITPOS, 
     &ret, ra_ind);
   flare32_set_insn_field_p (FLARE32_RB_IND_MASK, FLARE32_RB_IND_BITPOS, 

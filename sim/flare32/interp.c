@@ -2048,6 +2048,72 @@ sim_engine_run (SIM_DESC sd,
               break;
           }
         }
+        else if ((subgrp = flare32_get_insn_field_ei
+          (&flare32_enc_info_g7_sprldst_subgrp, insn))
+          == FLARE32_G7_SPRLDST_SUBGRP_VALUE)
+        {
+          opc_info = &flare32_opc_info_g7_sprldst
+            [flare32_get_insn_field_ei
+              (&flare32_enc_info_g7_sprldst_op, insn)];
+          switch (opc_info->opcode)
+          {
+            case FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_RB:
+            {
+              int32_t
+                *sa = &cpu.sprs[ra_ind],
+                rb = cpu.gprs[rb_ind];
+              uint32_t addr = (uint32_t)rb;
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              *sa = rd32 (scpu, opc, addr);
+            }
+              break;
+            case FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_SB:
+            {
+              int32_t
+                *sa = &cpu.sprs[ra_ind],
+                sb = cpu.sprs[rb_ind];
+              uint32_t addr = (uint32_t)sb;
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              *sa = rd32 (scpu, opc, addr);
+            }
+              break;
+            case FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_RB:
+            {
+              int32_t
+                sa = cpu.sprs[ra_ind],
+                rb = cpu.gprs[rb_ind];
+              uint32_t addr = (uint32_t)rb;
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              wr32 (scpu, opc, addr, sa);
+            }
+              break;
+            case FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_SB:
+            {
+              int32_t
+                sa = cpu.sprs[ra_ind],
+                sb = cpu.sprs[rb_ind];
+              uint32_t addr = (uint32_t)sb;
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+              wr32 (scpu, opc, addr, sa);
+            }
+              break;
+            default:
+            {
+              FLARE32_TRACE_INSN ("SIGILL_G7_SPRLDST_OP");
+              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+                SIM_SIGILL);
+            }
+              break;
+          }
+        }
         else
         {
           FLARE32_TRACE_INSN ("SIGILL_G7_SUBGRP");

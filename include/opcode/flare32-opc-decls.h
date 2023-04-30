@@ -152,6 +152,22 @@ static const flare32_enc_info_t
     FLARE32_G7_ALUOPBH_OP_BITPOS,
     FLARE32_G7_ALUOPBH_OP_RSMASK,
     FLARE32_G7_ALUOPBH_OP_MASK},
+
+  flare32_enc_info_g7_sprldst_subgrp =
+    {FLARE32_G7_SPRLDST_SUBGRP_BITSIZE,
+    FLARE32_G7_SPRLDST_SUBGRP_BITPOS,
+    FLARE32_G7_SPRLDST_SUBGRP_RSMASK,
+    FLARE32_G7_SPRLDST_SUBGRP_MASK},
+  flare32_enc_info_g7_sprldst_fullgrp =
+    {FLARE32_G7_SPRLDST_FULLGRP_BITSIZE,
+    FLARE32_G7_SPRLDST_FULLGRP_BITPOS,
+    FLARE32_G7_SPRLDST_FULLGRP_RSMASK,
+    FLARE32_G7_SPRLDST_FULLGRP_MASK},
+  flare32_enc_info_g7_sprldst_op =
+    {FLARE32_G7_SPRLDST_OP_BITSIZE,
+    FLARE32_G7_SPRLDST_OP_BITPOS,
+    FLARE32_G7_SPRLDST_OP_RSMASK,
+    FLARE32_G7_SPRLDST_OP_MASK},
   /* -------- */
   flare32_enc_info_ra_ind =
     {FLARE32_RA_IND_BITSIZE,
@@ -813,6 +829,40 @@ static const flare32_opc_info_t
   {&flare32_grp_info_g7_aluopbh,
     FLARE32_G7_ALUOPBH_OP_ENUM_RESERVED_3, FLARE32_OA_BAD,
     {"bad", "bad"}},
+  /* -------- */
+};
+
+static const flare32_grp_info_t flare32_grp_info_g7_sprldst =
+{
+  .grp=&flare32_enc_info_grp_16,
+  .grp_value=FLARE32_G7_GRP_VALUE,
+
+  .subgrp=&flare32_enc_info_g7_sprldst_subgrp,
+  .subgrp_value=FLARE32_G7_SPRLDST_SUBGRP_VALUE,
+};
+static const flare32_opc_info_t
+  flare32_opc_info_g7_sprldst[FLARE32_G7_SPRLDST_OPC_INFO_LIM] =
+{
+  /* -------- */
+  /* ldr sA, [rB] */
+  {&flare32_grp_info_g7_sprldst,
+    FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_RB, FLARE32_OA_SA_RB_LDST,
+    {"ldr", "ldr"}},
+
+  /* ldr sA, [sB] */
+  {&flare32_grp_info_g7_sprldst,
+    FLARE32_G7_SPRLDST_OP_ENUM_LDR_SA_SB, FLARE32_OA_SA_SB_LDST,
+    {"ldr", "ldr"}},
+
+  /* str sA, [rB] */
+  {&flare32_grp_info_g7_sprldst,
+    FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_RB, FLARE32_OA_SA_RB_LDST,
+    {"str", "str"}},
+
+  /* str sA, [sB] */
+  {&flare32_grp_info_g7_sprldst,
+    FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_SB, FLARE32_OA_SA_SB_LDST,
+    {"str", "str"}},
   /* -------- */
 };
 /* -------- */

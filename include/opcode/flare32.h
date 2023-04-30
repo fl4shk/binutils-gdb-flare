@@ -621,19 +621,19 @@ extern const flare32_reg_t gprs[FLARE32_NUM_GPRS];
 extern const flare32_reg_t sprs[FLARE32_NUM_SPRS];
 
 #define FLARE32_SPR_ENUM_FLAGS (0x0ull)
-#define FLARE32_SPR_ENUM_HI (0x1ull)
-#define FLARE32_SPR_ENUM_LO (0x2ull)
-#define FLARE32_SPR_ENUM_IDS (0x3ull)
-#define FLARE32_SPR_ENUM_IRA (0x4ull)
-#define FLARE32_SPR_ENUM_IE (0x5ull)
-#define FLARE32_SPR_ENUM_ITY (0x6ull)
-#define FLARE32_SPR_ENUM_STY (0x7ull)
+//#define FLARE32_SPR_ENUM_HI (0x1ull)
+//#define FLARE32_SPR_ENUM_LO (0x2ull)
+#define FLARE32_SPR_ENUM_IDS (0x1ull)
+#define FLARE32_SPR_ENUM_IRA (0x2ull)
+#define FLARE32_SPR_ENUM_IE (0x3ull)
+#define FLARE32_SPR_ENUM_ITY (0x4ull)
+#define FLARE32_SPR_ENUM_STY (0x5ull)
 
 #define FLARE32_INST_SPRS() \
   { \
     {"flags", FLARE32_SPR_ENUM_FLAGS, FLARE32_REG_KIND_SPR}, \
-    {"hi", FLARE32_SPR_ENUM_HI, FLARE32_REG_KIND_SPR}, \
-    {"lo", FLARE32_SPR_ENUM_LO, FLARE32_REG_KIND_SPR}, \
+    /* {"hi", FLARE32_SPR_ENUM_HI, FLARE32_REG_KIND_SPR}, */ \
+    /* {"lo", FLARE32_SPR_ENUM_LO, FLARE32_REG_KIND_SPR}, */ \
     {"ids", FLARE32_SPR_ENUM_IDS, FLARE32_REG_KIND_SPR}, \
     {"ira", FLARE32_SPR_ENUM_IRA, FLARE32_REG_KIND_SPR}, \
     {"ie", FLARE32_SPR_ENUM_IE, FLARE32_REG_KIND_SPR}, \

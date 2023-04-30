@@ -617,7 +617,8 @@ extern const flare32_reg_t gprs[FLARE32_NUM_GPRS];
 /* special-purpose registers */
 //#define FLARE32_NUM_SPRS (16ull)
 //#define FLARE32_REAL_NUM_SPRS (8ull)
-#define FLARE32_NUM_SPRS (8ull)
+//#define FLARE32_NUM_SPRS (8ull)
+#define FLARE32_NUM_SPRS (6ull)
 extern const flare32_reg_t sprs[FLARE32_NUM_SPRS];
 
 #define FLARE32_SPR_ENUM_FLAGS (0x0ull)

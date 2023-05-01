@@ -372,24 +372,24 @@ flare32_enc_temp_insn_index (flare32_temp_t rc_ind)
 }
 /* -------- */
 /* Helper function for `flare32_fix_addsy_subsy_handler ()`. */
-static void
-flare32_fix_addsy_subsy_handler_1
-  (fixS *fixP,
-  bfd_reloc_code_real_type r_type_add,
-  bfd_reloc_code_real_type r_type_sub)
-{
-  (void) fix_new
-    (fixP->fx_frag, /* frag */
-    fixP->fx_where, /* where */
-    fixP->fx_size,  /* size */
-    fixP->fx_subsy, /* add_symbol */
-    0u,             /* offset */
-    fixP->fx_pcrel, /* pcrel */
-    r_type_sub);    /* r_type */
-
-  fixP->fx_r_type = r_type_add;
-  fixP->fx_subsy = NULL;
-}
+//static void
+//flare32_fix_addsy_subsy_handler_1
+//  (fixS *fixP,
+//  bfd_reloc_code_real_type r_type_add,
+//  bfd_reloc_code_real_type r_type_sub)
+//{
+//  (void) fix_new
+//    (fixP->fx_frag, /* frag */
+//    fixP->fx_where, /* where */
+//    fixP->fx_size,  /* size */
+//    fixP->fx_subsy, /* add_symbol */
+//    0u,             /* offset */
+//    fixP->fx_pcrel, /* pcrel */
+//    r_type_sub);    /* r_type */
+//
+//  fixP->fx_r_type = r_type_add;
+//  fixP->fx_subsy = NULL;
+//}
 static void
 flare32_fix_addsy_subsy_handler (fixS *fixP)
 {
@@ -502,18 +502,18 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
 
     ////fixP->fx_r_type = r_type_add;
     ////fixP->fx_next->fx_r_type = r_type_sub;
-    //(void) fix_new
-    //  (fixP->fx_frag, /* frag */
-    //  fixP->fx_where, /* where */
-    //  fixP->fx_size,  /* size */
-    //  fixP->fx_subsy, /* add_symbol */
-    //  0u,             /* offset */
-    //  fixP->fx_pcrel, /* pcrel */
-    //  r_type_sub);    /* r_type */
+    (void) fix_new
+      (fixP->fx_frag, /* frag */
+      fixP->fx_where, /* where */
+      fixP->fx_size,  /* size */
+      fixP->fx_subsy, /* add_symbol */
+      0u,             /* offset */
+      fixP->fx_pcrel, /* pcrel */
+      r_type_sub);    /* r_type */
 
-    //fixP->fx_r_type = r_type_add;
-    //fixP->fx_subsy = NULL;
-    flare32_fix_addsy_subsy_handler_1 (fixP, r_type_add, r_type_sub);
+    fixP->fx_r_type = r_type_add;
+    fixP->fx_subsy = NULL;
+    //flare32_fix_addsy_subsy_handler_1 (fixP, r_type_add, r_type_sub);
 
 
     ////symbol_mark_used_in_reloc (fixP->fx_addsy);
@@ -554,6 +554,7 @@ parse_worker (char **ptr,
 {
   char *s;
   size_t nlen;
+  //const char *old_name = name;
 
   nlen = 0;
 
@@ -561,9 +562,9 @@ parse_worker (char **ptr,
 
   for (s=*ptr;
     *s
-      && !is_end_of_line[*s & 0xff]
+      && !is_end_of_line[(*s) & 0xff]
       && *s != ' '
-      && (ISALNUM (*s) || *s == '_')
+      && (ISALNUM (*s) || (*s) == '_')
       && *name != '\0'
       && *s != '\0';
     ++s, ++name)
@@ -588,6 +589,9 @@ parse_worker (char **ptr,
   {
     return false;
   }
+
+  //fprintf (stderr, "parse_worker (): \"%s\" \"%s\" %d\n",
+  //  *ptr, old_name, (unsigned) nlen);
 
   *ptr += nlen;
 
@@ -1749,19 +1753,27 @@ md_assemble (char *str)
     frag_new (0);
   }
 
-  nbytes = 2;
-  p = frag_more (2);
+  //nbytes = 2;
+  //p = frag_more (2);
 
-  if (have_lpre)
+  if (!have_lpre)
+  {
+    nbytes = 2;
+    p = frag_more (2);
+  }
+  else // if (have_lpre)
   {
     fixS *fixP;
 
-    nbytes += 4;
-    (void) frag_more (4);
+    //nbytes += 4;
+    //(void) frag_more (4);
+    nbytes = 6;
+    p = frag_more (nbytes);
 
     fixP = fix_new_exp (frag_now, /* frag */
                         (p - frag_now->fr_literal), /* where */
                         4, /* size */
+                        //6,
                         &ex, /* exp */
                         (int) is_pcrel, /* pcrel */
                         (is_pcrel

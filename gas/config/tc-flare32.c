@@ -470,13 +470,15 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
       }
         break;
       case BFD_RELOC_FLARE32_G3_S32_PCREL:
-        //r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
-        //r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
-        as_bad (_("can't subtract symbols in PC-relative immediate"));
+        r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
+        r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
+        //as_bad (_("can't subtract symbols in PC-relative immediate"));
         //as_bad_subtract (fixP);
         //return false;
-        return;
+        //return;
         break;
+      //case BFD_RELOC_FLARE32_G3_S32_PCREL_MINUS_DOT:
+      //  r_type_add = BFD_RELOC
       default:
         abort ();
         break;
@@ -1245,9 +1247,18 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
                           //6,
                           (!which_exp ? &pd->ex : &pd->ex_1), /* exp */
                           (int) pd->is_pcrel, /* pcrel */
-                          (pd->is_pcrel
-                            ? BFD_RELOC_FLARE32_G3_S32_PCREL
-                            : BFD_RELOC_FLARE32_G1G5G6_S32) /* r_type */
+                          //(!pd->is_pcrel
+                          //  ? BFD_RELOC_FLARE32_G1G5G6_S32
+                          //  : (
+                          //    pd->opc_info->oparg
+                          //      != FLARE32_OA_PCREL_S32_MINUS_DOT
+                          //    ? BFD_RELOC_FLARE32_G3_S32_PCREL
+                          //    : BFD_RELOC_FLARE32_G3_S32_PCREL_MINUS_DOT
+                          //  )
+                          //) /* r_type */
+                          (!pd->is_pcrel
+                            ? BFD_RELOC_FLARE32_G1G5G6_S32
+                            : BFD_RELOC_FLARE32_G3_S32_PCREL) /* r_type */
                           );
       flare32_fix_addsy_subsy_handler (fixP);
     }
@@ -1617,6 +1628,11 @@ md_assemble (char *str)
         pd.have_lpre = true;
       }
         break;
+      //case FLARE32_OA_PCREL_S32_MINUS_DOT:
+      //{
+      //  FLARE32_SKIP_ISSPACE
+      //}
+      //  break;
       case FLARE32_OA_IRA:
       {
         FLARE32_SKIP_ISSPACE ();

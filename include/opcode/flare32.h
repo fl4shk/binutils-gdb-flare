@@ -691,6 +691,7 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_SP_RB,
   FLARE32_OA_RA_FP_RB,
   FLARE32_OA_PCREL_S9,
+  //FLARE32_OA_PCREL_S32_MINUS_DOT,
   FLARE32_OA_IRA,
   FLARE32_OA_RA_SB,
   FLARE32_OA_SA_RB,
@@ -795,6 +796,7 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 //  flare32_opc_info_g2[FLARE32_G2_OPC_INFO_LIM];
 
 #define FLARE32_G3_OPC_INFO_LIM (16ull)
+//#define FLARE32_G3_OPC_INFO_LIM (16ull + 1ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g3[FLARE32_G3_OPC_INFO_LIM];
 

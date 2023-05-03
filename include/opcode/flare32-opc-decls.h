@@ -498,6 +498,10 @@ static const flare32_opc_info_t
     FLARE32_G3_OP_ENUM_BLES_PCREL_S9, FLARE32_OA_PCREL_S9,
     {"bles", "bles"}},
   /* -------- */
+  //{&flare32_grp_info_g3,
+  //  FLARE32_G3_OP_ENUM_BRA_PCREL_S9, FLARE32_OA_PCREL_S32_MINUS_DOT,
+  //  {"brl", "brl"}},
+  /* -------- */
 };
 static const flare32_grp_info_t flare32_grp_info_g4 =
 {

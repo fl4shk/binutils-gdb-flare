@@ -548,6 +548,45 @@ clear_and_parse_exp_save_ilp (char *s, expressionS *ex)
   return s;
 }
 
+//typedef struct flare32_const_dbl_t
+//{
+//  unsigned char data[8];
+//  int length;
+//} flare32_const_dbl_t;
+
+//const char *
+//clear_and_parse_const_dbl_save_ilp (char *s,
+//  flare32_const_dbl_t *const_dbl
+//  //bool *out_err
+//  )
+//{
+//  const char *err;
+//  char
+//    *end = (char *)NULL,
+//    *save = input_line_pointer;
+//  (void) memset (const_dbl, 0, sizeof (*const_dbl));
+//
+//  input_line_pointer = s;
+//  err = md_atof ('d', (char *)const_dbl->data, &const_dbl->length);
+//  end = input_line_pointer;
+//  input_line_pointer = save;
+//
+//  if ((err && (*err)) || s != end)
+//  {
+//    //*out_err = true;
+//    return (const char *) NULL;
+//  }
+//  //if (s != end)
+//  //{
+//  //  //*out_err = false;
+//  //  return end;
+//  //}
+//  return end;
+//
+//  //*out_err = false;
+//  return (const char *) NULL;
+//}
+
 static bool
 parse_worker (char **ptr,
               const char *name)
@@ -930,41 +969,42 @@ const char *
 md_atof (int type, char *litP, int *sizeP)
 {
   //return ieee_md_atof (type, litP, sizeP, false);
-  int prec;
-  LITTLENUM_TYPE words[4];
-  char *t;
-  int i;
+  return ieee_md_atof (type, litP, sizeP, true);
+  //int prec;
+  //LITTLENUM_TYPE words[4];
+  //char *t;
+  //int i;
 
-  switch (type)
-    {
-    case 'f':
-      prec = 2;
-      break;
+  //switch (type)
+  //  {
+  //  case 'f':
+  //    prec = 2;
+  //    break;
 
-    case 'd':
-      prec = 4;
-      break;
+  //  case 'd':
+  //    prec = 4;
+  //    break;
 
-    default:
-      *sizeP = 0;
-      return _("bad call to md_atof");
-    }
+  //  default:
+  //    *sizeP = 0;
+  //    return _("bad call to md_atof");
+  //  }
 
-  t = atof_ieee (input_line_pointer, type, words);
-  if (t)
-  {
-    input_line_pointer = t;
-  }
+  //t = atof_ieee (input_line_pointer, type, words);
+  //if (t)
+  //{
+  //  input_line_pointer = t;
+  //}
 
-  *sizeP = prec * 2;
+  //*sizeP = prec * 2;
 
-  for (i = prec - 1; i >= 0; i--)
-  {
-    md_number_to_chars (litP, (valueT) words[i], 2);
-    litP += 2;
-  }
+  //for (i = prec - 1; i >= 0; i--)
+  //{
+  //  md_number_to_chars (litP, (valueT) words[i], 2);
+  //  litP += 2;
+  //}
 
-  return NULL;
+  //return NULL;
 }
 
 struct option md_longopts[] =
@@ -1140,11 +1180,7 @@ flare32_md_end (void)
 //{
 //}
 
-/* This is the guts of the machine-dependent assembler.  STR points to
-  a machine dependent instruction.  This function is supposed to emit
-  the frags/bytes it assembles to.  */
-void
-md_assemble (char *str)
+typedef struct flare32_parse_data_t
 {
   char
     *op_start,
@@ -1157,26 +1193,114 @@ md_assemble (char *str)
   flare32_opci_list_t
     *opci_list;
   flare32_temp_t
-    index_insn = 0,
-    prefix_insn = 0,
-    insn = 0,
-    simm = 0,
-    fw = 0;
+    index_insn,
+    prefix_insn,
+    insn,
+    simm,
+    fw;
   const flare32_reg_t
     *reg_a,
     *reg_b,
     *reg_c;
   size_t
-    nlen = 0,
-    nbytes = 0;
+    nlen,
+    nbytes;
   bool
-    have_index = false,
-    have_lpre = false,
-    //have_simm = false,
-    is_pcrel = false,
-    parse_good = false;
+    have_index,
+    have_lpre,
+    have_cpy64,
+    //have_simm,
+    is_pcrel,
+    parse_good;
   expressionS
-    ex;
+    ex,
+    ex_1;
+  //flare32_const_dbl_t
+  //  const_dbl;
+} flare32_parse_data_t;
+
+static void
+flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
+  bool which_exp)
+{
+  if (!pd->have_lpre)
+  {
+    pd->nbytes = 2;
+    pd->p = frag_more (2);
+  }
+  else // if (have_lpre)
+  {
+    //pd->nbytes += 4;
+    //(void) frag_more (4);
+    pd->nbytes = 6;
+    pd->p = frag_more (pd->nbytes);
+
+    //if (!pd->have_cpy64)
+    {
+      fixS *fixP;
+
+      fixP = fix_new_exp (frag_now, /* frag */
+                          (pd->p - frag_now->fr_literal), /* where */
+                          4, /* size */
+                          //6,
+                          (!which_exp ? &pd->ex : &pd->ex_1), /* exp */
+                          (int) pd->is_pcrel, /* pcrel */
+                          (pd->is_pcrel
+                            ? BFD_RELOC_FLARE32_G3_S32_PCREL
+                            : BFD_RELOC_FLARE32_G1G5G6_S32) /* r_type */
+                          );
+      flare32_fix_addsy_subsy_handler (fixP);
+    }
+
+    pd->prefix_insn = flare32_enc_temp_insn_lpre_rshift (pd->opc_info,
+      pd->simm);
+  }
+  pd->insn = flare32_enc_temp_insn_non_pre_lpre
+    (pd->opc_info,
+    (pd->reg_a != NULL ? pd->reg_a->index : 0x0),
+    (pd->reg_b != NULL ? pd->reg_b->index : 0x0),
+    pd->simm,
+    pd->fw);
+  md_number_to_chars (pd->p,
+    (((pd->prefix_insn & 0xffffffffull) << FLARE32_ONE_EXT_BITPOS)
+      | (pd->insn & 0xffffull)),
+    pd->nbytes);
+  dwarf2_emit_insn (pd->nbytes);
+
+  /* Per RISC-V: */
+  /* We need to start a new frag after any instruction that can be
+    optimized away or compressed by the linker during relaxation,
+    to prevent the assembler from computing static offsets across such an
+    instruction.
+    This is necessary to get correct EH info.  */
+  if (pd->have_lpre)
+  {
+    frag_wane (frag_now);
+    frag_new (0);
+  }
+}
+/* This is the guts of the machine-dependent assembler.  STR points to
+  a machine dependent instruction.  This function is supposed to emit
+  the frags/bytes it assembles to.  */
+void
+md_assemble (char *str)
+{
+  flare32_parse_data_t pd;
+
+  (void) memset (&pd, 0, sizeof (pd));
+  //pd.index_insn = 0;
+  //pd.prefix_insn = 0;
+  //pd.insn = 0;
+  //pd.simm = 0;
+  //pd.fw = 0;
+  //pd.nlen = 0;
+  //pd.nbytes = 0;
+  //pd.have_index = false;
+  //pd.have_lpre = false;
+  //pd.have_cpy64 = false;
+  ////pd.have_simm = false;
+  //pd.is_pcrel = false;
+  //pd.parse_good = false;
 
   /* Drop leading whitespace. */
   while (*str == ' ')
@@ -1187,56 +1311,57 @@ md_assemble (char *str)
   /* Find the opcode end. */
   /* Note: this should still work for the ".f" instructions that set
     `flags`. */
-  op_start = str;
-  for (op_end=str;
-    *op_end
-      && !is_end_of_line[*op_end & 0xff]
-      && *op_end != ' ';
-    ++op_end)
+  pd.op_start = str;
+  for (pd.op_end=str;
+    *pd.op_end
+      && !is_end_of_line[*pd.op_end & 0xff]
+      && *pd.op_end != ' ';
+    ++pd.op_end)
   {
-    ++nlen;
+    ++pd.nlen;
   }
 
-  pend = *op_end;
-  *op_end = '\0';
-  op_end_prev = op_end;
+  pd.pend = *pd.op_end;
+  *pd.op_end = '\0';
+  pd.op_end_prev = pd.op_end;
 
-  if (nlen == 0)
+  if (pd.nlen == 0)
   {
     as_bad (_("can't find opcode "));
   }
 
-  opci_list = flare32_opci_list_lookup (op_start);
-  *op_end = pend;
+  pd.opci_list = flare32_opci_list_lookup (pd.op_start);
+  *pd.op_end = pd.pend;
 
-  if (opci_list == NULL)
+  if (pd.opci_list == NULL)
   {
-    as_bad (_("unknown opcode %s"), op_start);
+    as_bad (_("unknown opcode %s"), pd.op_start);
   }
 
 #define FLARE32_SKIP_ISSPACE() \
   do \
   { \
-    while (ISSPACE (*op_end)) \
+    while (ISSPACE (*pd.op_end)) \
     { \
-      ++op_end; \
+      ++pd.op_end; \
     } \
   } while (0)
 #define FLARE32_PARSE_COMMA()  \
   do \
   { \
-    if (*op_end != ',') \
+    if (*pd.op_end != ',') \
     { \
       goto post_oa_switch; \
     } \
-    ++op_end; \
+    ++pd.op_end; \
     FLARE32_SKIP_ISSPACE (); \
   } while (0)
 #define FLARE32_PARSE_GPR(some_reg) \
   do \
   { \
-    some_reg = parse_register_operand (&op_end); \
-    if (some_reg == NULL || some_reg->kind != FLARE32_REG_KIND_GPR) \
+    pd.some_reg = parse_register_operand (&pd.op_end); \
+    if (pd.some_reg == NULL \
+      || pd.some_reg->kind != FLARE32_REG_KIND_GPR) \
     { \
       goto post_oa_switch; \
     } \
@@ -1244,8 +1369,9 @@ md_assemble (char *str)
 #define FLARE32_PARSE_SPR(some_reg) \
   do \
   { \
-    some_reg = parse_register_operand (&op_end); \
-    if (some_reg == NULL || some_reg->kind != FLARE32_REG_KIND_SPR) \
+    pd.some_reg = parse_register_operand (&pd.op_end); \
+    if (pd.some_reg == NULL \
+      || pd.some_reg->kind != FLARE32_REG_KIND_SPR) \
     { \
       goto post_oa_switch; \
     } \
@@ -1253,7 +1379,7 @@ md_assemble (char *str)
 #define FLARE32_PARSE_NOENC_REG(name) \
   do \
   { \
-    if (parse_register_operand (&op_end) \
+    if (parse_register_operand (&pd.op_end) \
       != flare32_reg_lookup (name)) \
     { \
       goto post_oa_switch; \
@@ -1262,72 +1388,87 @@ md_assemble (char *str)
 #define FLARE32_PARSE_PC() \
   do \
   { \
-    if (parse_register_operand (&op_end) != &reg_pc) \
+    if (parse_register_operand (&pd.op_end) != &reg_pc) \
     { \
       goto post_oa_switch; \
     } \
   } while (0)
 
+#define FLARE32_PARSE_EXP_POST_POUND_WORKER(some_ex) \
+  do \
+  { \
+    pd.op_end = clear_and_parse_exp_save_ilp (pd.op_end, &pd.some_ex); \
+    if (pd.some_ex.X_op == O_illegal || pd.some_ex.X_op == O_absent) \
+    { \
+      goto post_oa_switch; \
+    } \
+  } while (0)
 #define FLARE32_PARSE_EXP_POST_POUND() \
   do \
   { \
-    op_end = clear_and_parse_exp_save_ilp (op_end, &ex); \
-    if (ex.X_op == O_illegal || ex.X_op == O_absent) \
+    FLARE32_PARSE_EXP_POST_POUND_WORKER (ex); \
+  } while (0)
+
+#define FLARE32_PARSE_EXP_WORKER(some_ex) \
+  do \
+  { \
+    if (*pd.op_end != '#') \
     { \
       goto post_oa_switch; \
     } \
+    ++pd.op_end; \
+    FLARE32_PARSE_EXP_POST_POUND_WORKER (some_ex); \
   } while (0)
-  
 #define FLARE32_PARSE_EXP() \
   do \
   { \
-    if (*op_end != '#') \
-    { \
-      goto post_oa_switch; \
-    } \
-    ++op_end; \
-    FLARE32_PARSE_EXP_POST_POUND (); \
+    FLARE32_PARSE_EXP_WORKER (ex); \
+  } while (0)
+#define FLARE32_PARSE_EXP_1() \
+  do \
+  { \
+    FLARE32_PARSE_EXP_WORKER (ex_1); \
   } while (0)
 
-  for (opc_info=opci_list->opc_info;
-    opci_list!=NULL;
-    opci_list=opci_list->next//,
-      //opc_info=opci_list->opc_info
+  for (pd.opc_info=pd.opci_list->opc_info;
+    pd.opci_list!=NULL;
+    pd.opci_list=pd.opci_list->next//,
+      //pd.opc_info=pd.opci_list->opc_info
     )
   {
-    opc_info = opci_list->opc_info;
+    pd.opc_info = pd.opci_list->opc_info;
     //printf ("flare32 dbg: %s %s %d %d\n",
-    //  opc_info->names[0],
-    //  opc_info->names[1],
-    //  //(unsigned) opc_info->oparg == FLARE32_OA_RA_RB
-    //  (unsigned) opc_info->oparg,
-    //  (unsigned) opc_info->opcode
+    //  pd.opc_info->names[0],
+    //  pd.opc_info->names[1],
+    //  //(unsigned) pd.opc_info->oparg == FLARE32_OA_RA_RB
+    //  (unsigned) pd.opc_info->oparg,
+    //  (unsigned) pd.opc_info->opcode
     //);
-    op_end = op_end_prev;
-    is_pcrel = false;
-    reg_a = (const flare32_reg_t *) NULL;
-    reg_b = (const flare32_reg_t *) NULL;
-    reg_c = (const flare32_reg_t *) NULL;
-    simm = 0;
-    fw = (flare32_temp_t) (
+    pd.op_end = pd.op_end_prev;
+    pd.is_pcrel = false;
+    pd.reg_a = (const flare32_reg_t *) NULL;
+    pd.reg_b = (const flare32_reg_t *) NULL;
+    pd.reg_c = (const flare32_reg_t *) NULL;
+    pd.simm = 0;
+    pd.fw = (flare32_temp_t) (
       (
-        opc_info->grp_info == &flare32_grp_info_g2
-          && strncmp (opc_info->names[1], op_start,
+        pd.opc_info->grp_info == &flare32_grp_info_g2
+          && strncmp (pd.opc_info->names[1], pd.op_start,
             FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       ) || (
-        opc_info->grp_info == &flare32_grp_info_g7_aluopbh
-        && strncmp (opc_info->names[1], op_start,
+        pd.opc_info->grp_info == &flare32_grp_info_g7_aluopbh
+        && strncmp (pd.opc_info->names[1], pd.op_start,
           FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       )
     );
 
-    switch (opc_info->oparg)
+    switch (pd.opc_info->oparg)
     {
       case FLARE32_OA_NONE:
       {
         FLARE32_SKIP_ISSPACE ();
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       //case FLARE32_OA_PRE:
@@ -1348,8 +1489,8 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        parse_good = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_RA_PC_S5:
@@ -1364,8 +1505,8 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        parse_good = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_RA_SP_S5:
@@ -1380,8 +1521,8 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        parse_good = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_RA_FP_S5:
@@ -1396,8 +1537,8 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        parse_good = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_S5:
@@ -1406,8 +1547,8 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        parse_good = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_RA:
@@ -1416,7 +1557,7 @@ md_assemble (char *str)
 
         FLARE32_PARSE_GPR (reg_a);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_RB:
@@ -1429,9 +1570,9 @@ md_assemble (char *str)
 
         FLARE32_PARSE_GPR (reg_b);
         //printf ("flare32 dbg: %s %s, %s\n",
-        //  opc_info->names[0], reg_a->name, reg_b->name);
+        //  pd.opc_info->names[0], pd.reg_a->name, pd.reg_b->name);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_SP_RB:
@@ -1446,14 +1587,12 @@ md_assemble (char *str)
 
         FLARE32_PARSE_GPR (reg_b);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_FP_RB:
       {
         FLARE32_SKIP_ISSPACE ();
-
-        parse_good = true;
 
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
@@ -1462,6 +1601,8 @@ md_assemble (char *str)
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_b);
+
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_PCREL_S9:
@@ -1471,9 +1612,9 @@ md_assemble (char *str)
         //FLARE32_PARSE_EXP ();
         FLARE32_PARSE_EXP_POST_POUND ();
 
-        parse_good = true;
-        is_pcrel = true;
-        have_lpre = true;
+        pd.parse_good = true;
+        pd.is_pcrel = true;
+        pd.have_lpre = true;
       }
         break;
       case FLARE32_OA_IRA:
@@ -1482,7 +1623,7 @@ md_assemble (char *str)
 
         FLARE32_PARSE_NOENC_REG ("ira");
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_SB:
@@ -1494,7 +1635,7 @@ md_assemble (char *str)
 
         FLARE32_PARSE_SPR (reg_b);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_SA_RB:
@@ -1506,7 +1647,7 @@ md_assemble (char *str)
 
         FLARE32_PARSE_GPR (reg_b);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_SA_SB:
@@ -1518,7 +1659,7 @@ md_assemble (char *str)
 
         FLARE32_PARSE_SPR (reg_b);
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_IMPLICIT_SP:
@@ -1526,9 +1667,9 @@ md_assemble (char *str)
         FLARE32_SKIP_ISSPACE ();
 
         FLARE32_PARSE_GPR (reg_a);
-        reg_b = flare32_reg_lookup ("sp");
+        pd.reg_b = flare32_reg_lookup ("sp");
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_SA_IMPLICIT_SP:
@@ -1536,9 +1677,9 @@ md_assemble (char *str)
         FLARE32_SKIP_ISSPACE ();
 
         FLARE32_PARSE_SPR (reg_a);
-        reg_b = flare32_reg_lookup ("sp");
+        pd.reg_b = flare32_reg_lookup ("sp");
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_RB_LDST:
@@ -1548,20 +1689,20 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_GPR (reg_b);
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_RB_RC_LDST:
@@ -1571,25 +1712,25 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_c);
 
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        parse_good = true;
-        have_index = true;
+        pd.parse_good = true;
+        pd.have_index = true;
       }
         break;
       case FLARE32_OA_RA_RB_S5_LDST:
@@ -1599,25 +1740,25 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_EXP ();
 
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        have_lpre = true;
-        parse_good = true;
+        pd.have_lpre = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_RA_RB_RC_S5_LDST:
@@ -1627,11 +1768,11 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
@@ -1641,15 +1782,49 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        have_index = true;
-        have_lpre = true;
-        parse_good = true;
+        pd.have_index = true;
+        pd.have_lpre = true;
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE32_OA_RA_RB_CPY64:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_GPR (reg_b);
+        FLARE32_PARSE_COMMA ();
+
+        //if (*pd.op_end != '#') 
+        //{
+        //  goto post_oa_switch;
+        //}
+        //++pd.op_end;
+
+        //pd.op_end = (char *)clear_and_parse_const_dbl_save_ilp (pd.op_end,
+        //  &pd.const_dbl);
+
+        //if (pd.op_end == (char *) NULL)
+        //{
+        //  goto post_oa_switch;
+        //}
+        //++pd.op_end;
+        FLARE32_PARSE_EXP ();
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_EXP_1 ();
+
+        pd.have_lpre = true;
+        pd.have_cpy64 = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_SA_RB_LDST:
@@ -1659,20 +1834,20 @@ md_assemble (char *str)
         FLARE32_PARSE_SPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_GPR (reg_b);
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       case FLARE32_OA_SA_SB_LDST:
@@ -1682,20 +1857,20 @@ md_assemble (char *str)
         FLARE32_PARSE_SPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*op_end != '[')
+        if (*pd.op_end != '[')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
         FLARE32_PARSE_SPR (reg_b);
-        if (*op_end != ']')
+        if (*pd.op_end != ']')
         {
           break;
         }
-        ++op_end;
+        ++pd.op_end;
 
-        parse_good = true;
+        pd.parse_good = true;
       }
         break;
       default:
@@ -1707,14 +1882,14 @@ md_assemble (char *str)
     FLARE32_SKIP_ISSPACE ();
 
     /* This seems to be necessary */
-    if (*op_end != '\0')
+    if (*pd.op_end != '\0')
     {
       //printf ("testificate\n");
-      parse_good = false;
+      pd.parse_good = false;
       continue;
     }
 
-    if (parse_good)
+    if (pd.parse_good)
     {
       break;
     }
@@ -1725,21 +1900,24 @@ md_assemble (char *str)
   #undef FLARE32_PARSE_SPR
   #undef FLARE32_PARSE_NOENC_REG
   #undef FLARE32_PARSE_PC
+  #undef FLARE32_PARSE_EXP_POST_POUND_WORKER
   #undef FLARE32_PARSE_EXP_POST_POUND
+  #undef FLARE32_PARSE_EXP_WORKER
   #undef FLARE32_PARSE_EXP
+  #undef FLARE32_PARSE_EXP_1
 
-  if (!parse_good)
+  if (!pd.parse_good)
   {
     as_bad (_("Invalid arguments for this instruction"));
   }
   /* -------- */
-  if (have_index)
+  if (pd.have_index)
   {
-    index_insn = flare32_enc_temp_insn_index
-      (reg_c != NULL ? reg_c->index : 0x0ull);
-    p = frag_more (2);
-    md_number_to_chars (p,
-      (index_insn & 0xffffull),
+    pd.index_insn = flare32_enc_temp_insn_index
+      (pd.reg_c != NULL ? pd.reg_c->index : 0x0ull);
+    pd.p = frag_more (2);
+    md_number_to_chars (pd.p,
+      (pd.index_insn & 0xffffull),
       2);
     dwarf2_emit_insn (2);
 
@@ -1753,58 +1931,28 @@ md_assemble (char *str)
     frag_new (0);
   }
 
-  //nbytes = 2;
-  //p = frag_more (2);
+  //pd.nbytes = 2;
+  //pd.p = frag_more (2);
 
-  if (!have_lpre)
+  if (!pd.have_cpy64)
   {
-    nbytes = 2;
-    p = frag_more (2);
+    pd.reg_b = (const flare32_reg_t *)NULL;
+    flare32_assemble_post_parse_worker (&pd, false);
   }
-  else // if (have_lpre)
+  else // if (pd.have_cpy64)
   {
-    fixS *fixP;
+    const flare32_reg_t *old_reg_b = pd.reg_b;
+    //uint64_t temp_simm = generic_bignum_to_int32 ();
+    //flare32_temp_t temp_simm = pd.simm;
 
-    //nbytes += 4;
-    //(void) frag_more (4);
-    nbytes = 6;
-    p = frag_more (nbytes);
+    pd.reg_b = NULL;
+    // %H0 comes first
+    //pd.simm = (temp_simm >> 32) & 0xffffffff;
+    flare32_assemble_post_parse_worker (&pd, false);
 
-    fixP = fix_new_exp (frag_now, /* frag */
-                        (p - frag_now->fr_literal), /* where */
-                        4, /* size */
-                        //6,
-                        &ex, /* exp */
-                        (int) is_pcrel, /* pcrel */
-                        (is_pcrel
-                          ? BFD_RELOC_FLARE32_G3_S32_PCREL
-                          : BFD_RELOC_FLARE32_G1G5G6_S32) /* r_type */
-                        );
-    flare32_fix_addsy_subsy_handler (fixP);
-    prefix_insn = flare32_enc_temp_insn_lpre_rshift (opc_info, simm);
-  }
-  insn = flare32_enc_temp_insn_non_pre_lpre
-    (opc_info,
-    (reg_a != NULL ? reg_a->index : 0x0),
-    (reg_b != NULL ? reg_b->index : 0x0),
-    simm,
-    fw);
-  md_number_to_chars (p,
-    (((prefix_insn & 0xffffffffull) << FLARE32_ONE_EXT_BITPOS)
-      | (insn & 0xffffull)),
-    nbytes);
-  dwarf2_emit_insn (nbytes);
-
-  /* Per RISC-V: */
-  /* We need to start a new frag after any instruction that can be
-    optimized away or compressed by the linker during relaxation,
-    to prevent the assembler from computing static offsets across such an
-    instruction.
-    This is necessary to get correct EH info.  */
-  if (have_lpre)
-  {
-    frag_wane (frag_now);
-    frag_new (0);
+    pd.reg_a = old_reg_b;
+    //pd.simm = temp_simm & 0xffffffff;
+    flare32_assemble_post_parse_worker (&pd, true);
   }
 
   //if (*op_end != '\0')

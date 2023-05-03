@@ -701,6 +701,7 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_RB_RC_LDST,
   FLARE32_OA_RA_RB_S5_LDST,
   FLARE32_OA_RA_RB_RC_S5_LDST,
+  FLARE32_OA_RA_RB_CPY64,
   FLARE32_OA_SA_RB_LDST,
   FLARE32_OA_SA_SB_LDST,
 } flare32_oparg_t;
@@ -785,7 +786,7 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g0[FLARE32_G0_OPC_INFO_LIM];
 
-#define FLARE32_G1_OPC_INFO_LIM (16ull)
+#define FLARE32_G1_OPC_INFO_LIM (16ull + 1ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g1[FLARE32_G1_OPC_INFO_LIM];
 

@@ -287,20 +287,28 @@ static const flare32_opc_info_t
   /* ze rA, #simm */
   {&flare32_grp_info_g1,
   FLARE32_G1_OP_ENUM_ZE_RA_S5, FLARE32_OA_RA_S5,
-  {"ze", "ze"}},
+    {"ze", "ze"}},
 
   /* se rA, #simm */
   {&flare32_grp_info_g1,
   FLARE32_G1_OP_ENUM_SE_RA_S5, FLARE32_OA_RA_S5,
-  {"se", "se"}},
+    {"se", "se"}},
 
+  /* swi rA, #simm */
   {&flare32_grp_info_g1,
   FLARE32_G1_OP_ENUM_SWI_RA_S5, FLARE32_OA_RA_S5,
-  {"swi", "swi"}},
+    {"swi", "swi"}},
 
+  /* swi #simm */
   {&flare32_grp_info_g1,
   FLARE32_G1_OP_ENUM_SWI_S5, FLARE32_OA_S5,
-  {"swi", "swi"}},
+    {"swi", "swi"}},
+  /* -------- */
+  /* Pseudo instructions start here */
+  /* cpydf rA, rB, #const_double */
+  {&flare32_grp_info_g1,
+  FLARE32_G1_OP_ENUM_CPY_RA_S5, FLARE32_OA_RA_RB_CPY64,
+    {"cpy64", "cpy64"}},
   /* -------- */
 };
 
@@ -866,5 +874,4 @@ static const flare32_opc_info_t
   /* -------- */
 };
 /* -------- */
-
 #endif    // _FLARE32_OPC_DECLS_H_

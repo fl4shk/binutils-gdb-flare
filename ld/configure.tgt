@@ -312,6 +312,8 @@ epiphany-*-*)		targ_emul=elf32epiphany
 			;;
 fido*-*-elf*)		targ_emul=m68kelf
 			;;
+flare32-*-*)		targ_emul=elf32flare32
+			;;
 fr30-*-*)		targ_emul=elf32fr30
 			targ_extra_ofiles=ldelfgen.o
 			;;
@@ -630,8 +632,6 @@ moxie-*-moxiebox*)	targ_emul=moxiebox
 			targ_extra_ofiles=ldelfgen.o
 			;;
 moxie-*-*)		targ_emul=elf32moxie
-			;;
-flare32-*-*)		targ_emul=elf32flare32
 			;;
 msp430-*-*)		targ_emul=msp430elf
 			targ_extra_emuls="msp430X"

@@ -133,6 +133,9 @@ static size_t flare32_opci_list_vec_size = 0;
 //      case FLARE32_OA_PCREL_S9:
 //        printf ("FLARE32_OA_PCREL_S9\n");
 //        break;
+//      case FLARE32_OA_PCREL_S32_NO_RELAX:
+//        printf ("FLARE32_OA_PCREL_S32_NO_RELAX\n");
+//        break;
 //      case FLARE32_OA_IRA:
 //        printf ("FLARE32_OA_IRA\n");
 //        break;
@@ -470,15 +473,19 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
       }
         break;
       case BFD_RELOC_FLARE32_G3_S32_PCREL:
-        r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
-        r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
-        //as_bad (_("can't subtract symbols in PC-relative immediate"));
+        //r_type_add = BFD_RELOC_FLARE32_G3_S32_PCREL_ADD32;
+        //r_type_sub = BFD_RELOC_FLARE32_G3_S32_PCREL_SUB32;
+        ////as_bad (_("can't subtract symbols in PC-relative immediate"));
+        ////as_bad_subtract (fixP);
+        ////return false;
+        ////return;
+        //break;
+      case BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX:
+        //r_type_add = BFD_RELOC
+        as_bad (_("can't subtract symbols in PC-relative immediate"));
         //as_bad_subtract (fixP);
         //return false;
-        //return;
-        break;
-      //case BFD_RELOC_FLARE32_G3_S32_PCREL_MINUS_DOT:
-      //  r_type_add = BFD_RELOC
+        return;
       default:
         abort ();
         break;
@@ -1249,16 +1256,16 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
                           (int) pd->is_pcrel, /* pcrel */
                           //(!pd->is_pcrel
                           //  ? BFD_RELOC_FLARE32_G1G5G6_S32
-                          //  : (
-                          //    pd->opc_info->oparg
-                          //      != FLARE32_OA_PCREL_S32_MINUS_DOT
-                          //    ? BFD_RELOC_FLARE32_G3_S32_PCREL
-                          //    : BFD_RELOC_FLARE32_G3_S32_PCREL_MINUS_DOT
-                          //  )
-                          //) /* r_type */
+                          //  : BFD_RELOC_FLARE32_G3_S32_PCREL) /* r_type */
                           (!pd->is_pcrel
                             ? BFD_RELOC_FLARE32_G1G5G6_S32
-                            : BFD_RELOC_FLARE32_G3_S32_PCREL) /* r_type */
+                            : (
+                              pd->opc_info->oparg
+                                != FLARE32_OA_PCREL_S32_NO_RELAX
+                              ? BFD_RELOC_FLARE32_G3_S32_PCREL
+                              : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
+                            )
+                          ) /* r_type */
                           );
       flare32_fix_addsy_subsy_handler (fixP);
     }
@@ -1504,38 +1511,56 @@ md_assemble (char *str)
         pd.have_lpre = true;
       }
         break;
+      //case FLARE32_OA_RA_PC_S5:
+      //{
+      //  FLARE32_SKIP_ISSPACE ();
+
+      //  FLARE32_PARSE_GPR (reg_a);
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_PC ();
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_EXP ();
+
+      //  pd.parse_good = true;
+      //  pd.have_lpre = true;
+      //}
+      //  break;
+      //case FLARE32_OA_RA_SP_S5:
+      //{
+      //  FLARE32_SKIP_ISSPACE ();
+
+      //  FLARE32_PARSE_GPR (reg_a);
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_NOENC_REG ("sp");
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_EXP ();
+
+      //  pd.parse_good = true;
+      //  pd.have_lpre = true;
+      //}
+      //  break;
+      //case FLARE32_OA_RA_FP_S5:
+      //{
+      //  FLARE32_SKIP_ISSPACE ();
+
+      //  FLARE32_PARSE_GPR (reg_a);
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_NOENC_REG ("fp");
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_EXP ();
+
+      //  pd.parse_good = true;
+      //  pd.have_lpre = true;
+      //}
+      //  break;
       case FLARE32_OA_RA_PC_S5:
-      {
-        FLARE32_SKIP_ISSPACE ();
-
-        FLARE32_PARSE_GPR (reg_a);
-        FLARE32_PARSE_COMMA ();
-
-        FLARE32_PARSE_PC ();
-        FLARE32_PARSE_COMMA ();
-
-        FLARE32_PARSE_EXP ();
-
-        pd.parse_good = true;
-        pd.have_lpre = true;
-      }
-        break;
       case FLARE32_OA_RA_SP_S5:
-      {
-        FLARE32_SKIP_ISSPACE ();
-
-        FLARE32_PARSE_GPR (reg_a);
-        FLARE32_PARSE_COMMA ();
-
-        FLARE32_PARSE_NOENC_REG ("sp");
-        FLARE32_PARSE_COMMA ();
-
-        FLARE32_PARSE_EXP ();
-
-        pd.parse_good = true;
-        pd.have_lpre = true;
-      }
-        break;
       case FLARE32_OA_RA_FP_S5:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -1617,6 +1642,7 @@ md_assemble (char *str)
       }
         break;
       case FLARE32_OA_PCREL_S9:
+      case FLARE32_OA_PCREL_S32_NO_RELAX:
       {
         FLARE32_SKIP_ISSPACE ();
 
@@ -1628,11 +1654,6 @@ md_assemble (char *str)
         pd.have_lpre = true;
       }
         break;
-      //case FLARE32_OA_PCREL_S32_MINUS_DOT:
-      //{
-      //  FLARE32_SKIP_ISSPACE
-      //}
-      //  break;
       case FLARE32_OA_IRA:
       {
         FLARE32_SKIP_ISSPACE ();

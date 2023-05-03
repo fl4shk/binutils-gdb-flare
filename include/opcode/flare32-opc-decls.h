@@ -498,9 +498,86 @@ static const flare32_opc_info_t
     FLARE32_G3_OP_ENUM_BLES_PCREL_S9, FLARE32_OA_PCREL_S9,
     {"bles", "bles"}},
   /* -------- */
-  //{&flare32_grp_info_g3,
-  //  FLARE32_G3_OP_ENUM_BRA_PCREL_S9, FLARE32_OA_PCREL_S32_MINUS_DOT,
-  //  {"brl", "brl"}},
+  /* Pseudo instructions start here */
+  /* bl.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BL_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bl.l", "bl.l"}},
+
+  /* bra.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BRA_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bra.l", "bra.l"}},
+
+  /* beq.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BEQ_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"beq.l.", "beq"}},
+
+  /* bne.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BNE_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bne.l", "bne.l"}},
+  /* -------- */
+  /* bmi.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BMI_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bmi.l", "bmi.l"}},
+
+  /* bpl.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BPL_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bpl.l", "bpl.l"}},
+
+  /* bvs.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BVS_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bvs.l", "bvs.l"}},
+
+  /* bvc.l simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BVC_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bvc.l", "bvc.l"}},
+  /* -------- */
+  /* bgeu.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BGEU_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bgeu.l", "bgeu.l"}},
+
+  /* bltu.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BLTU_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bltu.l", "bltu.l"}},
+
+  /* bgtu.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BGTU_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bgtu.l", "bgtu.l"}},
+
+  /* bleu.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BLEU_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bleu.l", "bleu.l"}},
+  /* -------- */
+  /* bges.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BGES_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bges.l", "bges.l"}},
+
+  /* blts.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BLTS_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"blts.l", "blts.l"}},
+
+  /* bgts.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BGTS_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bgts.l", "bgts.l"}},
+
+  /* bles.l #simm */
+  {&flare32_grp_info_g3,
+    FLARE32_G3_OP_ENUM_BLES_PCREL_S9, FLARE32_OA_PCREL_S32_NO_RELAX,
+    {"bles.l", "bles.l"}},
   /* -------- */
 };
 static const flare32_grp_info_t flare32_grp_info_g4 =

@@ -30,6 +30,8 @@ MEMORY
   text (rx) : ORIGIN = 0x0, LENGTH = __TEXT_REGION_LENGTH__
 }
 */
+address_zero = 0x0;
+KEEP (address_zero);
 
 SECTIONS
 {
@@ -47,7 +49,7 @@ SECTIONS
 
   .data :
   {
-    ${RELOCATING+ _data_start = . ; }
+    ${RELOCATING+ _data_start = 0x2000 ; }
     *(.data)
     ${RELOCATING+ _edata = . ; }
   } ${RELOCATING+ > ram}

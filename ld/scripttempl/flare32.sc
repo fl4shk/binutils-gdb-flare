@@ -30,6 +30,7 @@ MEMORY
   text (rx) : ORIGIN = 0x0, LENGTH = __TEXT_REGION_LENGTH__
 }
 */
+
 address_zero = 0x0;
 KEEP (address_zero);
 

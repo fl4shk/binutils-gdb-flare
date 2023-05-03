@@ -1599,85 +1599,124 @@ sim_engine_run (SIM_DESC sd,
           case FLARE32_G4_OP_ENUM_LUDIV_RA_RB:
           {
             int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
-              *r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              //ra = cpu.gprs[ra_ind],
+              //rb = cpu.gprs[rb_ind],
+              //*r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+              //*r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              *ra = &cpu.gprs[ra_ind & (~0x1)],
+              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+              rb = cpu.gprs[rb_ind & (~0x1)],
+              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
 
             uint64_t
-              lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
-                | flare32_zero_extend (*r1, 32u)),
-              rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
-                | flare32_zero_extend (rb, 32u));
+              //lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
+              //  | flare32_zero_extend (*r1, 32u)),
+              //rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
+              //  | flare32_zero_extend (rb, 32u));
+              lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
+              rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
             lhs /= rhs;
 
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *r0 = (int32_t) (lhs >> 32u);
-            *r1 = (int32_t) lhs;
+            //*r0 = (int32_t) (lhs >> 32u);
+            //*r1 = (int32_t) lhs;
+            *ra = (int32_t) (lhs >> 32u);
+            *ra_p_1 = (int32_t) lhs;
           }
             break;
           case FLARE32_G4_OP_ENUM_LSDIV_RA_RB:
           {
             int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
-              *r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              //ra = cpu.gprs[ra_ind],
+              //rb = cpu.gprs[rb_ind],
+              //*r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+              //*r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              *ra = &cpu.gprs[ra_ind & (~0x1)],
+              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+              rb = cpu.gprs[rb_ind & (~0x1)],
+              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
 
             int64_t
-              lhs = (int64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
-                | flare32_zero_extend (*r1, 32u)),
-              rhs = (int64_t) ((flare32_zero_extend (ra, 32u) << 32u)
-                | flare32_zero_extend (rb, 32u));
+              //lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
+              //  | flare32_zero_extend (*r1, 32u)),
+              //rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
+              //  | flare32_zero_extend (rb, 32u));
+              lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
+              rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
             lhs /= rhs;
 
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *r0 = (int32_t) (lhs >> 32u);
-            *r1 = (int32_t) lhs;
+            //*r0 = (int32_t) (lhs >> 32u);
+            //*r1 = (int32_t) lhs;
+            *ra = (int32_t) (lhs >> 32u);
+            *ra_p_1 = (int32_t) lhs;
           }
             break;
           case FLARE32_G4_OP_ENUM_LUMOD_RA_RB:
           {
+            //int32_t
+            //  ra = cpu.gprs[ra_ind],
+            //  rb = cpu.gprs[rb_ind],
+            //  *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+            //  *r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+
+            //uint64_t
+            //  lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
+            //    | flare32_zero_extend (*r1, 32u)),
+            //  rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
+            //    | flare32_zero_extend (rb, 32u));
+            //lhs %= rhs;
+
+            //FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+            //*r0 = (int32_t) (lhs >> 32u);
+            //*r1 = (int32_t) lhs;
             int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
-              *r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              //ra = cpu.gprs[ra_ind],
+              //rb = cpu.gprs[rb_ind],
+              //*r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
+              //*r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              *ra = &cpu.gprs[ra_ind & (~0x1)],
+              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+              rb = cpu.gprs[rb_ind & (~0x1)],
+              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
 
             uint64_t
-              lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
-                | flare32_zero_extend (*r1, 32u)),
-              rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
-                | flare32_zero_extend (rb, 32u));
+              //lhs = (uint64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
+              //  | flare32_zero_extend (*r1, 32u)),
+              //rhs = (uint64_t) ((flare32_zero_extend (ra, 32u) << 32u)
+              //  | flare32_zero_extend (rb, 32u));
+              lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
+              rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
             lhs %= rhs;
 
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *r0 = (int32_t) (lhs >> 32u);
-            *r1 = (int32_t) lhs;
+            //*r0 = (int32_t) (lhs >> 32u);
+            //*r1 = (int32_t) lhs;
+            *ra = (int32_t) (lhs >> 32u);
+            *ra_p_1 = (int32_t) lhs;
           }
             break;
           case FLARE32_G4_OP_ENUM_LSMOD_RA_RB:
           {
             int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *r0 = &cpu.gprs[FLARE32_GPR_ENUM_R0],
-              *r1 = &cpu.gprs[FLARE32_GPR_ENUM_R1];
+              *ra = &cpu.gprs[ra_ind & (~0x1)],
+              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+              rb = cpu.gprs[rb_ind & (~0x1)],
+              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
 
             int64_t
-              lhs = (int64_t) ((flare32_zero_extend (*r0, 32u) << 32u)
-                | flare32_zero_extend (*r1, 32u)),
-              rhs = (int64_t) ((flare32_zero_extend (ra, 32u) << 32u)
-                | flare32_zero_extend (rb, 32u));
+              lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
+              rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
             lhs %= rhs;
 
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *r0 = (int32_t) (lhs >> 32u);
-            *r1 = (int32_t) rhs;
+            *ra = (int32_t) (lhs >> 32u);
+            *ra_p_1 = (int32_t) lhs;
           }
             break;
           case FLARE32_G4_OP_ENUM_LDUB_RA_RB:

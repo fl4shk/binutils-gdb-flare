@@ -691,7 +691,7 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_SP_RB,
   FLARE32_OA_RA_FP_RB,
   FLARE32_OA_PCREL_S9,
-  FLARE32_OA_PCREL_S32_NO_RELAX,
+  //FLARE32_OA_PCREL_S32_NO_RELAX,
   FLARE32_OA_IRA,
   FLARE32_OA_RA_SB,
   FLARE32_OA_SA_RB,
@@ -746,7 +746,9 @@ typedef struct flare32_opc_info_t
   const flare32_grp_info_t *grp_info;
   flare32_temp_t opcode;
   flare32_oparg_t oparg;
-  const char *names[FLARE32_OPC_INFO_NAMES_LIM];
+  const char
+    *names[FLARE32_OPC_INFO_NAMES_LIM],
+    *nr_names[FLARE32_OPC_INFO_NAMES_LIM];
 } flare32_opc_info_t;
 
 //#define FLARE32_HTAB_KEY_BUF_LIM (64ull)
@@ -795,7 +797,8 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g2[FLARE32_G2_OPC_INFO_LIM];
 
-#define FLARE32_G3_OPC_INFO_LIM (16ull + 16ull)
+#define FLARE32_G3_OPC_INFO_LIM (16ull)
+//#define FLARE32_G3_OPC_INFO_LIM (16ull + 16ull)
 //#define FLARE32_G3_OPC_INFO_LIM (16ull + 1ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g3[FLARE32_G3_OPC_INFO_LIM];

@@ -205,17 +205,21 @@ flare32_opci_list_vec_delete (void)
 }
 static void
 flare32_opci_list_hnv_append
-  (const flare32_opc_info_t *opc_info, unsigned names_ind)
+  (const flare32_opc_info_t *opc_info, bool no_relax, unsigned names_ind)
 {
+  const char *temp_name
+    = !no_relax
+      ? opc_info->names[names_ind]
+      : opc_info->nr_names[names_ind];
+
   if (opc_info->oparg == FLARE32_OA_BAD)
   {
     return;
   }
 
   flare32_opci_list_t
-    *opci_list = flare32_opci_list_lookup (opc_info->names[names_ind]),
-    *opci_list_end = flare32_opci_list_end_lookup
-      (opc_info->names[names_ind]);
+    *opci_list = flare32_opci_list_lookup (temp_name),
+    *opci_list_end = flare32_opci_list_end_lookup (temp_name);
 
   if (opci_list == NULL)
   {
@@ -237,11 +241,11 @@ flare32_opci_list_hnv_append
     flare32_opci_list_vec_append (opci_list);
 
     str_hash_insert (flare32_opci_list_hash,
-      opc_info->names[names_ind],
+      temp_name,
       opci_list,
       0);
     str_hash_insert (flare32_opci_list_end_hash,
-      opc_info->names[names_ind],
+      temp_name,
       opci_list_end,
       0);
   }
@@ -249,7 +253,7 @@ flare32_opci_list_hnv_append
   {
     opci_list_end = flare32_opci_list_append (opci_list_end, opc_info);
     str_hash_insert (flare32_opci_list_end_hash,
-      opc_info->names[names_ind],
+      temp_name,
       opci_list_end,
       1);
   }
@@ -447,6 +451,7 @@ flare32_fix_addsy_subsy_handler (fixS *fixP)
         break;
 
       case BFD_RELOC_FLARE32_G1G5G6_S32:
+      case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
       {
         //segT sub_segment;
         ///* Per RISC-V: */
@@ -1080,7 +1085,8 @@ md_begin (void)
     if (opc_info->grp_info != &flare32_grp_info_g0_pre
       && opc_info->grp_info != &flare32_grp_info_g0_lpre)
     {
-      flare32_opci_list_hnv_append (opc_info, 0);
+      flare32_opci_list_hnv_append (opc_info, false, 0);
+      flare32_opci_list_hnv_append (opc_info, true, 0);
     }
   }
 
@@ -1088,7 +1094,8 @@ md_begin (void)
     count++<FLARE32_G1_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
   }
   //printf ("post g1\n");
   //flare32_print_hash_opci_list ("cpy");
@@ -1098,11 +1105,13 @@ md_begin (void)
     count++<FLARE32_G2_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
 
     if (opc_info->opcode != FLARE32_G2_OP_ENUM_CMP_RA_RB)
     {
-      flare32_opci_list_hnv_append (opc_info, 1);
+      flare32_opci_list_hnv_append (opc_info, false, 1);
+      flare32_opci_list_hnv_append (opc_info, true, 1);
     }
   }
   //printf ("post g2\n");
@@ -1112,7 +1121,8 @@ md_begin (void)
     count++<FLARE32_G3_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
   }
 
   for (count=0, opc_info=flare32_opc_info_g4;
@@ -1121,7 +1131,8 @@ md_begin (void)
   {
     if (opc_info->opcode != FLARE32_G4_OP_ENUM_INDEX_RA)
     {
-      flare32_opci_list_hnv_append (opc_info, 0);
+      flare32_opci_list_hnv_append (opc_info, false, 0);
+      flare32_opci_list_hnv_append (opc_info, true, 0);
     }
   }
 
@@ -1132,29 +1143,34 @@ md_begin (void)
     count++<FLARE32_G5_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
   }
 
   for (count=0, opc_info=flare32_opc_info_g6;
     count++<FLARE32_G6_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
   }
 
   for (count=0, opc_info=flare32_opc_info_g7_aluopbh;
     count++<FLARE32_G7_ALUOPBH_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
-    flare32_opci_list_hnv_append (opc_info, 1);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 1);
+    flare32_opci_list_hnv_append (opc_info, true, 1);
   }
 
   for (count=0, opc_info=flare32_opc_info_g7_sprldst;
     count++<FLARE32_G7_SPRLDST_OPC_INFO_LIM;
     ++opc_info)
   {
-    flare32_opci_list_hnv_append (opc_info, 0);
+    flare32_opci_list_hnv_append (opc_info, false, 0);
+    flare32_opci_list_hnv_append (opc_info, true, 0);
   }
   /* -------- */
   /* Insert `const flare32_reg_t *`s */
@@ -1196,7 +1212,8 @@ typedef struct flare32_parse_data_t
     *op_end,
     *op_end_prev,
     *p,
-    pend;
+    pend,
+    op_name[FLARE32_OPC_INFO_NAME_MAX_LEN + 1];
   const flare32_opc_info_t
     *opc_info;
   flare32_opci_list_t
@@ -1220,6 +1237,7 @@ typedef struct flare32_parse_data_t
     have_cpy64,
     //have_simm,
     is_pcrel,
+    no_relax,
     parse_good;
   expressionS
     ex,
@@ -1247,6 +1265,24 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
     //if (!pd->have_cpy64)
     {
       fixS *fixP;
+      bfd_reloc_code_real_type r_type
+        = (!pd->is_pcrel
+            ? (
+              !pd->no_relax
+              ? BFD_RELOC_FLARE32_G1G5G6_S32
+              : BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+            )
+            : (
+              !pd->no_relax
+              ? BFD_RELOC_FLARE32_G3_S32_PCREL
+              : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
+            )
+          );
+
+      //fprintf (stderr, "testificate: %d\n", (unsigned) pd->no_relax);
+      //fprintf (stderr, "howto: %d %s\n",
+      //  (unsigned) pd->no_relax,
+      //  bfd_reloc_type_lookup (stdoutput, r_type)->name);
 
       fixP = fix_new_exp (frag_now, /* frag */
                           (pd->p - frag_now->fr_literal), /* where */
@@ -1257,15 +1293,16 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
                           //(!pd->is_pcrel
                           //  ? BFD_RELOC_FLARE32_G1G5G6_S32
                           //  : BFD_RELOC_FLARE32_G3_S32_PCREL) /* r_type */
-                          (!pd->is_pcrel
-                            ? BFD_RELOC_FLARE32_G1G5G6_S32
-                            : (
-                              pd->opc_info->oparg
-                                != FLARE32_OA_PCREL_S32_NO_RELAX
-                              ? BFD_RELOC_FLARE32_G3_S32_PCREL
-                              : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
-                            )
-                          ) /* r_type */
+                          //(!pd->is_pcrel
+                          //  ? BFD_RELOC_FLARE32_G1G5G6_S32
+                          //  : (
+                          //    pd->opc_info->oparg
+                          //      != FLARE32_OA_PCREL_S32_NO_RELAX
+                          //    ? BFD_RELOC_FLARE32_G3_S32_PCREL
+                          //    : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
+                          //  )
+                          //) /* r_type */
+                          r_type /* r_type */
                           );
       flare32_fix_addsy_subsy_handler (fixP);
     }
@@ -1339,21 +1376,38 @@ md_assemble (char *str)
     ++pd.nlen;
   }
 
+
   pd.pend = *pd.op_end;
   *pd.op_end = '\0';
   pd.op_end_prev = pd.op_end;
+
+  //fprintf(stderr, "pd.op_start: %s\n", pd.op_start);
 
   if (pd.nlen == 0)
   {
     as_bad (_("can't find opcode "));
   }
+  else if (pd.nlen > FLARE32_OPC_INFO_NAME_MAX_LEN)
+  {
+    as_bad (_("opcode is longer than maximum length of %d"),
+      (unsigned) FLARE32_OPC_INFO_NAME_MAX_LEN);
+  }
 
-  pd.opci_list = flare32_opci_list_lookup (pd.op_start);
+  for (size_t i=0; i<pd.nlen; ++i)
+  {
+    /* `pd.op_name` has been set to all '\0's via the earlier `memset ()`
+      call, so we don't have to null terminate `pd.op_name`.
+      Note that `pd.op_name` has a length of
+      `FLARE32_OPC_INFO_NAME_MAX_LEN + 1`. */
+    pd.op_name[i] = pd.op_start[i];
+  }
+
+  pd.opci_list = flare32_opci_list_lookup (pd.op_name);
   *pd.op_end = pd.pend;
 
   if (pd.opci_list == NULL)
   {
-    as_bad (_("unknown opcode %s"), pd.op_start);
+    as_bad (_("unknown opcode %s"), pd.op_name);
   }
 
 #define FLARE32_SKIP_ISSPACE() \
@@ -1454,6 +1508,8 @@ md_assemble (char *str)
       //pd.opc_info=pd.opci_list->opc_info
     )
   {
+    const char * const *some_names;
+
     pd.opc_info = pd.opci_list->opc_info;
     //printf ("flare32 dbg: %s %s %d %d\n",
     //  pd.opc_info->names[0],
@@ -1468,14 +1524,28 @@ md_assemble (char *str)
     pd.reg_b = (const flare32_reg_t *) NULL;
     pd.reg_c = (const flare32_reg_t *) NULL;
     pd.simm = 0;
+    pd.no_relax = !(
+      (strncmp (pd.opc_info->names[0], pd.op_name,
+        FLARE32_OPC_INFO_NAME_MAX_LEN) == 0)
+      || (strncmp (pd.opc_info->names[1], pd.op_name,
+        FLARE32_OPC_INFO_NAME_MAX_LEN) == 0)
+    );
+    //fprintf (stderr, "pd.no_relax stuff: \"%s\" %i %i %d\n",
+    //  pd.op_name,
+    //  strncmp (pd.opc_info->names[0], pd.op_name,
+    //    FLARE32_OPC_INFO_NAME_MAX_LEN),
+    //  strncmp (pd.opc_info->names[1], pd.op_name,
+    //    FLARE32_OPC_INFO_NAME_MAX_LEN),
+    //  (unsigned) pd.no_relax);
+    some_names = !pd.no_relax ? pd.opc_info->names : pd.opc_info->nr_names;
     pd.fw = (flare32_temp_t) (
       (
         pd.opc_info->grp_info == &flare32_grp_info_g2
-          && strncmp (pd.opc_info->names[1], pd.op_start,
+          && strncmp (some_names[1], pd.op_name,
             FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       ) || (
         pd.opc_info->grp_info == &flare32_grp_info_g7_aluopbh
-        && strncmp (pd.opc_info->names[1], pd.op_start,
+        && strncmp (some_names[1], pd.op_name,
           FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       )
     );
@@ -1511,56 +1581,38 @@ md_assemble (char *str)
         pd.have_lpre = true;
       }
         break;
-      //case FLARE32_OA_RA_PC_S5:
-      //{
-      //  FLARE32_SKIP_ISSPACE ();
-
-      //  FLARE32_PARSE_GPR (reg_a);
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_PC ();
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_lpre = true;
-      //}
-      //  break;
-      //case FLARE32_OA_RA_SP_S5:
-      //{
-      //  FLARE32_SKIP_ISSPACE ();
-
-      //  FLARE32_PARSE_GPR (reg_a);
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_NOENC_REG ("sp");
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_lpre = true;
-      //}
-      //  break;
-      //case FLARE32_OA_RA_FP_S5:
-      //{
-      //  FLARE32_SKIP_ISSPACE ();
-
-      //  FLARE32_PARSE_GPR (reg_a);
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_NOENC_REG ("fp");
-      //  FLARE32_PARSE_COMMA ();
-
-      //  FLARE32_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_lpre = true;
-      //}
-      //  break;
       case FLARE32_OA_RA_PC_S5:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_PC ();
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_EXP ();
+
+        pd.parse_good = true;
+        pd.have_lpre = true;
+      }
+        break;
       case FLARE32_OA_RA_SP_S5:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_NOENC_REG ("sp");
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_EXP ();
+
+        pd.parse_good = true;
+        pd.have_lpre = true;
+      }
+        break;
       case FLARE32_OA_RA_FP_S5:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -1577,6 +1629,36 @@ md_assemble (char *str)
         pd.have_lpre = true;
       }
         break;
+      //case FLARE32_OA_RA_PC_S5:
+      //case FLARE32_OA_RA_SP_S5:
+      //case FLARE32_OA_RA_FP_S5:
+      //{
+      //  FLARE32_SKIP_ISSPACE ();
+
+      //  FLARE32_PARSE_GPR (reg_a);
+      //  FLARE32_PARSE_COMMA ();
+
+      //  switch (pd.opc_info->oparg)
+      //  {
+      //    case FLARE32_OA_RA_PC_S5:
+      //      FLARE32_PARSE_PC ();
+      //      break;
+      //    case FLARE32_OA_RA_SP_S5:
+      //      FLARE32_PARSE_NOENC_REG ("sp");
+      //      break;
+      //    case FLARE32_OA_RA_FP_S5:
+      //      FLARE32_PARSE_NOENC_REG ("fp");
+      //      break;
+      //  }
+
+      //  FLARE32_PARSE_COMMA ();
+
+      //  FLARE32_PARSE_EXP ();
+
+      //  pd.parse_good = true;
+      //  pd.have_lpre = true;
+      //}
+      //  break;
       case FLARE32_OA_S5:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -1642,7 +1724,7 @@ md_assemble (char *str)
       }
         break;
       case FLARE32_OA_PCREL_S9:
-      case FLARE32_OA_PCREL_S32_NO_RELAX:
+      //case FLARE32_OA_PCREL_S32_NO_RELAX:
       {
         FLARE32_SKIP_ISSPACE ();
 

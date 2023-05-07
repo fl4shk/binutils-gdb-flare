@@ -680,7 +680,7 @@ proc gdb_breakpoint { linespec args } {
 	-re "$break_message \[0-9\]* \\(.*\\) pending.*$gdb_prompt $" {
 		if {$pending_response == "n"} {
 			if { $print_fail } {
-				fail $gdb_name_name
+				fail $gdb_test_name
 			}
 			return 0
 		}
@@ -818,7 +818,7 @@ proc gdb_continue_to_breakpoint {name {location_pattern .*}} {
 	-re "(?:Breakpoint|Temporary breakpoint) .* (at|in) $location_pattern\r\n$gdb_prompt $" {
 	    pass $full_name
 	}
-	-re "\[\r\n\]*(?:$kfail_pattern)\[\r\n\]+$gdb_prompt $" {
+	-re "(?:$kfail_pattern)\r\n$gdb_prompt $" {
 	    kfail "gdb/25038" $full_name
 	}
     }
@@ -1126,7 +1126,7 @@ proc gdb_test_multiple { command message args } {
 	if { $wrap_pattern } {
 	    # Wrap subst_item as is done for the gdb_test PATTERN argument.
 	    lappend $current_list \
-		"\[\r\n\]*(?:$subst_item)\[\r\n\]+$gdb_prompt $"
+		"(?:$subst_item)\r\n$prompt_regexp"
 	    set wrap_pattern 0
 	} else {
 	    lappend $current_list $subst_item
@@ -1384,7 +1384,7 @@ proc gdb_test_multiline { name args } {
     foreach {input result} $args {
 	incr inputnr
 	if {[gdb_test_multiple $input "$name: input $inputnr: $input" {
-	    -re "\[\r\n\]*($result)\[\r\n\]+($gdb_prompt | *>)$" {
+	    -re "($result)\r\n($gdb_prompt | *>)$" {
 		pass $gdb_test_name
 	    }
 	}]} {
@@ -1401,10 +1401,12 @@ proc gdb_test_multiline { name args } {
 #
 # COMMAND is the command to execute, send to GDB with send_gdb.  If
 #   this is the null string no command is sent.
-# PATTERN is the pattern to match for a PASS, and must NOT include
-#   the \r\n sequence immediately before the gdb prompt.  This argument
-#   may be omitted to just match the prompt, ignoring whatever output 
-#   precedes it.
+# PATTERN is the pattern to match for a PASS, and must NOT include the
+#   \r\n sequence immediately before the gdb prompt (see -nonl below).
+#   This argument may be omitted to just match the prompt, ignoring
+#   whatever output precedes it.  If PATTERN starts with '^' then
+#   PATTERN will be anchored such that it should match all output from
+#   COMMAND.
 # MESSAGE is an optional message to be printed.  If this is
 #   omitted, then the pass/fail messages use the command string as the
 #   message.  (If this is the empty string, then sometimes we don't
@@ -1454,13 +1456,25 @@ proc gdb_test { args } {
     }
 
     set prompt [fill_in_default_prompt $prompt [expr !${no-prompt-anchor}]]
-    set nl [expr ${nonl} ? {""} : {"\[\r\n\]+"}]
+    set nl [expr ${nonl} ? {""} : {"\r\n"}]
 
     set saw_question 0
 
+    # If the pattern starts with a '^' then we want to match all the
+    # output from COMMAND.  To support this, here we inject an
+    # additional pattern that matches the command immediately after
+    # the '^'.
+    if {[string range $pattern 0 0] eq "^"} {
+	set command_regex [string_to_regexp $command]
+	set pattern [string range $pattern 1 end]
+	if {$command_regex ne ""} {
+	    set pattern "^${command_regex}\r\n$pattern"
+	}
+    }
+
     set user_code {}
     lappend user_code {
-	-re "\[\r\n\]*(?:$pattern)$nl$prompt" {
+	-re "(?:$pattern)$nl$prompt" {
 	    if { $question != "" & !$saw_question} {
 		fail $message
 	    } elseif {!$nopass} {
@@ -1516,11 +1530,31 @@ if { [tcl_version_at_least 8 5] == 0 } {
     }
 }
 
+if { [tcl_version_at_least 8 6] == 0 } {
+    # lmap was added in tcl 8.6.  Only add if missing.
+
+    # Note that we only implement the simple variant for now.
+    proc lmap { varname list body } {
+	set res {}
+	foreach val $list {
+	    uplevel 1 "set $varname $val"
+	    lappend res [uplevel 1 $body]
+	}
+
+	return $res
+    }
+}
+
 # gdb_test_no_output [-prompt PROMPT_REGEXP] [-nopass] COMMAND [MESSAGE]
 # Send a command to GDB and verify that this command generated no output.
 #
 # See gdb_test for a description of the -prompt, -no-prompt-anchor, -nopass,
 # COMMAND, and MESSAGE parameters.
+#
+# Returns:
+#    1 if the test failed,
+#    0 if the test passes,
+#   -1 if there was an internal error.
 
 proc gdb_test_no_output { args } {
     global gdb_prompt
@@ -1536,13 +1570,13 @@ proc gdb_test_no_output { args } {
     set prompt [fill_in_default_prompt $prompt [expr !${no-prompt-anchor}]]
 
     set command_regex [string_to_regexp $command]
-    gdb_test_multiple $command $message -prompt $prompt {
+    return [gdb_test_multiple $command $message -prompt $prompt {
 	-re "^$command_regex\r\n$prompt" {
 	    if {!$nopass} {
 		pass $gdb_test_name
 	    }
 	}
-    }
+    }]
 }
 
 # Send a command and then wait for a sequence of outputs.
@@ -2512,6 +2546,11 @@ gdb_caching_proc allow_python_tests {} {
 
 gdb_caching_proc allow_dap_tests {} {
     if { ![allow_python_tests] } {
+	return 0
+    }
+
+    # ton.tcl uses "string is entier", supported starting tcl 8.6.
+    if { ![tcl_version_at_least 8 6] } {
 	return 0
     }
 
@@ -7707,7 +7746,7 @@ proc get_valueof { fmt exp default {test ""} } {
 
     set val ${default}
     gdb_test_multiple "print${fmt} ${exp}" "$test" {
-	-re "\\$\[0-9\]* = (\[^\r\n\]*)\[\r\n\]*$gdb_prompt $" {
+	-re "\\$\[0-9\]* = (\[^\r\n\]*)\r\n$gdb_prompt $" {
 	    set val $expect_out(1,string)
 	    pass "$test"
 	}
@@ -7731,7 +7770,7 @@ proc get_local_valueof { exp default {test ""} } {
 
     set val ${default}
     gdb_test_multiple "info locals ${exp}" "$test" {
-	-re "$exp = (\[^\r\n\]*)\[\r\n\]*$gdb_prompt $" {
+	-re "$exp = (\[^\r\n\]*)\r\n$gdb_prompt $" {
 	    set val $expect_out(1,string)
 	    pass "$test"
 	}
@@ -9645,6 +9684,14 @@ proc have_syscall { name } {
 gdb_caching_proc have_compile_flag { flag } {
     set src { void foo () {} }
     return [gdb_can_simple_compile have_compile_flag_$flag $src object \
+		additional_flags=$flag]
+}
+
+# Return 1 if we can create an executable using compile and link flag FLAG.
+
+gdb_caching_proc have_compile_and_link_flag { flag } {
+    set src { int main () { return 0; } }
+    return [gdb_can_simple_compile have_compile_and_link_flag_$flag $src executable \
 		additional_flags=$flag]
 }
 

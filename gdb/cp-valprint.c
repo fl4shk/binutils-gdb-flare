@@ -193,7 +193,7 @@ cp_print_value_fields (struct value *val, struct ui_file *stream,
 
 	  /* If requested, skip printing of static fields.  */
 	  if (!options->static_field_print
-	      && field_is_static (&type->field (i)))
+	      && type->field (i).is_static ())
 	    continue;
 
 	  if (fields_seen)
@@ -227,7 +227,7 @@ cp_print_value_fields (struct value *val, struct ui_file *stream,
 
 	  annotate_field_begin (type->field (i).type ());
 
-	  if (field_is_static (&type->field (i)))
+	  if (type->field (i).is_static ())
 	    {
 	      gdb_puts ("static ", stream);
 	      fprintf_symbol (stream,
@@ -258,7 +258,7 @@ cp_print_value_fields (struct value *val, struct ui_file *stream,
 	    }
 	  annotate_field_value ();
 
-	  if (!field_is_static (&type->field (i))
+	  if (!type->field (i).is_static ()
 	      && TYPE_FIELD_PACKED (type, i))
 	    {
 	      struct value *v;
@@ -295,7 +295,7 @@ cp_print_value_fields (struct value *val, struct ui_file *stream,
 		  fputs_styled ("<optimized out or zero length>",
 				metadata_style.style (), stream);
 		}
-	      else if (field_is_static (&type->field (i)))
+	      else if (type->field (i).is_static ())
 		{
 		  try
 		    {
@@ -379,6 +379,32 @@ cp_print_value_fields (struct value *val, struct ui_file *stream,
     }				/* if there are data fields */
 
   gdb_printf (stream, "}");
+}
+
+/* A wrapper for cp_print_value_fields that tries to apply a
+   pretty-printer first.  */
+
+static void
+cp_print_value_fields_pp (struct value *val,
+			  struct ui_file *stream,
+			  int recurse,
+			  const struct value_print_options *options,
+			  struct type **dont_print_vb,
+			  int dont_print_statmem)
+{
+  int result = 0;
+
+  /* Attempt to run an extension language pretty-printer if
+     possible.  */
+  if (!options->raw)
+    result
+      = apply_ext_lang_val_pretty_printer (val, stream,
+					   recurse, options,
+					   current_language);
+
+  if (!result)
+    cp_print_value_fields (val, stream, recurse, options, dont_print_vb,
+			   dont_print_statmem);
 }
 
 /* Special val_print routine to avoid printing multiple copies of
@@ -493,27 +519,16 @@ cp_print_value (struct value *val, struct ui_file *stream,
 	val_print_invalid_address (stream);
       else
 	{
-	  int result = 0;
-
 	  if (!val_print_check_max_depth (stream, recurse, options,
 					  current_language))
 	    {
 	      struct value *baseclass_val = val->primitive_field (0,
 								  i, type);
 
-	      /* Attempt to run an extension language pretty-printer on the
-		 baseclass if possible.  */
-	      if (!options->raw)
-		result
-		  = apply_ext_lang_val_pretty_printer (baseclass_val, stream,
-						       recurse, options,
-						       current_language);
-
-	      if (!result)
-		cp_print_value_fields (baseclass_val, stream, recurse, options,
-				       ((struct type **)
-					obstack_base (&dont_print_vb_obstack)),
-				       0);
+	      cp_print_value_fields_pp
+		(baseclass_val, stream, recurse, options,
+		 (struct type **) obstack_base (&dont_print_vb_obstack),
+		 0);
 	    }
 	}
       gdb_puts (", ", stream);
@@ -581,7 +596,7 @@ cp_print_static_field (struct type *type,
 
       obstack_grow (&dont_print_statmem_obstack, (char *) &addr,
 		    sizeof (CORE_ADDR));
-      cp_print_value_fields (val, stream, recurse, options, NULL, 1);
+      cp_print_value_fields_pp (val, stream, recurse, options, nullptr, 1);
       return;
     }
 
@@ -637,7 +652,7 @@ cp_find_class_member (struct type **self_p, int *fieldno,
   for (i = TYPE_N_BASECLASSES (self); i < len; i++)
     {
       field &f = self->field (i);
-      if (field_is_static (&f))
+      if (f.is_static ())
 	continue;
       LONGEST bitpos = f.loc_bitpos ();
 

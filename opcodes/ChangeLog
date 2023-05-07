@@ -1,3 +1,19 @@
+2023-04-21  Tom Tromey  <tromey@adacore.com>
+
+	* i386-dis.c (OP_J): Check result of get16.
+
+2023-04-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* arc-tbl.h: Remove vadds2, vadds2h, vadds4h, vaddsubs,
+	vaddsubs2h, vaddsubs4h, vsubadds, vsubadds2h, vsubadds4h, vsubs2,
+	vsubs2h, and vsubs4h instructions.
+
+2023-04-11  Nick Clifton  <nickc@redhat.com>
+
+	PR 30310
+	* nfp-dis.c (init_nfp6000_priv): Check that the output section
+	exists.
+
 2023-03-15  Nick Clifton  <nickc@redhat.com>
 
 	PR 30231

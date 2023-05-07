@@ -119,10 +119,16 @@ struct gdb_mpz
     return result;
   }
 
-  /* Convert VAL to an integer of the given type.
+  /* Convert this value to an integer of the given type.
 
      The return type can signed or unsigned, with no size restriction.  */
   template<typename T> T as_integer () const;
+
+  /* Convert this value to an integer of the given type.  If this
+     value is too large, it is truncated.
+
+     The return type can signed or unsigned, with no size restriction.  */
+  template<typename T> T as_integer_truncate () const;
 
   /* Set VAL by importing the number stored in the byte array (BUF),
      using the given BYTE_ORDER.  The size of the data to read is
@@ -312,14 +318,30 @@ struct gdb_mpz
     return mpz_cmp (m_val, other.m_val) <= 0;
   }
 
-  bool operator< (int other) const
+  bool operator< (long other) const
   {
     return mpz_cmp_si (m_val, other) < 0;
   }
 
-  bool operator== (int other) const
+  /* We want an operator== that can handle all integer types.  For
+     types that are 'long' or narrower, we can use a GMP function and
+     avoid boxing the RHS.  But, because overloading based on integer
+     type is a pain in C++, we accept all such types here and check
+     the size in the body.  */
+  template<typename T, typename = gdb::Requires<std::is_integral<T>>>
+  bool operator== (T other) const
   {
-    return mpz_cmp_si (m_val, other) == 0;
+    if (std::is_signed<T>::value)
+      {
+	if (sizeof (T) <= sizeof (long))
+	  return mpz_cmp_si (m_val, other) == 0;
+      }
+    else
+      {
+	if (sizeof (T) <= sizeof (unsigned long))
+	  return mpz_cmp_ui (m_val, other) == 0;
+      }
+    return *this == gdb_mpz (other);
   }
 
   bool operator== (const gdb_mpz &other) const
@@ -608,6 +630,22 @@ gdb_mpz::as_integer () const
 		     0 /* endian (0 = native) */,
 		     !std::is_signed<T>::value /* unsigned_p */,
 		     true /* safe */);
+
+  return result;
+}
+
+/* See declaration above.  */
+
+template<typename T>
+T
+gdb_mpz::as_integer_truncate () const
+{
+  T result;
+
+  this->export_bits ({(gdb_byte *) &result, sizeof (result)},
+		     0 /* endian (0 = native) */,
+		     !std::is_signed<T>::value /* unsigned_p */,
+		     false /* safe */);
 
   return result;
 }

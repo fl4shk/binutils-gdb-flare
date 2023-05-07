@@ -1551,6 +1551,7 @@ _bfd_coff_get_external_symbols (bfd *abfd)
   size_t symesz;
   size_t size;
   void * syms;
+  ufile_ptr filesize;
 
   if (obj_coff_external_syms (abfd) != NULL)
     return true;
@@ -1564,6 +1565,15 @@ _bfd_coff_get_external_symbols (bfd *abfd)
 
   if (size == 0)
     return true;
+
+  filesize = bfd_get_file_size (abfd);
+  if (filesize != 0
+      && ((ufile_ptr) obj_sym_filepos (abfd) > filesize
+	  || size > filesize - obj_sym_filepos (abfd)))
+    {
+      bfd_set_error (bfd_error_file_truncated);
+      return false;
+    }
 
   if (bfd_seek (abfd, obj_sym_filepos (abfd), SEEK_SET) != 0)
     return false;
@@ -1981,9 +1991,7 @@ coff_make_empty_symbol (bfd *abfd)
 /* Make a debugging symbol.  */
 
 asymbol *
-coff_bfd_make_debug_symbol (bfd *abfd,
-			    void * ptr ATTRIBUTE_UNUSED,
-			    unsigned long sz ATTRIBUTE_UNUSED)
+coff_bfd_make_debug_symbol (bfd *abfd)
 {
   size_t amt = sizeof (coff_symbol_type);
   coff_symbol_type *new_symbol = (coff_symbol_type *) bfd_alloc (abfd, amt);

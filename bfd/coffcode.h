@@ -290,7 +290,6 @@ DESCRIPTION
 	<<combined_entry_type>>:
 
 CODE_FRAGMENT
-.
 .typedef struct coff_ptr_struct
 .{
 .  {* Remembers the offset from the first symbol in the file for
@@ -333,7 +332,6 @@ CODE_FRAGMENT
 . void *extrap;
 .} combined_entry_type;
 .
-.
 .{* Each canonical asymbol really looks like this: *}
 .
 .typedef struct coff_symbol_struct
@@ -350,7 +348,7 @@ CODE_FRAGMENT
 .  {* Have the line numbers been relocated yet ? *}
 .  bool done_lineno;
 .} coff_symbol_type;
-
+.
 */
 
 #include "libiberty.h"
@@ -1380,8 +1378,7 @@ styp_to_sec_flags (bfd *abfd,
 INTERNAL_DEFINITION
 	bfd_coff_backend_data
 
-CODE_FRAGMENT
-
+INTERNAL
 .{* COFF symbol classifications.  *}
 .
 .enum coff_symbol_classification
@@ -1402,7 +1399,10 @@ CODE_FRAGMENT
 .  (asection *, struct bfd_link_info *, struct internal_reloc *,
 .   struct coff_link_hash_entry *, struct internal_syment *);
 .
+
 Special entry points for gdb to swap in coff symbol table parts:
+
+CODE_FRAGMENT
 .typedef struct
 .{
 .  void (*_bfd_coff_swap_aux_in)
@@ -1540,6 +1540,8 @@ Special entry points for gdb to swap in coff symbol table parts:
 .
 .} bfd_coff_backend_data;
 .
+
+INTERNAL
 .#define coff_backend_info(abfd) \
 .  ((const bfd_coff_backend_data *) (abfd)->xvec->backend_data)
 .
@@ -3365,29 +3367,83 @@ coff_read_word (bfd *abfd, unsigned int *value, unsigned int *pelength)
   return true;
 }
 
+/* Read a two byte number from buffer B returning the result in VALUE.
+   No more than BUF_SIZE bytes will be read.
+   Returns true upobn success, false otherwise.
+   If successful, increases the value stored in PELENGTH by the number
+   of bytes read.  */
+
+static bool
+coff_read_word_from_buffer (unsigned char *  b,
+			    int              buf_size,
+                            unsigned int *   value,
+			    unsigned int *   pelength)
+{
+  if (buf_size < 1)
+    {
+      *value = 0;
+      return false;
+    }
+
+  if (buf_size == 1)
+    {
+      *value = (unsigned int)b[0];
+      *pelength += 1;
+    }
+  else
+    {
+      *value = (unsigned int)(b[0] + (b[1] << 8));
+      *pelength += 2;
+    }
+
+  return true;
+}
+
+#define COFF_CHECKSUM_BUFFER_SIZE 0x800000
+
 static unsigned int
 coff_compute_checksum (bfd *abfd, unsigned int *pelength)
 {
-  bool more_data;
   file_ptr filepos;
   unsigned int value;
   unsigned int total;
+  unsigned char *buf;
+  int buf_size;
 
   total = 0;
   *pelength = 0;
   filepos = (file_ptr) 0;
+  buf = (unsigned char *) bfd_malloc (COFF_CHECKSUM_BUFFER_SIZE);
+  if (buf == NULL)
+    return 0;
+  buf_size = 0;
 
   do
     {
+      unsigned char *cur_buf;
+      int cur_buf_size;
+
       if (bfd_seek (abfd, filepos, SEEK_SET) != 0)
 	return 0;
 
-      more_data = coff_read_word (abfd, &value, pelength);
-      total += value;
-      total = 0xffff & (total + (total >> 0x10));
-      filepos += 2;
+      buf_size = bfd_bread (buf, COFF_CHECKSUM_BUFFER_SIZE, abfd);
+      cur_buf_size = buf_size;
+      cur_buf = buf;
+
+      while (cur_buf_size > 0)
+        {
+          coff_read_word_from_buffer (cur_buf, cur_buf_size, &value, pelength);
+          cur_buf += 2;
+          cur_buf_size -= 2;
+          total += value;
+          total = 0xffff & (total + (total >> 0x10));
+        }
+
+      filepos += buf_size;
     }
-  while (more_data);
+  while (buf_size > 0);
+
+  free (buf);
 
   return (0xffff & (total + (total >> 0x10)));
 }
@@ -4852,13 +4908,18 @@ coff_slurp_symbol_table (bfd * abfd)
 	    case C_BSTAT:
 	      dst->symbol.flags = BSF_DEBUGGING;
 
-	      /* The value is actually a symbol index.  Save a pointer
-		 to the symbol instead of the index.  FIXME: This
-		 should use a union.  */
-	      src->u.syment.n_value
-		= (uintptr_t) (native_symbols + src->u.syment.n_value);
-	      dst->symbol.value = src->u.syment.n_value;
-	      src->fix_value = 1;
+	      if (src->u.syment.n_value >= obj_raw_syment_count (abfd))
+		dst->symbol.value = 0;
+	      else
+		{
+		  /* The value is actually a symbol index.  Save a pointer
+		     to the symbol instead of the index.  FIXME: This
+		     should use a union.  */
+		  src->u.syment.n_value
+		    = (uintptr_t) (native_symbols + src->u.syment.n_value);
+		  dst->symbol.value = src->u.syment.n_value;
+		  src->fix_value = 1;
+		}
 	      break;
 #endif
 
@@ -5028,11 +5089,11 @@ coff_classify_symbol (bfd *abfd,
 	 breaks gas generated objects.  */
       if (syment->n_value == 0)
 	{
-	  asection *sec;
-	  char * name;
+	  const asection *sec;
+	  const char *name;
 	  char buf[SYMNMLEN + 1];
 
-	  name = _bfd_coff_internal_syment_name (abfd, syment, buf)
+	  name = _bfd_coff_internal_syment_name (abfd, syment, buf);
 	  sec = coff_section_from_bfd_index (abfd, syment->n_scnum);
 	  if (sec != NULL && name != NULL
 	      && (strcmp (bfd_section_name (sec), name) == 0))
@@ -5454,6 +5515,8 @@ coff_final_link_postscript (bfd * abfd ATTRIBUTE_UNUSED,
 #ifndef coff_SWAP_scnhdr_in
 #define coff_SWAP_scnhdr_in coff_swap_scnhdr_in
 #endif
+
+#define COFF_SWAP_TABLE (void *) &bfd_coff_std_swap_table
 
 static const bfd_coff_backend_data bfd_coff_std_swap_table ATTRIBUTE_UNUSED =
 {

@@ -52,6 +52,7 @@
 #include "gdbsupport/gdb_obstack.h"
 #include "gdbcore.h"
 #include "top.h"
+#include "ui.h"
 #include "main.h"
 #include "solist.h"
 
@@ -163,12 +164,6 @@ void
 verror (const char *string, va_list args)
 {
   throw_verror (GENERIC_ERROR, string, args);
-}
-
-void
-error_stream (const string_file &stream)
-{
-  error (("%s"), stream.c_str ());
 }
 
 /* Emit a message and abort.  */
@@ -1116,6 +1111,14 @@ static bool filter_initialized = false;
 
 
 
+/* See readline's rlprivate.h.  */
+
+EXTERN_C int _rl_term_autowrap;
+
+/* See utils.h.  */
+
+int readline_hidden_cols = 0;
+
 /* Initialize the number of lines per page and chars per line.  */
 
 void
@@ -1144,6 +1147,19 @@ init_page_info (void)
 
       /* Get the screen size from Readline.  */
       rl_get_screen_size (&rows, &cols);
+
+      /* Readline:
+	 - ignores the COLUMNS variable when detecting screen width
+	   (because rl_prefer_env_winsize defaults to 0)
+	 - puts the detected screen width in the COLUMNS variable
+	   (because rl_change_environment defaults to 1)
+	 - may report one less than the detected screen width in
+	   rl_get_screen_size (when _rl_term_autowrap == 0).
+	 We could set readline_hidden_cols by comparing COLUMNS to cols as
+	 returned by rl_get_screen_size, but instead simply use
+	 _rl_term_autowrap.  */
+      readline_hidden_cols = _rl_term_autowrap ? 0 : 1;
+
       lines_per_page = rows;
       chars_per_line = cols;
 
@@ -1200,6 +1216,15 @@ set_batch_flag_and_restore_page_info::~set_batch_flag_and_restore_page_info ()
   set_width ();
 }
 
+/* An approximation of SQRT(INT_MAX) that is:
+   - cheap to calculate,
+   - guaranteed to be smaller than SQRT(INT_MAX), such that
+     sqrt_int_max * sqrt_int_max doesn't overflow, and
+   - "close enough" to SQRT(INT_MAX), for instance for INT_MAX == 2147483647,
+     SQRT(INT_MAX) is ~46341 and sqrt_int_max == 32767.  */
+
+static const int sqrt_int_max = INT_MAX >> (sizeof (int) * 8 / 2);
+
 /* Set the screen size based on LINES_PER_PAGE and CHARS_PER_LINE.  */
 
 static void
@@ -1218,8 +1243,6 @@ set_screen_size (void)
      Cap "infinity" to approximately sqrt(INT_MAX) so that we don't
      overflow in rl_set_screen_size, which multiplies rows and columns
      to compute the number of characters on the screen.  */
-
-  const int sqrt_int_max = INT_MAX >> (sizeof (int) * 8 / 2);
 
   if (rows <= 0 || rows > sqrt_int_max)
     {
@@ -1271,6 +1294,66 @@ set_screen_width_and_height (int width, int height)
 
   set_screen_size ();
   set_width ();
+}
+
+/* Implement "maint info screen".  */
+
+static void
+maintenance_info_screen (const char *args, int from_tty)
+{
+  int rows, cols;
+  rl_get_screen_size (&rows, &cols);
+
+  gdb_printf (gdb_stdout,
+	      _("Number of characters gdb thinks "
+		"are in a line is %u%s.\n"),
+	      chars_per_line,
+	      chars_per_line == UINT_MAX ? " (unlimited)" : "");
+
+  gdb_printf (gdb_stdout,
+	      _("Number of characters readline reports "
+		"are in a line is %d%s.\n"),
+	      cols,
+	      (cols == sqrt_int_max
+	       ? " (unlimited)"
+	       : (cols == sqrt_int_max - 1
+		  ? " (unlimited - 1)"
+		  : "")));
+
+#ifdef HAVE_LIBCURSES
+  gdb_printf (gdb_stdout,
+	     _("Number of characters curses thinks "
+	       "are in a line is %d.\n"),
+	     COLS);
+#endif
+
+  gdb_printf (gdb_stdout,
+	      _("Number of characters environment thinks "
+		"are in a line is %s (COLUMNS).\n"),
+	      getenv ("COLUMNS"));
+
+  gdb_printf (gdb_stdout,
+	      _("Number of lines gdb thinks are in a page is %u%s.\n"),
+	      lines_per_page,
+	      lines_per_page == UINT_MAX ? " (unlimited)" : "");
+
+  gdb_printf (gdb_stdout,
+	      _("Number of lines readline reports "
+		"are in a page is %d%s.\n"),
+	      rows,
+	      rows == sqrt_int_max ? " (unlimited)" : "");
+
+#ifdef HAVE_LIBCURSES
+  gdb_printf (gdb_stdout,
+	     _("Number of lines curses thinks "
+	       "are in a page is %d.\n"),
+	      LINES);
+#endif
+
+  gdb_printf (gdb_stdout,
+	      _("Number of lines environment thinks "
+		"are in a page is %s (LINES).\n"),
+	      getenv ("LINES"));
 }
 
 void
@@ -3263,51 +3346,6 @@ parse_pid_to_attach (const char *args)
   return pid;
 }
 
-/* Substitute all occurrences of string FROM by string TO in *STRINGP.  *STRINGP
-   must come from xrealloc-compatible allocator and it may be updated.  FROM
-   needs to be delimited by IS_DIR_SEPARATOR or DIRNAME_SEPARATOR (or be
-   located at the start or end of *STRINGP.  */
-
-void
-substitute_path_component (char **stringp, const char *from, const char *to)
-{
-  char *string = *stringp, *s;
-  const size_t from_len = strlen (from);
-  const size_t to_len = strlen (to);
-
-  for (s = string;;)
-    {
-      s = strstr (s, from);
-      if (s == NULL)
-	break;
-
-      if ((s == string || IS_DIR_SEPARATOR (s[-1])
-	   || s[-1] == DIRNAME_SEPARATOR)
-	  && (s[from_len] == '\0' || IS_DIR_SEPARATOR (s[from_len])
-	      || s[from_len] == DIRNAME_SEPARATOR))
-	{
-	  char *string_new;
-
-	  string_new
-	    = (char *) xrealloc (string, (strlen (string) + to_len + 1));
-
-	  /* Relocate the current S pointer.  */
-	  s = s - string + string_new;
-	  string = string_new;
-
-	  /* Replace from by to.  */
-	  memmove (&s[to_len], &s[from_len], strlen (&s[from_len]) + 1);
-	  memcpy (s, to, to_len);
-
-	  s += to_len;
-	}
-      else
-	s++;
-    }
-
-  *stringp = string;
-}
-
 #ifdef HAVE_WAITPID
 
 #ifdef SIGALRM
@@ -3647,6 +3685,9 @@ When set, debugging messages will be marked with seconds and microseconds."),
   add_internal_problem_command (&internal_error_problem);
   add_internal_problem_command (&internal_warning_problem);
   add_internal_problem_command (&demangler_warning_problem);
+
+  add_cmd ("screen", class_maintenance, &maintenance_info_screen,
+	 _("Show screen characteristics."), &maintenanceinfolist);
 
 #if GDB_SELF_TEST
   selftests::register_test ("gdb_realpath", gdb_realpath_tests);

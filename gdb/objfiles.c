@@ -264,7 +264,7 @@ add_to_objfile_sections (struct bfd *abfd, struct bfd_section *asect,
 	return;
     }
 
-  section = &objfile->sections[gdb_bfd_section_index (abfd, asect)];
+  section = &objfile->sections_start[gdb_bfd_section_index (abfd, asect)];
   section->objfile = objfile;
   section->the_bfd_section = asect;
   section->ovly_mapped = 0;
@@ -280,10 +280,10 @@ build_objfile_section_table (struct objfile *objfile)
 {
   int count = gdb_bfd_count_sections (objfile->obfd.get ());
 
-  objfile->sections = OBSTACK_CALLOC (&objfile->objfile_obstack,
-				      count,
-				      struct obj_section);
-  objfile->sections_end = (objfile->sections + count);
+  objfile->sections_start = OBSTACK_CALLOC (&objfile->objfile_obstack,
+					    count,
+					    struct obj_section);
+  objfile->sections_end = (objfile->sections_start + count);
   for (asection *sect : gdb_bfd_sections (objfile->obfd))
     add_to_objfile_sections (objfile->obfd.get (), sect, objfile, 0);
 
@@ -625,9 +625,6 @@ objfile_relocate1 (struct objfile *objfile,
 
       for (block *b : bv->blocks ())
 	{
-	  struct symbol *sym;
-	  struct mdict_iterator miter;
-
 	  b->set_start (b->start () + delta[block_line_section]);
 	  b->set_end (b->end () + delta[block_line_section]);
 
@@ -639,10 +636,8 @@ objfile_relocate1 (struct objfile *objfile,
 
 	  /* We only want to iterate over the local symbols, not any
 	     symbols in included symtabs.  */
-	  ALL_DICT_SYMBOLS (b->multidict (), miter, sym)
-	    {
-	      relocate_one_symbol (sym, objfile, delta);
-	    }
+	  for (struct symbol *sym : b->multidict_symbols ())
+	    relocate_one_symbol (sym, objfile, delta);
 	}
     }
 
@@ -657,10 +652,9 @@ objfile_relocate1 (struct objfile *objfile,
   get_objfile_pspace_data (objfile->pspace)->section_map_dirty = 1;
 
   /* Update the table in exec_ops, used to read memory.  */
-  struct obj_section *s;
-  ALL_OBJFILE_OSECTIONS (objfile, s)
+  for (obj_section *s : objfile->sections ())
     {
-      int idx = s - objfile->sections;
+      int idx = s - objfile->sections_start;
 
       exec_set_section_address (bfd_get_filename (objfile->obfd.get ()), idx,
 				s->addr ());
@@ -876,9 +870,7 @@ sort_cmp (const struct obj_section *sect1, const obj_section *sect2)
 	     second case shouldn't occur during normal use, but std::sort
 	     does check that '!(a < a)' when compiled in debug mode.  */
 
-	  const struct obj_section *osect;
-
-	  ALL_OBJFILE_OSECTIONS (objfile1, osect)
+	  for (const obj_section *osect : objfile1->sections ())
 	    if (osect == sect2)
 	      return false;
 	    else if (osect == sect1)
@@ -1071,7 +1063,7 @@ update_section_map (struct program_space *pspace,
 {
   struct objfile_pspace_info *pspace_info;
   int alloc_size, map_size, i;
-  struct obj_section *s, **map;
+  struct obj_section **map;
 
   pspace_info = get_objfile_pspace_data (pspace);
   gdb_assert (pspace_info->section_map_dirty != 0
@@ -1082,7 +1074,7 @@ update_section_map (struct program_space *pspace,
 
   alloc_size = 0;
   for (objfile *objfile : pspace->objfiles ())
-    ALL_OBJFILE_OSECTIONS (objfile, s)
+    for (obj_section *s : objfile->sections ())
       if (insert_section_p (objfile->obfd.get (), s->the_bfd_section))
 	alloc_size += 1;
 
@@ -1098,7 +1090,7 @@ update_section_map (struct program_space *pspace,
 
   i = 0;
   for (objfile *objfile : pspace->objfiles ())
-    ALL_OBJFILE_OSECTIONS (objfile, s)
+    for (obj_section *s : objfile->sections ())
       if (insert_section_p (objfile->obfd.get (), s->the_bfd_section))
 	map[i++] = s;
 
@@ -1214,12 +1206,10 @@ inhibit_section_map_updates (struct program_space *pspace)
 bool
 is_addr_in_objfile (CORE_ADDR addr, const struct objfile *objfile)
 {
-  struct obj_section *osect;
-
   if (objfile == NULL)
     return false;
 
-  ALL_OBJFILE_OSECTIONS (objfile, osect)
+  for (obj_section *osect : objfile->sections ())
     {
       if (section_is_overlay (osect) && !section_is_mapped (osect))
 	continue;

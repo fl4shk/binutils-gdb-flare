@@ -282,7 +282,7 @@ public:
 
   /* See language.h.  */
 
-  CORE_ADDR skip_trampoline (frame_info_ptr frame,
+  CORE_ADDR skip_trampoline (const frame_info_ptr &frame,
 			     CORE_ADDR stop_pc) const override
   {
     struct gdbarch *gdbarch = get_frame_arch (frame);
@@ -1164,9 +1164,7 @@ print_object_command (const char *args, int from_tty)
   {
     expression_up expr = parse_expression (args);
 
-    object
-      = evaluate_expression (expr.get (),
-			     builtin_type (expr->gdbarch)->builtin_data_ptr);
+    object = expr->evaluate (builtin_type (expr->gdbarch)->builtin_data_ptr);
   }
 
   /* Validate the address for sanity.  */

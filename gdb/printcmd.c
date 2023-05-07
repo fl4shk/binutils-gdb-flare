@@ -53,7 +53,7 @@
 #include "source.h"
 #include "gdbsupport/byte-vector.h"
 #include "gdbsupport/gdb_optional.h"
-#include "safe-ctype.h"
+#include "gdbsupport/gdb-safe-ctype.h"
 #include "gdbsupport/rsp-low.h"
 
 /* Chain containing all defined memory-tag subcommands.  */
@@ -1316,7 +1316,7 @@ process_print_command_args (const char *args, value_print_options *print_opts,
       /* VOIDPRINT is true to indicate that we do want to print a void
 	 value, so invert it for parse_expression.  */
       expression_up expr = parse_expression (exp, nullptr, !voidprint);
-      return evaluate_expression (expr.get ());
+      return expr->evaluate ();
     }
 
   return access_value_history (0);
@@ -1495,7 +1495,7 @@ output_command (const char *exp, int from_tty)
 
   expression_up expr = parse_expression (exp);
 
-  val = evaluate_expression (expr.get ());
+  val = expr->evaluate ();
 
   annotate_value_begin (val->type ());
 
@@ -1534,14 +1534,13 @@ set_command (const char *exp, int from_tty)
 	(_("Expression is not an assignment (and might have no effect)"));
     }
 
-  evaluate_expression (expr.get ());
+  expr->evaluate ();
 }
 
 static void
 info_symbol_command (const char *arg, int from_tty)
 {
   struct minimal_symbol *msymbol;
-  struct obj_section *osect;
   CORE_ADDR addr, sect_addr;
   int matches = 0;
   unsigned int offset;
@@ -1551,7 +1550,7 @@ info_symbol_command (const char *arg, int from_tty)
 
   addr = parse_and_eval_address (arg);
   for (objfile *objfile : current_program_space->objfiles ())
-    ALL_OBJFILE_OSECTIONS (objfile, osect)
+    for (obj_section *osect : objfile->sections ())
       {
 	/* Only process each object file once, even if there's a separate
 	   debug file.  */
@@ -1900,7 +1899,7 @@ x_command (const char *exp, int from_tty)
 	 command's definition.  */
       if (from_tty)
 	set_repeat_arguments ("");
-      val = evaluate_expression (expr.get ());
+      val = expr->evaluate ();
       if (TYPE_IS_REFERENCE (val->type ()))
 	val = coerce_ref (val);
       /* In rvalue contexts, such as this, functions are coerced into
@@ -2188,7 +2187,7 @@ do_one_display (struct display *d)
 	  struct value *val;
 	  CORE_ADDR addr;
 
-	  val = evaluate_expression (d->exp.get ());
+	  val = d->exp->evaluate ();
 	  addr = value_as_address (val);
 	  if (d->format.format == 'i')
 	    addr = gdbarch_addr_bits_remove (d->exp->gdbarch, addr);
@@ -2226,7 +2225,7 @@ do_one_display (struct display *d)
 	{
 	  struct value *val;
 
-	  val = evaluate_expression (d->exp.get ());
+	  val = d->exp->evaluate ();
 	  print_formatted (val, d->format.size, &opts, gdb_stdout);
 	}
       catch (const gdb_exception_error &ex)
@@ -2447,8 +2446,8 @@ printf_c_string (struct ui_file *stream, const char *format,
 {
   const gdb_byte *str;
 
-  if (value->type ()->code () != TYPE_CODE_PTR
-      && value->lval () == lval_internalvar
+  if (((value->type ()->code () != TYPE_CODE_PTR && value->lval () == lval_internalvar)
+       || value->type ()->code () == TYPE_CODE_ARRAY)
       && c_is_string_type_p (value->type ()))
     {
       size_t len = value->type ()->length ();

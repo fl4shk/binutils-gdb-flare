@@ -1954,14 +1954,6 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	      as_warn (_("division by zero"));
 	      v = 1;
 	    }
-	  if ((valueT) v >= sizeof(valueT) * CHAR_BIT
-	      && (op_left == O_left_shift || op_left == O_right_shift))
-	    {
-	      as_warn_value_out_of_range (_("shift count"), v, 0,
-					  sizeof(valueT) * CHAR_BIT - 1,
-					  NULL, 0);
-	      resultP->X_add_number = v = 0;
-	    }
 	  switch (op_left)
 	    {
 	    default:			goto general;
@@ -1974,6 +1966,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	    case O_divide:		resultP->X_add_number /= v; break;
 	    case O_modulus:		resultP->X_add_number %= v; break;
 	    case O_left_shift:
+	    case O_right_shift:
 	      /* We always use unsigned shifts.  According to the ISO
 		 C standard, left shift of a signed type having a
 		 negative value is undefined behaviour, and right
@@ -1982,12 +1975,19 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 		 when the result overflows is also undefined
 		 behaviour.  So don't trigger ubsan warnings or rely
 		 on characteristics of the compiler.  */
-	      resultP->X_add_number
-		= (valueT) resultP->X_add_number << (valueT) v;
-	      break;
-	    case O_right_shift:
-	      resultP->X_add_number
-		= (valueT) resultP->X_add_number >> (valueT) v;
+	      if ((valueT) v >= sizeof (valueT) * CHAR_BIT)
+		{
+		  as_warn_value_out_of_range (_("shift count"), v, 0,
+					      sizeof (valueT) * CHAR_BIT - 1,
+					      NULL, 0);
+		  resultP->X_add_number = 0;
+		}
+	      else if (op_left == O_left_shift)
+		resultP->X_add_number
+		  = (valueT) resultP->X_add_number << (valueT) v;
+	      else
+		resultP->X_add_number
+		  = (valueT) resultP->X_add_number >> (valueT) v;
 	      break;
 	    case O_bit_inclusive_or:	resultP->X_add_number |= v; break;
 	    case O_bit_or_not:		resultP->X_add_number |= ~v; break;
@@ -2388,12 +2388,17 @@ resolve_expression (expressionS *expressionP)
    here lessens the crowd at read.c.
 
    Assume input_line_pointer is at start of symbol name, or the
-    start of a double quote enclosed symbol name.
-   Advance input_line_pointer past symbol name.
-   Turn that character into a '\0', returning its former value,
-    which may be the closing double quote.
+   start of a double quote enclosed symbol name.  Advance
+   input_line_pointer past symbol name.  Turn that character into a '\0',
+   returning its former value, which may be the closing double quote.
+
    This allows a string compare (RMS wants symbol names to be strings)
-    of the symbol name.
+   of the symbol name.
+
+   NOTE: The input buffer is further altered when adjacent strings are
+   concatenated by the function.  Callers caring about the original buffer
+   contents will need to make a copy before calling here.
+
    There will always be a char following symbol name, because all good
    lines end in end-of-line.  */
 

@@ -349,6 +349,19 @@ compunit_symtab::find_call_site (CORE_ADDR pc) const
   struct call_site call_site_local (unrelocated_pc, nullptr, nullptr);
   void **slot
     = htab_find_slot (m_call_site_htab, &call_site_local, NO_INSERT);
+  if (slot != nullptr)
+    return (call_site *) *slot;
+
+  /* See if the arch knows another PC we should try.  On some
+     platforms, GCC emits a DWARF call site that is offset from the
+     actual return location.  */
+  struct gdbarch *arch = objfile ()->arch ();
+  CORE_ADDR new_pc = gdbarch_update_call_site_pc (arch, pc);
+  if (pc == new_pc)
+    return nullptr;
+
+  call_site new_call_site_local (new_pc - delta, nullptr, nullptr);
+  slot = htab_find_slot (m_call_site_htab, &new_call_site_local, NO_INSERT);
   if (slot == nullptr)
     return nullptr;
 
@@ -874,10 +887,7 @@ symbol_find_demangled_name (struct general_symbol_info *gsymbol,
   gdb::unique_xmalloc_ptr<char> demangled;
   int i;
 
-  if (gsymbol->language () == language_unknown)
-    gsymbol->m_language = language_auto;
-
-  if (gsymbol->language () != language_auto)
+  if (gsymbol->language () != language_unknown)
     {
       const struct language_defn *lang = language_def (gsymbol->language ());
 
@@ -1015,7 +1025,7 @@ general_symbol_info::compute_and_set_names (gdb::string_view linkage_name,
       (*slot)->demangled = std::move (demangled_name);
       (*slot)->language = language ();
     }
-  else if (language () == language_unknown || language () == language_auto)
+  else if (language () == language_unknown)
     m_language = (*slot)->language;
 
   m_name = (*slot)->mangled.data ();
@@ -1089,7 +1099,7 @@ struct obj_section *
 general_symbol_info::obj_section (const struct objfile *objfile) const
 {
   if (section_index () >= 0)
-    return &objfile->sections[section_index ()];
+    return &objfile->sections_start[section_index ()];
   return nullptr;
 }
 
@@ -1760,14 +1770,12 @@ fixup_symbol_section (struct symbol *sym, struct objfile *objfile)
 	 this reason, we still attempt a lookup by name prior to doing
 	 a search of the section table.  */
 
-      struct obj_section *s;
-
-      ALL_OBJFILE_OSECTIONS (objfile, s)
+      for (obj_section *s : objfile->sections ())
 	{
 	  if ((bfd_section_flags (s->the_bfd_section) & SEC_ALLOC) == 0)
 	    continue;
 
-	  int idx = s - objfile->sections;
+	  int idx = s - objfile->sections_start;
 	  CORE_ADDR offset = objfile->section_offsets[idx];
 
 	  if (fallback == -1)
@@ -3705,7 +3713,7 @@ skip_prologue_using_linetable (CORE_ADDR func_addr)
 
       for (;
 	   (it < linetable->item + linetable->nitems
-	    && it->raw_pc () <= unrel_end);
+	    && it->raw_pc () < unrel_end);
 	   it++)
 	if (it->prologue_end)
 	  return {it->pc (objfile)};

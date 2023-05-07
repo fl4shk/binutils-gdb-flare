@@ -3,6 +3,10 @@
 
 *** Changes since GDB 13
 
+* The AArch64 'org.gnu.gdb.aarch64.pauth' Pointer Authentication feature string
+  has been deprecated in favor of the 'org.gnu.gdb.aarch64.pauth_v2' feature
+  string.
+
 * GDB now has some support for integer types larger than 64 bits.
 
 * Removed targets and native configurations
@@ -108,6 +112,20 @@ info main
    for thread-specific breakpoints, or not at all for breakpoints
    without a thread restriction.  The same is also true for the 'task'
    field of an Ada task-specific breakpoint.
+
+** It is no longer possible to create a thread-specific breakpoint for
+   a thread that doesn't exist using '-break-insert -p ID'.  Creating
+   breakpoints for non-existent threads is not allowed when using the
+   CLI, that the MI allowed it was a long standing bug, which has now
+   been fixed.
+
+** The '--simple-values' argument to the '-stack-list-arguments',
+   '-stack-list-locals', '-stack-list-variables', and '-var-list-children'
+   commands now takes reference types into account: that is, a value is now
+   considered simple if it is neither an array, structure, or union, nor a
+   reference to an array, structure, or union.  (Previously all references were
+   considered simple.)  Support for this feature can be verified by using the
+   '-list-features' command, which should contain "simple-values-ref-types".
 
 * Python API
 

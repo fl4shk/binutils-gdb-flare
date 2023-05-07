@@ -136,9 +136,6 @@ private:
 extern int gdb_filename_fnmatch (const char *pattern, const char *string,
 				 int flags);
 
-extern void substitute_path_component (char **stringp, const char *from,
-				       const char *to);
-
 std::string ldirname (const char *filename);
 
 extern int count_path_elements (const char *path);
@@ -285,8 +282,6 @@ extern void (*deprecated_error_begin_hook) (void);
 
 extern const char *warning_pre_print;
 
-extern void error_stream (const string_file &) ATTRIBUTE_NORETURN;
-
 extern void demangler_vwarning (const char *file, int line,
 			       const char *, va_list ap)
      ATTRIBUTE_PRINTF (3, 0);
@@ -334,5 +329,12 @@ extern void dump_core (void);
 extern void copy_bitwise (gdb_byte *dest, ULONGEST dest_offset,
 			  const gdb_byte *source, ULONGEST source_offset,
 			  ULONGEST nbits, int bits_big_endian);
+
+/* When readline decides that the terminal cannot auto-wrap lines, it reduces
+   the width of the reported screen width by 1.  This variable indicates
+   whether that's the case or not, allowing us to add it back where
+   necessary.  See _rl_term_autowrap in readline/terminal.c.  */
+
+extern int readline_hidden_cols;
 
 #endif /* UTILS_H */

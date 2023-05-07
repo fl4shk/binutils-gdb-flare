@@ -34,6 +34,7 @@
 #include "annotate.h"
 #include "symfile.h"
 #include "top.h"
+#include "ui.h"
 #include "inf-loop.h"
 #include "regcache.h"
 #include "value.h"
@@ -623,6 +624,8 @@ holding the child stopped.  Try \"set detach-on-fork\" or \
      from CHILD_PTID.  */
   target_follow_fork (child_inf, child_ptid, fork_kind, follow_child,
 		      detach_fork);
+
+  gdb::observers::inferior_forked.notify (parent_inf, child_inf, fork_kind);
 
   /* target_follow_fork must leave the parent as the current inferior.  If we
      want to follow the child, we make it the current one below.  */
@@ -1293,7 +1296,8 @@ follow_exec (ptid_t ptid, const char *exec_file_target)
      previous incarnation of this process.  */
   no_shared_libraries (nullptr, 0);
 
-  struct inferior *inf = current_inferior ();
+  inferior *execing_inferior = current_inferior ();
+  inferior *following_inferior;
 
   if (follow_exec_mode_string == follow_exec_mode_new)
     {
@@ -1304,19 +1308,19 @@ follow_exec (ptid_t ptid, const char *exec_file_target)
 	 inferior's pid.  Having two inferiors with the same pid would confuse
 	 find_inferior_p(t)id.  Transfer the terminal state and info from the
 	  old to the new inferior.  */
-      inferior *new_inferior = add_inferior_with_spaces ();
+      following_inferior = add_inferior_with_spaces ();
 
-      swap_terminal_info (new_inferior, inf);
-      exit_inferior_silent (inf);
+      swap_terminal_info (following_inferior, execing_inferior);
+      exit_inferior_silent (execing_inferior);
 
-      new_inferior->pid = pid;
-      target_follow_exec (new_inferior, ptid, exec_file_target);
-
-      /* We continue with the new inferior.  */
-      inf = new_inferior;
+      following_inferior->pid = pid;
     }
   else
     {
+      /* follow-exec-mode is "same", we continue execution in the execing
+	 inferior.  */
+      following_inferior = execing_inferior;
+
       /* The old description may no longer be fit for the new image.
 	 E.g, a 64-bit process exec'ed a 32-bit process.  Clear the
 	 old description; we'll read a new one below.  No need to do
@@ -1324,18 +1328,20 @@ follow_exec (ptid_t ptid, const char *exec_file_target)
 	 around (its description is later cleared/refetched on
 	 restart).  */
       target_clear_description ();
-      target_follow_exec (inf, ptid, exec_file_target);
     }
 
-  gdb_assert (current_inferior () == inf);
-  gdb_assert (current_program_space == inf->pspace);
+  target_follow_exec (following_inferior, ptid, exec_file_target);
+
+  gdb_assert (current_inferior () == following_inferior);
+  gdb_assert (current_program_space == following_inferior->pspace);
 
   /* Attempt to open the exec file.  SYMFILE_DEFER_BP_RESET is used
      because the proper displacement for a PIE (Position Independent
      Executable) main symbol file will only be computed by
      solib_create_inferior_hook below.  breakpoint_re_set would fail
      to insert the breakpoints with the zero displacement.  */
-  try_open_exec_file (exec_file_host.get (), inf, SYMFILE_DEFER_BP_RESET);
+  try_open_exec_file (exec_file_host.get (), following_inferior,
+		      SYMFILE_DEFER_BP_RESET);
 
   /* If the target can specify a description, read it.  Must do this
      after flipping to the new executable (because the target supplied
@@ -1345,7 +1351,7 @@ follow_exec (ptid_t ptid, const char *exec_file_target)
      registers.  */
   target_find_description ();
 
-  gdb::observers::inferior_execd.notify (inf);
+  gdb::observers::inferior_execd.notify (execing_inferior, following_inferior);
 
   breakpoint_re_set ();
 
@@ -1622,15 +1628,15 @@ infrun_inferior_exit (struct inferior *inf)
 }
 
 static void
-infrun_inferior_execd (inferior *inf)
+infrun_inferior_execd (inferior *exec_inf, inferior *follow_inf)
 {
   /* If some threads where was doing a displaced step in this inferior at the
      moment of the exec, they no longer exist.  Even if the exec'ing thread
      doing a displaced step, we don't want to to any fixup nor restore displaced
      stepping buffer bytes.  */
-  inf->displaced_step_state.reset ();
+  follow_inf->displaced_step_state.reset ();
 
-  for (thread_info *thread : inf->threads ())
+  for (thread_info *thread : follow_inf->threads ())
     thread->displaced_step_state.reset ();
 
   /* Since an in-line step is done with everything else stopped, if there was
@@ -1638,7 +1644,7 @@ infrun_inferior_execd (inferior *inf)
      thread.  */
   clear_step_over_info ();
 
-  inf->thread_waiting_for_vfork_done = nullptr;
+  follow_inf->thread_waiting_for_vfork_done = nullptr;
 }
 
 /* If ON, and the architecture supports it, GDB will use displaced
@@ -4353,9 +4359,13 @@ fetch_inferior_event ()
 
     gdb_assert (ecs.ws.kind () != TARGET_WAITKIND_IGNORE);
 
-    /* Switch to the target that generated the event, so we can do
-       target calls.  */
-    switch_to_target_no_thread (ecs.target);
+    /* Switch to the inferior that generated the event, so we can do
+       target calls.  If the event was not associated to a ptid,  */
+    if (ecs.ptid != null_ptid
+	&& ecs.ptid != minus_one_ptid)
+      switch_to_inferior_no_thread (find_inferior_ptid (ecs.target, ecs.ptid));
+    else
+      switch_to_target_no_thread (ecs.target);
 
     if (debug_infrun)
       print_target_wait_results (minus_one_ptid, ecs.ptid, ecs.ws);
@@ -5800,7 +5810,7 @@ handle_inferior_event (struct execution_control_state *ecs)
 	       list yet at this point.  */
 
 	    child_regcache
-	      = get_thread_arch_aspace_regcache (parent_inf->process_target (),
+	      = get_thread_arch_aspace_regcache (parent_inf,
 						 ecs->ws.child_ptid (),
 						 gdbarch,
 						 parent_inf->aspace);
@@ -8488,18 +8498,6 @@ end_stepping_range (struct execution_control_state *ecs)
    Note that we don't call these directly, instead we delegate that to
    the interpreters, through observers.  Interpreters then call these
    with whatever uiout is right.  */
-
-void
-print_end_stepping_range_reason (struct ui_out *uiout)
-{
-  /* For CLI-like interpreters, print nothing.  */
-
-  if (uiout->is_mi_like_p ())
-    {
-      uiout->field_string ("reason",
-			   async_reason_lookup (EXEC_ASYNC_END_STEPPING_RANGE));
-    }
-}
 
 void
 print_signal_exited_reason (struct ui_out *uiout, enum gdb_signal siggnal)

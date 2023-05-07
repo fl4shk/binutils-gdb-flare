@@ -35,7 +35,7 @@
 #include <ctype.h>
 #include "mi-parse.h"
 #include "gdbsupport/gdb_optional.h"
-#include "safe-ctype.h"
+#include "gdbsupport/gdb-safe-ctype.h"
 #include "inferior.h"
 #include "observable.h"
 
@@ -645,13 +645,8 @@ list_args_or_locals (const frame_print_options &fp_opts,
 	      switch (values)
 		{
 		case PRINT_SIMPLE_VALUES:
-		  {
-		    struct type *type = check_typedef (sym2->type ());
-		    if (type->code () == TYPE_CODE_ARRAY
-			|| type->code () == TYPE_CODE_STRUCT
-			|| type->code () == TYPE_CODE_UNION)
-		      break;
-		  }
+		  if (!mi_simple_type_p (sym2->type ()))
+		    break;
 		  /* FALLTHROUGH */
 
 		case PRINT_ALL_VALUES:

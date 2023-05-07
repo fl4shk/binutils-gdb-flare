@@ -1149,7 +1149,7 @@ ppc64_aggregate_candidate (struct type *type,
 	    {
 	      LONGEST sub_count;
 
-	      if (field_is_static (&type->field (i)))
+	      if (type->field (i).is_static ())
 		continue;
 
 	      sub_count = ppc64_aggregate_candidate
@@ -2159,8 +2159,7 @@ ppc64_sysv_abi_return_value (struct gdbarch *gdbarch, struct value *function,
 }
 
 CORE_ADDR
-ppc64_sysv_get_return_buf_addr (struct type *val_type,
-				frame_info_ptr cur_frame)
+ppc_sysv_get_return_buf_addr (struct type *val_type, frame_info_ptr cur_frame)
 {
   /* The PowerPC ABI specifies aggregates that are not returned by value
      are returned in a storage buffer provided by the caller.  The

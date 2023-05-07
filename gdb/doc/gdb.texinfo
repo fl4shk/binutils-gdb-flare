@@ -159,6 +159,7 @@ software in general.  We will miss him.
 * Emacs::                       Using @value{GDBN} under @sc{gnu} Emacs
 * GDB/MI::                      @value{GDBN}'s Machine Interface.
 * Annotations::                 @value{GDBN}'s annotation interface.
+* Debugger Adapter Protocol::	The Debugger Adapter Protocol.
 * JIT Interface::               Using the JIT debugging interface.
 * In-Process Agent::            In-Process Agent
 
@@ -3216,6 +3217,15 @@ embedded targets may have several inferiors running in different parts
 of a single address space.  Each inferior may in turn have multiple
 threads running in it.
 
+@cindex ID list
+The commands @code{info inferiors} and @code{info connections}, which will be
+introduced below, accept a space-separated @dfn{ID list} as their argument
+specifying one or more elements on which to operate.  A list element can be
+either a single non-negative number, like @samp{5}, or an ascending range of
+such numbers, like @samp{5-7}.  A list can consist of any combination of such
+elements, even duplicates or overlapping ranges are valid.  E.g.@:
+@samp{1 4-6 5 4-4} or @samp{1 2 4-7}.
+
 To find out what inferiors exist at any moment, use @w{@code{info
 inferiors}}:
 
@@ -3223,9 +3233,8 @@ inferiors}}:
 @kindex info inferiors [ @var{id}@dots{} ]
 @item info inferiors
 Print a list of all inferiors currently being managed by @value{GDBN}.
-By default all inferiors are printed, but the argument @var{id}@dots{}
--- a space separated list of inferior numbers -- can be used to limit
-the display to just the requested inferiors.
+By default all inferiors are printed, but the ID list @var{id}@dots{} can be
+used to limit the display to just the requested inferiors.
 
 @value{GDBN} displays for each inferior (in this order):
 
@@ -3284,9 +3293,8 @@ To find out what open target connections exist at any moment, use
 @kindex info connections [ @var{id}@dots{} ]
 @item info connections
 Print a list of all open target connections currently being managed by
-@value{GDBN}.  By default all connections are printed, but the
-argument @var{id}@dots{} -- a space separated list of connections
-numbers -- can be used to limit the display to just the requested
+@value{GDBN}.  By default all connections are printed, but the ID list
+@var{id}@dots{} can be used to limit the display to just the requested
 connections.
 
 @value{GDBN} displays for each connection (in this order):
@@ -3647,6 +3655,7 @@ program's ``main thread'' even if the program is not multi-threaded.
 
 @vindex $_thread@r{, convenience variable}
 @vindex $_gthread@r{, convenience variable}
+@vindex $_inferior_thread_count@r{, convenience variable}
 The debugger convenience variables @samp{$_thread} and
 @samp{$_gthread} contain, respectively, the per-inferior thread number
 and the global thread number of the current thread.  You may find this
@@ -5969,7 +5978,7 @@ support running commands on the target.
 
 @item set dprintf-function @var{function}
 Set the function to call if the dprintf style is @code{call}.  By
-default its value is @code{printf}.  You may set it to any expression.
+default its value is @code{printf}.  You may set it to any expression
 that @value{GDBN} can evaluate to a function, as per the @code{call}
 command.
 
@@ -20610,6 +20619,14 @@ makes the next @code{continue} command or stepping command execute at
 address @code{0x485}, rather than at the address where your program stopped.
 @xref{Continuing and Stepping, ,Continuing and Stepping}.
 
+However, writing directly to @code{$pc} will only change the value of
+the program-counter register, while using @code{jump} will ensure that
+any additional auxiliary state is also updated.  For example, on
+SPARC, @code{jump} will update both @code{$pc} and @code{$npc}
+registers prior to resuming execution.  When using the approach of
+writing directly to @code{$pc} it is your job to also update the
+@code{$npc} register.
+
 The most common occasion to use the @code{jump} command is to back
 up---perhaps with more breakpoints set---over a portion of a program
 that has already executed, in order to examine its execution in more
@@ -29608,6 +29625,8 @@ the Debugger Adapter Protocol.  This protocol can be used by a
 debugger GUI or an IDE to communicate with @value{GDBN}.  This
 protocol is documented at
 @url{https://microsoft.github.io/debug-adapter-protocol/}.
+@xref{Debugger Adapter Protocol}, for information about @value{GDBN}
+extensions to the protocol.
 
 @item mi
 @cindex mi interpreter
@@ -32199,7 +32218,10 @@ all of the breakpoint locations.
 Initialize the @var{ignore-count}.
 @item -p @var{thread-id}
 Restrict the breakpoint to the thread with the specified global
-@var{thread-id}.
+@var{thread-id}.  @var{thread-id} must be a valid thread-id at the
+time the breakpoint is requested.  Breakpoints created with a
+@var{thread-id} will automatically be deleted when the corresponding
+thread exits.
 @item --qualified
 This option makes @value{GDBN} interpret a function name specified as
 a complete fully-qualified name.
@@ -37987,6 +38009,13 @@ option (@pxref{GDB/MI Program Execution}).
 @item data-disassemble-a-option
 Indicates that the @code{-data-disassemble} command supports the @option{-a}
 option (@pxref{GDB/MI Data Manipulation}).
+@item simple-values-ref-types
+Indicates that the @code{--simple-values} argument to the
+@code{-stack-list-arguments}, @code{-stack-list-locals},
+@code{-stack-list-variables}, and @code{-var-list-children} commands
+takes reference types into account: that is, a value is considered
+simple if it is neither an array, structure, or union, nor a reference
+to an array, structure, or union.
 @end ftable
 
 @findex -list-target-features
@@ -38962,6 +38991,22 @@ source which is being displayed.  The @var{addr} is in the form @samp{0x}
 followed by one or more lowercase hex digits (note that this does not
 depend on the language).
 
+@node Debugger Adapter Protocol
+@chapter Debugger Adapter Protocol
+
+Generally, @value{GDBN} implements the Debugger Adapter Protocol as
+written.  However, in some cases, extensions are either needed or even
+expected.
+
+@value{GDBN} defines a parameter that can be passed to the
+@code{launch} request:
+
+@table @code
+@item program
+If provided, this is a string that specifies the program to use.  This
+corresponds to the @code{file} command.  @xref{Files}.
+@end table
+
 @node JIT Interface
 @chapter JIT Compilation Interface
 @cindex just-in-time compilation
@@ -39826,9 +39871,9 @@ make program.  Other variants of @code{make} will not work.
 The following libraries are mandatory for building @value{GDBN}.  The
 @file{configure} script searches for each of these libraries in
 several standard locations; if some library is installed in an unusual
-place, you can use the @file{configure} either the option
-@option{--with-@var{lib}} to specify its installation directory, or
-two separate options @option{---with-@var{library}-include} (to
+place, you can use either the @option{--with-@var{lib}}
+@file{configure} option to specify its installation directory, or
+the two separate options @option{---with-@var{library}-include} (to
 specify the location of its header files) and
 @option{--with-@var{library}-lib} (to specify the location of its
 libraries).  For example, for the GMP library, the 3 options are
@@ -39847,7 +39892,8 @@ arithmetics.  The latest version of GMP is available from
 @item MPFR (The GNU Multiple-precision floating-point library)
 @value{GDBN} uses MPFR to emulate the target floating-point
 arithmetics during expression evaluation, if the target uses different
-floating-point formats than the host.
+floating-point formats than the host.  The latest version of MPFR is
+available from @url{http://www.mpfr.org}.
 @end table
 
 @end table
@@ -41241,6 +41287,17 @@ has been resized.  This setting is intended for use by the test suite,
 where it would otherwise be difficult to determine when a resize and
 refresh has been completed.
 
+@kindex maint set tui-left-margin-verbose
+@kindex maint show tui-left-margin-verbose
+@item maint set tui-left-margin-verbose
+@item maint show tui-left-margin-verbose
+Control whether the left margin of the TUI source and disassembly windows
+uses @samp{_} and @samp{0} at locations where otherwise there would be a
+space.  The default is @code{off}, which means spaces are used.  The
+setting is intended to make it clear where the left margin begins and
+ends, to avoid incorrectly interpreting a space as being part of the
+the left margin.
+
 @kindex maint set per-command
 @kindex maint show per-command
 @item maint set per-command
@@ -41344,6 +41401,13 @@ This option is @samp{on} by default for supported architectures.
 This option is useful for debugging @value{GDBN}'s use of the Pygments
 library when @value{GDBN} is built for an architecture that supports
 styling with the builtin disassembler
+
+@kindex maint info screen
+@cindex show screen characteristics
+@item maint info screen
+Print various characteristics of the screen, such as various notions
+of width and height.
+
 @kindex maint space
 @cindex memory used by commands
 @item maint space @var{value}
@@ -47971,6 +48035,29 @@ has a signed link register value that needs to be unmasked/decoded.
 
 Extra registers are allowed in this feature, but they will not affect
 @value{GDBN}.
+
+Please note the @samp{org.gnu.gdb.aarch64.pauth} feature string is deprecated
+and must only be used for backwards compatibility with older releases of
+@value{GDBN} and @command{gdbserver}.  Targets that support Pointer
+Authentication must advertise such capability by using the
+@samp{org.gnu.gdb.aarch64.pauth_v2} feature string instead.
+
+The @samp{org.gnu.gdb.aarch64.pauth_v2} feature has the exact same contents
+as feature @samp{org.gnu.gdb.aarch64.pauth}.
+
+The reason for having feature @samp{org.gnu.gdb.aarch64.pauth_v2} is a bug in
+previous versions of @value{GDBN} (versions 9, 10, 11 and 12).  This bug
+caused @value{GDBN} to crash whenever the target reported support for Pointer
+Authentication (using feature string @samp{org.gnu.gdb.aarch64.pauth}) and also
+reported additional system registers that were not accounted for by
+@value{GDBN}.  This is more common when using emulators and on bare-metal
+debugging scenarios.
+
+It can also happen if a newer gdbserver is used with an old @value{GDBN} that
+has the bug.  In such a case, the newer gdbserver might report Pointer
+Authentication support via the @samp{org.gnu.gdb.aarch64.pauth} feature string
+and also report additional registers the older @value{GDBN} does not know
+about, potentially leading to a crash.
 
 @subsubsection AArch64 TLS registers feature
 

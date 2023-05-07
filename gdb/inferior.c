@@ -164,6 +164,14 @@ inferior::tty ()
   return m_terminal;
 }
 
+/* See inferior.h.  */
+
+void
+inferior::set_args (gdb::array_view<char * const> args)
+{
+  set_args (construct_inferior_arguments (args));
+}
+
 void
 inferior::add_continuation (std::function<void ()> &&cont)
 {
@@ -682,6 +690,21 @@ switch_to_inferior_no_thread (inferior *inf)
   set_current_inferior (inf);
   switch_to_no_thread ();
   set_current_program_space (inf->pspace);
+}
+
+/* See regcache.h.  */
+
+gdb::optional<scoped_restore_current_thread>
+maybe_switch_inferior (inferior *inf)
+{
+  gdb::optional<scoped_restore_current_thread> maybe_restore_thread;
+  if (inf != current_inferior ())
+    {
+      maybe_restore_thread.emplace ();
+      switch_to_inferior_no_thread (inf);
+    }
+
+  return maybe_restore_thread;
 }
 
 static void

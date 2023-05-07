@@ -49,7 +49,7 @@
 #include "inf-loop.h"
 #include "linespec.h"
 #include "thread-fsm.h"
-#include "top.h"
+#include "ui.h"
 #include "interps.h"
 #include "skip.h"
 #include "gdbsupport/gdb_optional.h"
@@ -65,23 +65,6 @@ static void step_1 (int, int, const char *);
 
 #define ERROR_NO_INFERIOR \
    if (!target_has_execution ()) error (_("The program is not being run."));
-
-/* Scratch area where string containing arguments to give to the
-   program will be stored by 'set args'.  As soon as anything is
-   stored, notice_args_set will move it into per-inferior storage.
-   Arguments are separated by spaces.  Empty string (pointer to '\0')
-   means no args.  */
-
-static std::string inferior_args_scratch;
-
-/* Scratch area where the new cwd will be stored by 'set cwd'.  */
-
-static std::string inferior_cwd_scratch;
-
-/* Scratch area where 'set inferior-tty' will store user-provided value.
-   We'll immediate copy it into per-inferior storage.  */
-
-static std::string inferior_io_terminal_scratch;
 
 /* Pid of our debugged inferior, or 0 if no inferior now.
    Since various parts of infrun.c test this to see whether there is a program
@@ -106,14 +89,23 @@ static bool finish_print = true;
 
 
 
+/* Store the new value passed to 'set inferior-tty'.  */
+
 static void
-set_inferior_tty_command (const char *args, int from_tty,
-			  struct cmd_list_element *c)
+set_tty_value (const std::string &tty)
 {
-  /* CLI has assigned the user-provided value to inferior_io_terminal_scratch.
-     Now route it to current inferior.  */
-  current_inferior ()->set_tty (inferior_io_terminal_scratch);
+  current_inferior ()->set_tty (tty);
 }
+
+/* Get the current 'inferior-tty' value.  */
+
+static const std::string &
+get_tty_value ()
+{
+  return current_inferior ()->tty ();
+}
+
+/* Implement 'show inferior-tty' command.  */
 
 static void
 show_inferior_tty_command (struct ui_file *file, int from_tty,
@@ -128,34 +120,33 @@ show_inferior_tty_command (struct ui_file *file, int from_tty,
 		"is \"%s\".\n"), inferior_tty.c_str ());
 }
 
-void
-set_inferior_args_vector (int argc, char **argv)
-{
-  gdb::array_view<char * const> args (argv, argc);
-  std::string n = construct_inferior_arguments (args);
-  current_inferior ()->set_args (std::move (n));
-}
-
-/* Notice when `set args' is run.  */
+/* Store the new value passed to 'set args'.  */
 
 static void
-set_args_command (const char *args, int from_tty, struct cmd_list_element *c)
+set_args_value (const std::string &args)
 {
-  /* CLI has assigned the user-provided value to inferior_args_scratch.
-     Now route it to current inferior.  */
-  current_inferior ()->set_args (inferior_args_scratch);
+  current_inferior ()->set_args (args);
 }
 
-/* Notice when `show args' is run.  */
+/* Return the value for 'show args' to display.  */
+
+static const std::string &
+get_args_value ()
+{
+  return current_inferior ()->args ();
+}
+
+/* Callback to implement 'show args' command.  */
 
 static void
 show_args_command (struct ui_file *file, int from_tty,
 		   struct cmd_list_element *c, const char *value)
 {
-  /* Note that we ignore the passed-in value in favor of computing it
-     directly.  */
-  deprecated_show_value_hack (file, from_tty, c,
-			      current_inferior ()->args ().c_str ());
+  /* Ignore the passed in value, pull the argument directly from the
+     inferior.  However, these should always be the same.  */
+  gdb_printf (file, _("\
+Argument list to give program being debugged when it is started is \"%s\".\n"),
+	      current_inferior ()->args ().c_str ());
 }
 
 /* See gdbsupport/common-inferior.h.  */
@@ -166,12 +157,12 @@ get_inferior_cwd ()
   return current_inferior ()->cwd ();
 }
 
-/* Handle the 'set cwd' command.  */
+/* Store the new value passed to 'set cwd'.  */
 
 static void
-set_cwd_command (const char *args, int from_tty, struct cmd_list_element *c)
+set_cwd_value (const std::string &args)
 {
-  current_inferior ()->set_cwd (inferior_cwd_scratch);
+  current_inferior ()->set_cwd (args);
 }
 
 /* Handle the 'show cwd' command.  */
@@ -3138,55 +3129,47 @@ _initialize_infcmd ()
 {
   static struct cmd_list_element *info_proc_cmdlist;
   struct cmd_list_element *c = nullptr;
-  const char *cmd_name;
 
   /* Add the filename of the terminal connected to inferior I/O.  */
-  add_setshow_optional_filename_cmd ("inferior-tty", class_run,
-				     &inferior_io_terminal_scratch, _("\
-Set terminal for future runs of program being debugged."), _("\
-Show terminal for future runs of program being debugged."), _("\
-Usage: set inferior-tty [TTY]\n\n\
-If TTY is omitted, the default behavior of using the same terminal as GDB\n\
+  auto tty_set_show
+    = add_setshow_optional_filename_cmd ("inferior-tty", class_run, _("\
+Set terminal for future runs of program being debugged."), _("		\
+Show terminal for future runs of program being debugged."), _("		\
+Usage: set inferior-tty [TTY]\n\n					\
+If TTY is omitted, the default behavior of using the same terminal as GDB\n \
 is restored."),
-				     set_inferior_tty_command,
-				     show_inferior_tty_command,
-				     &setlist, &showlist);
-  cmd_name = "inferior-tty";
-  c = lookup_cmd (&cmd_name, setlist, "", nullptr, -1, 1);
-  gdb_assert (c != nullptr);
-  add_alias_cmd ("tty", c, class_run, 0, &cmdlist);
+					 set_tty_value,
+					 get_tty_value,
+					 show_inferior_tty_command,
+					 &setlist, &showlist);
+  add_alias_cmd ("tty", tty_set_show.set, class_run, 0, &cmdlist);
 
-  cmd_name = "args";
-  add_setshow_string_noescape_cmd (cmd_name, class_run,
-				   &inferior_args_scratch, _("\
+  auto args_set_show
+    = add_setshow_string_noescape_cmd ("args", class_run, _("\
 Set argument list to give program being debugged when it is started."), _("\
 Show argument list to give program being debugged when it is started."), _("\
 Follow this command with any number of args, to be passed to the program."),
-				   set_args_command,
-				   show_args_command,
-				   &setlist, &showlist);
-  c = lookup_cmd (&cmd_name, setlist, "", nullptr, -1, 1);
-  gdb_assert (c != nullptr);
-  set_cmd_completer (c, filename_completer);
+				       set_args_value,
+				       get_args_value,
+				       show_args_command,
+				       &setlist, &showlist);
+  set_cmd_completer (args_set_show.set, filename_completer);
 
-  cmd_name = "cwd";
-  add_setshow_string_noescape_cmd (cmd_name, class_run,
-				   &inferior_cwd_scratch, _("\
-Set the current working directory to be used when the inferior is started.\n\
-Changing this setting does not have any effect on inferiors that are\n\
+  auto cwd_set_show
+    = add_setshow_string_noescape_cmd ("cwd", class_run, _("\
+Set the current working directory to be used when the inferior is started.\n \
+Changing this setting does not have any effect on inferiors that are\n	\
 already running."),
-				   _("\
+				       _("\
 Show the current working directory that is used when the inferior is started."),
-				   _("\
+				       _("\
 Use this command to change the current working directory that will be used\n\
 when the inferior is started.  This setting does not affect GDB's current\n\
 working directory."),
-				   set_cwd_command,
-				   show_cwd_command,
-				   &setlist, &showlist);
-  c = lookup_cmd (&cmd_name, setlist, "", nullptr, -1, 1);
-  gdb_assert (c != nullptr);
-  set_cmd_completer (c, filename_completer);
+				       set_cwd_value, get_inferior_cwd,
+				       show_cwd_command,
+				       &setlist, &showlist);
+  set_cmd_completer (cwd_set_show.set, filename_completer);
 
   c = add_cmd ("environment", no_class, environment_info, _("\
 The environment to give the program, or one variable's value.\n\

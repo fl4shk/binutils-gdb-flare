@@ -53,6 +53,7 @@
 #include "memattr.h"
 #include "ada-lang.h"
 #include "top.h"
+#include "ui.h"
 #include "valprint.h"
 #include "jit.h"
 #include "parser-defs.h"
@@ -609,15 +610,6 @@ static int overlay_events_enabled;
 
 /* See description in breakpoint.h. */
 bool target_exact_watchpoints = false;
-
-/* Walk the following statement or block through all breakpoints.
-   ALL_BREAKPOINTS_SAFE does so even if the statement deletes the
-   current breakpoint.  */
-
-#define ALL_BREAKPOINTS_SAFE(B,TMP)	\
-	for (B = breakpoint_chain;	\
-	     B ? (TMP=B->next, 1): 0;	\
-	     B = TMP)
 
 /* Chains of all breakpoints defined.  */
 
@@ -2143,6 +2135,21 @@ update_watchpoint (struct watchpoint *b, bool reparse)
 	    }
 	}
 
+      /* Helper function to bundle possibly emitting a warning along with
+	 changing the type of B to bp_watchpoint.  */
+      auto change_type_to_bp_watchpoint = [] (breakpoint *bp)
+      {
+	/* Only warn for breakpoints that have been assigned a +ve number,
+	   anything else is either an internal watchpoint (which we don't
+	   currently create) or has not yet been finalized, in which case
+	   this change of type will be occurring before the user is told
+	   the type of this watchpoint.  */
+	if (bp->type == bp_hardware_watchpoint && bp->number > 0)
+	  warning (_("watchpoint %d downgraded to software watchpoint"),
+		   bp->number);
+	bp->type = bp_watchpoint;
+      };
+
       /* Change the type of breakpoint between hardware assisted or
 	 an ordinary watchpoint depending on the hardware support and
 	 free hardware slots.  Recheck the number of free hardware slots
@@ -2200,7 +2207,7 @@ update_watchpoint (struct watchpoint *b, bool reparse)
 			     "resources for this watchpoint."));
 
 		  /* Downgrade to software watchpoint.  */
-		  b->type = bp_watchpoint;
+		  change_type_to_bp_watchpoint (b);
 		}
 	      else
 		{
@@ -2221,7 +2228,7 @@ update_watchpoint (struct watchpoint *b, bool reparse)
 			 "read/access watchpoint."));
 	    }
 	  else
-	    b->type = bp_watchpoint;
+	    change_type_to_bp_watchpoint (b);
 
 	  loc_type = (b->type == bp_watchpoint? bp_loc_software_watchpoint
 		      : bp_loc_hardware_watchpoint);
@@ -3122,7 +3129,7 @@ update_inserted_breakpoint_locations (void)
   if (error_flag)
     {
       target_terminal::ours_for_output ();
-      error_stream (tmp_error_stream);
+      error (("%s"), tmp_error_stream.c_str ());
     }
 }
 
@@ -3219,7 +3226,7 @@ insert_breakpoint_locations (void)
 You may have requested too many hardware breakpoints/watchpoints.\n");
 	}
       target_terminal::ours_for_output ();
-      error_stream (tmp_error_stream);
+      error (("%s"), tmp_error_stream.c_str ());
     }
 }
 
@@ -4969,7 +4976,7 @@ static bool
 breakpoint_cond_eval (expression *exp)
 {
   scoped_value_mark mark;
-  return value_true (evaluate_expression (exp));
+  return value_true (exp->evaluate ());
 }
 
 /* Allocate a new bpstat.  Link it to the FIFO list by BS_LINK_POINTER.  */
@@ -6469,15 +6476,15 @@ print_one_breakpoint_location (struct breakpoint *b,
 	    inf_nums.push_back (inf->num);
 	}
 
-	/* For backward compatibility, don't display inferiors in CLI unless
-	   there are several.  Always display for MI. */
-	if (allflag
-	    || (!gdbarch_has_global_breakpoints (target_gdbarch ())
-		&& (program_spaces.size () > 1
-		    || number_of_inferiors () > 1)
-		/* LOC is for existing B, it cannot be in
-		   moribund_locations and thus having NULL OWNER.  */
-		&& loc->owner->type != bp_catchpoint))
+      /* For backward compatibility, don't display inferiors in CLI unless
+	 there are several.  Always display for MI. */
+      if (allflag
+	  || (!gdbarch_has_global_breakpoints (target_gdbarch ())
+	      && (program_spaces.size () > 1
+		  || number_of_inferiors () > 1)
+	      /* LOC is for existing B, it cannot be in
+		 moribund_locations and thus having NULL OWNER.  */
+	      && loc->owner->type != bp_catchpoint))
 	mi_only = 0;
       output_thread_groups (uiout, "thread-groups", inf_nums, mi_only);
     }
@@ -7601,72 +7608,73 @@ set_longjmp_breakpoint_for_call_dummy (void)
 void
 check_longjmp_breakpoint_for_call_dummy (struct thread_info *tp)
 {
-  struct breakpoint *b, *b_tmp;
+  for (struct breakpoint *b : all_breakpoints_safe ())
+    {
+      struct breakpoint *b_tmp = b->next;
+      if (b->type == bp_longjmp_call_dummy && b->thread == tp->global_num)
+	{
+	  struct breakpoint *dummy_b = b->related_breakpoint;
 
-  ALL_BREAKPOINTS_SAFE (b, b_tmp)
-    if (b->type == bp_longjmp_call_dummy && b->thread == tp->global_num)
-      {
-	struct breakpoint *dummy_b = b->related_breakpoint;
+	  /* Find the bp_call_dummy breakpoint in the list of breakpoints
+	     chained off b->related_breakpoint.  */
+	  while (dummy_b != b && dummy_b->type != bp_call_dummy)
+	    dummy_b = dummy_b->related_breakpoint;
 
-	/* Find the bp_call_dummy breakpoint in the list of breakpoints
-	   chained off b->related_breakpoint.  */
-	while (dummy_b != b && dummy_b->type != bp_call_dummy)
-	  dummy_b = dummy_b->related_breakpoint;
+	  /* If there was no bp_call_dummy breakpoint then there's nothing
+	     more to do.  Or, if the dummy frame associated with the
+	     bp_call_dummy is still on the stack then we need to leave this
+	     bp_call_dummy in place.  */
+	  if (dummy_b->type != bp_call_dummy
+	      || frame_find_by_id (dummy_b->frame_id) != NULL)
+	    continue;
 
-	/* If there was no bp_call_dummy breakpoint then there's nothing
-	   more to do.  Or, if the dummy frame associated with the
-	   bp_call_dummy is still on the stack then we need to leave this
-	   bp_call_dummy in place.  */
-	if (dummy_b->type != bp_call_dummy
-	    || frame_find_by_id (dummy_b->frame_id) != NULL)
-	  continue;
+	  /* We didn't find the dummy frame on the stack, this could be
+	     because we have longjmp'd to a stack frame that is previous to
+	     the dummy frame, or it could be because the stack unwind is
+	     broken at some point between the longjmp frame and the dummy
+	     frame.
 
-	/* We didn't find the dummy frame on the stack, this could be
-	   because we have longjmp'd to a stack frame that is previous to
-	   the dummy frame, or it could be because the stack unwind is
-	   broken at some point between the longjmp frame and the dummy
-	   frame.
+	     Next we figure out why the stack unwind stopped.  If it looks
+	     like the unwind is complete then we assume the dummy frame has
+	     been jumped over, however, if the unwind stopped for an
+	     unexpected reason then we assume the stack unwind is currently
+	     broken, and that we will (eventually) return to the dummy
+	     frame.
 
-	   Next we figure out why the stack unwind stopped.  If it looks
-	   like the unwind is complete then we assume the dummy frame has
-	   been jumped over, however, if the unwind stopped for an
-	   unexpected reason then we assume the stack unwind is currently
-	   broken, and that we will (eventually) return to the dummy
-	   frame.
+	     It might be tempting to consider using frame_id_inner here, but
+	     that is not safe.   There is no guarantee that the stack frames
+	     we are looking at here are even on the same stack as the
+	     original dummy frame, hence frame_id_inner can't be used.  See
+	     the comments on frame_id_inner for more details.  */
+	  bool unwind_finished_unexpectedly = false;
+	  for (frame_info_ptr fi = get_current_frame (); fi != nullptr; )
+	    {
+	      frame_info_ptr prev = get_prev_frame (fi);
+	      if (prev == nullptr)
+		{
+		  /* FI is the last stack frame.  Why did this frame not
+		     unwind further?  */
+		  auto stop_reason = get_frame_unwind_stop_reason (fi);
+		  if (stop_reason != UNWIND_NO_REASON
+		      && stop_reason != UNWIND_OUTERMOST)
+		    unwind_finished_unexpectedly = true;
+		}
+	      fi = prev;
+	    }
+	  if (unwind_finished_unexpectedly)
+	    continue;
 
-	   It might be tempting to consider using frame_id_inner here, but
-	   that is not safe.   There is no guarantee that the stack frames
-	   we are looking at here are even on the same stack as the
-	   original dummy frame, hence frame_id_inner can't be used.  See
-	   the comments on frame_id_inner for more details.  */
-	bool unwind_finished_unexpectedly = false;
-	for (frame_info_ptr fi = get_current_frame (); fi != nullptr; )
-	  {
-	    frame_info_ptr prev = get_prev_frame (fi);
-	    if (prev == nullptr)
-	      {
-		/* FI is the last stack frame.  Why did this frame not
-		   unwind further?  */
-		auto stop_reason = get_frame_unwind_stop_reason (fi);
-		if (stop_reason != UNWIND_NO_REASON
-		    && stop_reason != UNWIND_OUTERMOST)
-		  unwind_finished_unexpectedly = true;
-	      }
-	    fi = prev;
-	  }
-	if (unwind_finished_unexpectedly)
-	  continue;
+	  dummy_frame_discard (dummy_b->frame_id, tp);
 
-	dummy_frame_discard (dummy_b->frame_id, tp);
-
-	while (b->related_breakpoint != b)
-	  {
-	    if (b_tmp == b->related_breakpoint)
-	      b_tmp = b->related_breakpoint->next;
-	    delete_breakpoint (b->related_breakpoint);
-	  }
-	delete_breakpoint (b);
-      }
+	  while (b->related_breakpoint != b)
+	    {
+	      if (b_tmp == b->related_breakpoint)
+		b_tmp = b->related_breakpoint->next;
+	      delete_breakpoint (b->related_breakpoint);
+	    }
+	  delete_breakpoint (b);
+	}
+    }
 }
 
 void

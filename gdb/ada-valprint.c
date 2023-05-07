@@ -37,15 +37,6 @@ static int print_field_values (struct value *, struct value *,
 
 
 
-/* Make TYPE unsigned if its range of values includes no negatives.  */
-static void
-adjust_type_signedness (struct type *type)
-{
-  if (type != NULL && type->code () == TYPE_CODE_RANGE
-      && type->bounds ()->low.const_val () >= 0)
-    type->set_is_unsigned (true);
-}
-
 /* Assuming TYPE is a simple array type, prints its lower bound on STREAM,
    if non-standard (i.e., other than 1 for numbers, other than lower bound
    of index type for enumerated type).  Returns 1 if something printed,
@@ -373,9 +364,6 @@ ada_printchar (int c, struct type *type, struct ui_file *stream)
 void
 ada_print_scalar (struct type *type, LONGEST val, struct ui_file *stream)
 {
-  unsigned int i;
-  unsigned len;
-
   if (!type)
     {
       print_longest (stream, 'd', 0, val);
@@ -388,23 +376,14 @@ ada_print_scalar (struct type *type, LONGEST val, struct ui_file *stream)
     {
 
     case TYPE_CODE_ENUM:
-      len = type->num_fields ();
-      for (i = 0; i < len; i++)
-	{
-	  if (type->field (i).loc_enumval () == val)
-	    {
-	      break;
-	    }
-	}
-      if (i < len)
-	{
-	  fputs_styled (ada_enum_name (type->field (i).name ()),
+      {
+	gdb::optional<LONGEST> posn = discrete_position (type, val);
+	if (posn.has_value ())
+	  fputs_styled (ada_enum_name (type->field (*posn).name ()),
 			variable_name_style.style (), stream);
-	}
-      else
-	{
+	else
 	  print_longest (stream, 'd', 0, val);
-	}
+      }
       break;
 
     case TYPE_CODE_INT:
@@ -652,7 +631,6 @@ print_field_values (struct value *value, struct value *outer_value,
 	      int bit_size = TYPE_FIELD_BITSIZE (type, i);
 	      struct value_print_options opts;
 
-	      adjust_type_signedness (type->field (i).type ());
 	      v = ada_value_primitive_packed_val
 		    (value, nullptr,
 		     bit_pos / HOST_CHAR_BIT,
@@ -828,8 +806,6 @@ static void
 ada_val_print_enum (struct value *value, struct ui_file *stream, int recurse,
 		    const struct value_print_options *options)
 {
-  int i;
-  unsigned int len;
   LONGEST val;
 
   if (options->format)
@@ -842,18 +818,11 @@ ada_val_print_enum (struct value *value, struct ui_file *stream, int recurse,
   const gdb_byte *valaddr = value->contents_for_printing ().data ();
   int offset_aligned = ada_aligned_value_addr (type, valaddr) - valaddr;
 
-  len = type->num_fields ();
   val = unpack_long (type, valaddr + offset_aligned);
-  for (i = 0; i < len; i++)
+  gdb::optional<LONGEST> posn = discrete_position (type, val);
+  if (posn.has_value ())
     {
-      QUIT;
-      if (val == type->field (i).loc_enumval ())
-	break;
-    }
-
-  if (i < len)
-    {
-      const char *name = ada_enum_name (type->field (i).name ());
+      const char *name = ada_enum_name (type->field (*posn).name ());
 
       if (name[0] == '\'')
 	gdb_printf (stream, "%ld %ps", (long) val,

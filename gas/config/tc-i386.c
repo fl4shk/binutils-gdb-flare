@@ -159,7 +159,7 @@ static int i386_att_operand (char *);
 static int i386_intel_operand (char *, int);
 static int i386_intel_simplify (expressionS *);
 static int i386_intel_parse_name (const char *, expressionS *);
-static const reg_entry *parse_register (char *, char **);
+static const reg_entry *parse_register (const char *, char **);
 static const char *parse_insn (const char *, char *, bool);
 static char *parse_operands (char *, const char *);
 static void swap_operands (void);
@@ -10506,12 +10506,12 @@ x86_cons (expressionS *exp, int size)
 {
   bfd_reloc_code_real_type got_reloc = NO_RELOC;
 
+  intel_syntax = -intel_syntax;
+  exp->X_md = 0;
+
 #if ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) \
       && !defined (LEX_AT)) \
     || defined (TE_PE)
-  intel_syntax = -intel_syntax;
-
-  exp->X_md = 0;
   if (size == 4 || (object_64bit && size == 8))
     {
       /* Handle @GOTOFF and the like in an expression.  */
@@ -10558,15 +10558,13 @@ x86_cons (expressionS *exp, int size)
 	}
     }
   else
+#endif
     expression (exp);
 
   intel_syntax = -intel_syntax;
 
   if (intel_syntax)
     i386_intel_simplify (exp);
-#else
-  expression (exp);
-#endif
 
   /* If not 64bit, massage value, to account for wraparound when !BFD64.  */
   if (size == 4 && exp->X_op == O_constant && !object_64bit)
@@ -12498,11 +12496,7 @@ i386_att_operand (char *operand_string)
 	  temp_string = base_string;
 
 	  /* Skip past '(' and whitespace.  */
-	  if (*base_string != '(')
-	    {
-	      as_bad (_("unbalanced braces"));
-	      return 0;
-	    }
+	  gas_assert (*base_string == '(');
 	  ++base_string;
 	  if (is_space_char (*base_string))
 	    ++base_string;
@@ -13750,9 +13744,9 @@ static bool check_register (const reg_entry *r)
 /* REG_STRING starts *before* REGISTER_PREFIX.  */
 
 static const reg_entry *
-parse_real_register (char *reg_string, char **end_op)
+parse_real_register (const char *reg_string, char **end_op)
 {
-  char *s = reg_string;
+  const char *s = reg_string;
   char *p;
   char reg_name_given[MAX_REG_NAME_SIZE + 1];
   const reg_entry *r;
@@ -13775,7 +13769,7 @@ parse_real_register (char *reg_string, char **end_op)
   if (is_part_of_name (*s))
     return (const reg_entry *) NULL;
 
-  *end_op = s;
+  *end_op = (char *) s;
 
   r = (const reg_entry *) str_hash_find (reg_hash, reg_name_given);
 
@@ -13803,7 +13797,7 @@ parse_real_register (char *reg_string, char **end_op)
 		++s;
 	      if (*s == ')')
 		{
-		  *end_op = s + 1;
+		  *end_op = (char *) s + 1;
 		  know (r[fpr].reg_num == fpr);
 		  return r + fpr;
 		}
@@ -13819,7 +13813,7 @@ parse_real_register (char *reg_string, char **end_op)
 /* REG_STRING starts *before* REGISTER_PREFIX.  */
 
 static const reg_entry *
-parse_register (char *reg_string, char **end_op)
+parse_register (const char *reg_string, char **end_op)
 {
   const reg_entry *r;
 
@@ -13830,12 +13824,12 @@ parse_register (char *reg_string, char **end_op)
   if (!r)
     {
       char *save = input_line_pointer;
-      char c;
+      char *buf = xstrdup (reg_string), *name;
       symbolS *symbolP;
 
-      input_line_pointer = reg_string;
-      c = get_symbol_name (&reg_string);
-      symbolP = symbol_find (reg_string);
+      input_line_pointer = buf;
+      get_symbol_name (&name);
+      symbolP = symbol_find (name);
       while (symbolP && S_GET_SEGMENT (symbolP) != reg_section)
 	{
 	  const expressionS *e = symbol_get_value_expression(symbolP);
@@ -13853,7 +13847,7 @@ parse_register (char *reg_string, char **end_op)
 	      know (e->X_add_number >= 0
 		    && (valueT) e->X_add_number < i386_regtab_size);
 	      r = i386_regtab + e->X_add_number;
-	      *end_op = input_line_pointer;
+	      *end_op = (char *) reg_string + (input_line_pointer - buf);
 	    }
 	  if (r && !check_register (r))
 	    {
@@ -13862,8 +13856,8 @@ parse_register (char *reg_string, char **end_op)
 	      r = &bad_reg;
 	    }
 	}
-      *input_line_pointer = c;
       input_line_pointer = save;
+      free (buf);
     }
   return r;
 }

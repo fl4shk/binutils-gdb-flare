@@ -130,7 +130,7 @@ rust_underscore_fields (struct type *type)
     return false;
   for (i = 0; i < type->num_fields (); ++i)
     {
-      if (!field_is_static (&type->field (i)))
+      if (!type->field (i).is_static ())
 	{
 	  char buf[20];
 
@@ -403,7 +403,7 @@ rust_language::val_print_struct
   first_field = 1;
   for (i = 0; i < type->num_fields (); ++i)
     {
-      if (field_is_static (&type->field (i)))
+      if (type->field (i).is_static ())
 	continue;
 
       if (!first_field)
@@ -723,7 +723,7 @@ rust_print_struct_def (struct type *type, const char *varstring,
   std::vector<int> fields;
   for (int i = 0; i < type->num_fields (); ++i)
     {
-      if (field_is_static (&type->field (i)))
+      if (type->field (i).is_static ())
 	continue;
       if (is_enum && TYPE_FIELD_ARTIFICIAL (type, i))
 	continue;
@@ -741,7 +741,7 @@ rust_print_struct_def (struct type *type, const char *varstring,
     {
       QUIT;
 
-      gdb_assert (!field_is_static (&type->field (i)));
+      gdb_assert (!type->field (i).is_static ());
       gdb_assert (! (is_enum && TYPE_FIELD_ARTIFICIAL (type, i)));
 
       if (flags->print_offsets)
@@ -1607,6 +1607,8 @@ rust_language::language_arch_info (struct gdbarch *gdbarch,
   add (init_integer_type (alloc, 32, 1, "u32"));
   add (init_integer_type (alloc, 64, 0, "i64"));
   add (init_integer_type (alloc, 64, 1, "u64"));
+  add (init_integer_type (alloc, 128, 0, "i128"));
+  add (init_integer_type (alloc, 128, 1, "u128"));
 
   unsigned int length = 8 * builtin->builtin_data_ptr->length ();
   add (init_integer_type (alloc, length, 0, "isize"));

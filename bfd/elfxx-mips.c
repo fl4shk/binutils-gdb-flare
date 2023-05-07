@@ -2624,7 +2624,21 @@ _bfd_mips_elf_lo16_reloc (bfd *abfd, arelent *reloc_entry, asymbol *symbol,
 
   _bfd_mips_elf_reloc_unshuffle (abfd, reloc_entry->howto->type, false,
 				 location);
-  vallo = bfd_get_32 (abfd, location);
+  /* The high 16 bits of the addend are stored in the high insn, the
+     low 16 bits in the low insn, but there is a catch:  You can't
+     just concatenate the high and low parts.  The high part of the
+     addend is adjusted for the fact that the low part is sign
+     extended.  For example, an addend of 0x38000 would have 0x0004 in
+     the high part and 0x8000 (=0xff..f8000) in the low part.
+     To extract the actual addend, calculate (a)
+     ((hi & 0xffff) << 16) + ((lo & 0xffff) ^ 0x8000) - 0x8000.
+     We will be applying (symbol + addend) & 0xffff to the low insn,
+     and we want to apply (b) (symbol + addend + 0x8000) >> 16 to the
+     high insn (the +0x8000 adjusting for when the applied low part is
+     negative).  Substituting (a) into (b) and recognising that
+     (hi & 0xffff) is already in the high insn gives a high part
+     addend adjustment of (lo & 0xffff) ^ 0x8000.  */
+  vallo = (bfd_get_32 (abfd, location) & 0xffff) ^ 0x8000;
   _bfd_mips_elf_reloc_shuffle (abfd, reloc_entry->howto->type, false,
 			       location);
 
@@ -2648,9 +2662,7 @@ _bfd_mips_elf_lo16_reloc (bfd *abfd, arelent *reloc_entry, asymbol *symbol,
       else if (hi->rel.howto->type == R_MICROMIPS_GOT16)
 	hi->rel.howto = MIPS_ELF_RTYPE_TO_HOWTO (abfd, R_MICROMIPS_HI16, false);
 
-      /* VALLO is a signed 16-bit number.  Bias it by 0x8000 so that any
-	 carry or borrow will induce a change of +1 or -1 in the high part.  */
-      hi->rel.addend += (vallo + 0x8000) & 0xffff;
+      hi->rel.addend += vallo;
 
       ret = _bfd_mips_elf_generic_reloc (abfd, &hi->rel, symbol, hi->data,
 					 hi->input_section, output_bfd,
@@ -12327,9 +12339,9 @@ mips_set_isa_flags (bfd *abfd)
     {
     default:
       if (ABI_N32_P (abfd) || ABI_64_P (abfd))
-        val = E_MIPS_ARCH_3;
+        val = MIPS_DEFAULT_R6 ? E_MIPS_ARCH_64R6 : E_MIPS_ARCH_3;
       else
-        val = E_MIPS_ARCH_1;
+        val = MIPS_DEFAULT_R6 ? E_MIPS_ARCH_32R6 : E_MIPS_ARCH_1;
       break;
 
     case bfd_mach_mips3000:
@@ -14524,6 +14536,16 @@ struct mips_mach_extension
   unsigned long extension, base;
 };
 
+/* An array that maps 64-bit architectures to the corresponding 32-bit
+   architectures.  */
+static const struct mips_mach_extension mips_mach_32_64[] =
+{
+  { bfd_mach_mipsisa64r6, bfd_mach_mipsisa32r6 },
+  { bfd_mach_mipsisa64r5, bfd_mach_mipsisa32r5 },
+  { bfd_mach_mipsisa64r3, bfd_mach_mipsisa32r3 },
+  { bfd_mach_mipsisa64r2, bfd_mach_mipsisa32r2 },
+  { bfd_mach_mipsisa64,   bfd_mach_mipsisa32 }
+};
 
 /* An array describing how BFD machines relate to one another.  The entries
    are ordered topologically with MIPS I extensions listed last.  */
@@ -14601,29 +14623,37 @@ static const struct mips_mach_extension mips_mach_extensions[] =
   { bfd_mach_mips3900, bfd_mach_mips3000 }
 };
 
-/* Return true if bfd machine EXTENSION is an extension of machine BASE.  */
+/* Return true if bfd machine EXTENSION is the same as BASE, or if
+   EXTENSION is the 64-bit equivalent of a 32-bit BASE.  */
 
 static bool
-mips_mach_extends_p (unsigned long base, unsigned long extension)
+mips_mach_extends_32_64 (unsigned long base, unsigned long extension)
 {
   size_t i;
 
   if (extension == base)
     return true;
 
-  if (base == bfd_mach_mipsisa32
-      && mips_mach_extends_p (bfd_mach_mipsisa64, extension))
-    return true;
+  for (i = 0; i < ARRAY_SIZE (mips_mach_32_64); i++)
+    if (extension == mips_mach_32_64[i].extension)
+      return base == mips_mach_32_64[i].base;
 
-  if (base == bfd_mach_mipsisa32r2
-      && mips_mach_extends_p (bfd_mach_mipsisa64r2, extension))
+  return false;
+}
+
+static bool
+mips_mach_extends_p (unsigned long base, unsigned long extension)
+{
+  size_t i;
+
+  if (mips_mach_extends_32_64 (base, extension))
     return true;
 
   for (i = 0; i < ARRAY_SIZE (mips_mach_extensions); i++)
     if (extension == mips_mach_extensions[i].extension)
       {
 	extension = mips_mach_extensions[i].base;
-	if (extension == base)
+	if (mips_mach_extends_32_64 (base, extension))
 	  return true;
       }
 
@@ -16595,7 +16625,7 @@ _bfd_mips_elf_get_synthetic_symtab (bfd *abfd,
   /* Calculating the exact amount of space required for symbols would
      require two passes over the PLT, so just pessimise assuming two
      PLT slots per relocation.  */
-  count = relplt->size / hdr->sh_entsize;
+  count = NUM_SHDR_ENTRIES (hdr);
   counti = count * bed->s->int_rels_per_ext_rel;
   size = 2 * count * sizeof (asymbol);
   size += count * (sizeof (mipssuffix) +

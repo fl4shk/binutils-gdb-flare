@@ -34,7 +34,6 @@ bool observer_debug = false;
 
 DEFINE_OBSERVABLE (normal_stop);
 DEFINE_OBSERVABLE (signal_received);
-DEFINE_OBSERVABLE (end_stepping_range);
 DEFINE_OBSERVABLE (signal_exited);
 DEFINE_OBSERVABLE (exited);
 DEFINE_OBSERVABLE (no_history);
@@ -44,6 +43,7 @@ DEFINE_OBSERVABLE (target_changed);
 DEFINE_OBSERVABLE (executable_changed);
 DEFINE_OBSERVABLE (inferior_created);
 DEFINE_OBSERVABLE (inferior_execd);
+DEFINE_OBSERVABLE (inferior_forked);
 DEFINE_OBSERVABLE (record_changed);
 DEFINE_OBSERVABLE (solib_loaded);
 DEFINE_OBSERVABLE (solib_unloaded);

@@ -394,10 +394,10 @@ static const flare32_opc_info_t
     FLARE32_G2_OP_ENUM_SBC_RA_RB, FLARE32_OA_RA_RB,
     {"sbc", "sbc.f"}, {"sbc.nr", "sbc.f.nr"}},
 
-  /* reserved */
+  /* cmpbc rA, rB */
   {&flare32_grp_info_g2,
-    FLARE32_G2_OP_ENUM_RESERVED_14, FLARE32_OA_BAD,
-    {"bad", "bad.f"}, {"bad.nr", "bad.f.nr"}},
+    FLARE32_G2_OP_ENUM_CMPBC_RA_RB, FLARE32_OA_RA_RB,
+    {"cmpbc", "cmpbc.f"}, {"cmpbc.nr", "cmpbc.f.nr"}},
 
   /* reserved */
   {&flare32_grp_info_g2,

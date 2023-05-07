@@ -333,7 +333,7 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 #define FLARE32_G2_OP_ENUM_XOR_RA_RB (0xbull)
 #define FLARE32_G2_OP_ENUM_ADC_RA_RB (0xcull)
 #define FLARE32_G2_OP_ENUM_SBC_RA_RB (0xdull)
-#define FLARE32_G2_OP_ENUM_RESERVED_14 (0xeull)
+#define FLARE32_G2_OP_ENUM_CMPBC_RA_RB (0xeull)
 #define FLARE32_G2_OP_ENUM_RESERVED_15 (0xfull)
 /* -------- */
 /* the `grp` field of group 3 instructions */

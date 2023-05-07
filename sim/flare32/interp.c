@@ -1140,7 +1140,22 @@ sim_engine_run (SIM_DESC sd,
               );
           }
             break;
-          case FLARE32_G2_OP_ENUM_RESERVED_14:
+          case FLARE32_G2_OP_ENUM_CMPBC_RA_RB:
+          {
+            FLARE32_TRACE_INSN (opc_info->names[fw]);
+
+            (void) flare32_sim_add_sub
+              (32u, /* bits */
+              *ra, /* operand_a */
+              rb, /* operand_b */
+              temp_flags_in, /* flags_in */
+              fw ? flags : NULL, /* flags out */
+              true, /* with_carry_in */
+              true /* do_sub */
+              );
+          }
+            break;
+            
           case FLARE32_G2_OP_ENUM_RESERVED_15:
           default:
           {

@@ -1408,6 +1408,7 @@ md_assemble (char *str)
   if (pd.opci_list == NULL)
   {
     as_bad (_("unknown opcode %s"), pd.op_name);
+    return;
   }
 
 #define FLARE32_SKIP_ISSPACE() \

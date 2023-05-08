@@ -35,7 +35,7 @@ const char comment_chars[]        = "//";
 
 /* This array holds the chars that always start a comment at the beginning
  of a line. */
-const char line_comment_chars[]   = "//";
+const char line_comment_chars[]   = "#";
 
 /* This array holds machine specific line separator characters. */
 const char line_separator_chars[] = "";

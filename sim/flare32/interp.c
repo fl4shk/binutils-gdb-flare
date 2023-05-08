@@ -944,6 +944,7 @@ sim_engine_run (SIM_DESC sd,
           fp = cpu.gprs[FLARE32_GPR_ENUM_FP],
           sp = cpu.gprs[FLARE32_GPR_ENUM_SP],
           temp_flags_in = cpu.sprs[FLARE32_SPR_ENUM_FLAGS],
+          temp_flags_out,
           *flags = &cpu.sprs[FLARE32_SPR_ENUM_FLAGS];
 
         opc_info = &flare32_opc_info_g2
@@ -1021,7 +1022,7 @@ sim_engine_run (SIM_DESC sd,
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              flags, /* flags out */
               false, /* with_carry_in */
               true /* do_sub */
               );
@@ -1149,10 +1150,20 @@ sim_engine_run (SIM_DESC sd,
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              &temp_flags_out, /* flags out */
               true, /* with_carry_in */
               true /* do_sub */
               );
+
+            /* Chain together flags.Z */
+            *flags = temp_flags_out & ~FLARE32_FLAGS_Z_MASK;
+            if (
+              (temp_flags_in & FLARE32_FLAGS_Z_MASK)
+              && (temp_flags_out & FLARE32_FLAGS_Z_MASK)
+            )
+            {
+              *flags |= FLARE32_FLAGS_Z_MASK; 
+            }
           }
             break;
             

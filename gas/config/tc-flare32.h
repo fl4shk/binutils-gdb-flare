@@ -26,13 +26,36 @@
 #define TARGET_BYTES_BIG_ENDIAN 1
 
 /* Words are big enough to hold addresses.  */
-#define WORKING_DOT_WORD
+#define WORKING_DOT_WORD 1
+#define LOCAL_LABELS_FB 1
+
+/* Symbols named FAKE_LABEL_NAME are emitted when generating DWARF, so make
+   sure FAKE_LABEL_NAME is printable.  It still must be distinct from any
+   real label name.  So, append a space, which other labels can't contain.  */
+#define FAKE_LABEL_NAME ".L0"
+/* Changing the special character in FAKE_LABEL_NAME requires changing
+   FAKE_LABEL_CHAR too.  */
+#define FAKE_LABEL_CHAR ' '
+
 
 /* This macro is the BFD architecture to pass to `bfd_set_arch_mach'.  */
 #define TARGET_FORMAT "elf32-flare32"
 #define TARGET_ARCH bfd_arch_flare32
 
 #define md_undefined_symbol(NAME)           0
+
+#define md_number_to_chars(buf, val, n) \
+  flare32_number_to_chars (buf, val, n)
+extern void
+flare32_number_to_chars (char *buf, valueT val, int n);
+
+#define md_atof(type, litP, sizeP) \
+  flare32_md_atof (type, litP, sizeP)
+extern const char *
+flare32_md_atof (int type, char *litP, int *sizeP);
+
+#define md_pre_output_hook flare32_pre_output_hook ()
+extern void flare32_pre_output_hook (void);
 
 /* If this macro is defined and evaluates to zero then GAS will not fold 
   expressions that add or subtract a constant to/from a register to give 
@@ -49,14 +72,18 @@ extern void
 flare32_md_end (void);
 #define md_end flare32_md_end
 
-/* These macros must be defined, but is will be a fatal assembler
-   error if we ever hit them.  */
-#define md_estimate_size_before_relax(A, B) \
-  (as_fatal (_("estimate size\n")), 0)
-#define md_convert_frag(B, S, F) \
-  as_fatal (_("convert_frag\n"))
+///* These macros must be defined, but is will be a fatal assembler
+//   error if we ever hit them.  */
+//#define md_estimate_size_before_relax(A, B)
+//  (as_fatal (_("estimate size\n")), 0)
+//#define md_convert_frag(B, S, F)
+//  as_fatal (_("convert_frag\n"))
 
 //#define GAS_SORT_RELOCS 1
+#define md_relax_frag(segment, fragP, stretch) \
+  flare32_relax_frag (segment, fragP, stretch)
+extern int
+flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
 
 /* If you define this macro, and the global variable ‘linkrelax’ is set 
   (because of a command-line option, or unconditionally in md_begin),
@@ -64,7 +91,7 @@ flare32_md_end (void);
   The linker can then discard this space when relaxing the section. */
 //#define LINKER_RELAXING_SHRINKS_ONLY
 
-#define md_section_align(SEGMENT, SIZE)     (SIZE)
+#define md_section_align(SEGMENT, SIZE) (SIZE)
 
 /* We always relax during linking, so we don't need `TC_VALIDATE_FIX`. */
 /* This macro is evaluated for each fixup (when linkrelax is not set).
@@ -88,13 +115,14 @@ flare32_md_end (void);
 //    goto SKIP;
 //  }
 
-/* We always relax during linking, so we don't need
-  `TC_VALIDATE_FIX_SUB`. */
+///* We always relax during linking, so we don't need
+//  `TC_VALIDATE_FIX_SUB`. */
 /* This macro is evaluated for any fixup with a fx_subsy that
   fixup_segment cannot reduce to a number.  If the macro returns
   false an error will be reported.  */
 //#define TC_VALIDATE_FIX_SUB(fix, seg) flare32_validate_fix_sub (fix)
 //extern int flare32_validate_fix_sub (fixS *fix);
+//#define TC_VALIDATE_FIX_SUB(fix, seg) 1
 
 /* Because we evaluate relocs in the linker, we don't need
   `TC_FORCE_RELOCATION` and friends. */
@@ -114,21 +142,39 @@ flare32_md_end (void);
 //    || flare32_force_relocation (fix))
 //extern int flare32_force_relocation (fixS *fix);
 
+/* Postpone text-section label subtraction calculation until linking, since
+   linker relaxations might change the deltas.  */
+#define TC_FORCE_RELOCATION_SUB_SAME(FIX, SEG) \
+  (GENERIC_FORCE_RELOCATION_SUB_SAME (FIX, SEG) \
+   || ((SEG)->flags & SEC_CODE) != 0)
+#define TC_FORCE_RELOCATION_SUB_LOCAL(FIX, SEG) 1
+#define TC_VALIDATE_FIX_SUB(FIX, SEG) 1
+#define TC_FORCE_RELOCATION_LOCAL(FIX) 1
+#define DIFF_EXPR_OK 1
 
-/* Do not use PC relative fixups and relocations for
-  anything but real PCREL relocations.  */
+///* Do not use PC relative fixups and relocations for
+//  anything but real PCREL relocations.  */
 //#define TC_FORCE_RELOCATION_SUB_LOCAL(FIX, SEG)
 //  (((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S9_PCREL)
 //  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S21_PCREL)
-//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S32_PCREL))
+//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S32_PCREL)
+//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX))
 
+/* Values passed to md_apply_fix don't include symbol values.  */
+#define MD_APPLY_SYM_VALUE(FIX) 0
 
 /* Let the linker resolve all the relocs due to relaxation. */
 #define tc_fix_adjustable(fixP) 0
 #define md_allow_local_subtract(l, r, s) 0
-// flare32_allow_local_subtract (l, r, s)
-//extern bool flare32_allow_local_subtract
-//  (expressionS *left, expressionS *right, segT section);
+//#define tc_fix_adjustable(fixP) flare32_fix_adjustable (fixP)
+//extern int
+//flare32_fix_adjustable (fixS *fixp);
+
+//#define md_allow_local_subtract(l,r,s)
+//  flare32_allow_local_subtract (l, r, s)
+//extern bool
+//flare32_allow_local_subtract (expressionS *left, expressionS *right,
+//  segT section);
 
 /* No shared lib support, so we don't need to ensure externally
   visible symbols can be overridden.  */
@@ -137,7 +183,7 @@ flare32_md_end (void);
 /* Used to generate fixups during data allocation pseudo-ops */  
 #define TC_CONS_FIX_NEW flare32_cons_fix_new
 extern void
-flare32_cons_fix_new (struct frag *frag,
+flare32_cons_fix_new (struct frag *fragP,
                       int where,
                       unsigned int nbytes,
                       struct expressionS *ex,
@@ -151,9 +197,12 @@ flare32_regname_to_dw2regnum (char *name);
 extern void
 flare32_cfi_frame_initial_instructions (void);
 
+//extern const relax_typeS md_relax_table[];
+//#define TC_GENERIC_RELAX_TABLE md_relax_table
+
 /* If defined, GAS will check this macro before performing any
   optimizations on the DWARF call frame debug information that is emitted.
-  Targets which im- plement link time relaxation may need to define this
+  Targets which implement link time relaxation may need to define this
   macro and set it to zero if it is possible to change the size of a
   function’s prologue. */
 #define md_allow_eh_opt 0

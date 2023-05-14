@@ -342,6 +342,51 @@ static reloc_howto_type flare32_elf_howto_table [] =
   //    0xffffffff,                 /* dst_mask */
   //    false),                     /* pcrel_offset */
   /* -------- */
+  /* 8-bit in-place setting, for local label subtraction.  */
+  HOWTO (R_FLARE32_SET8,            /* type */
+      0,                            /* rightshift */
+      1,                            /* size */
+      8,                            /* bitsize */
+      false,                        /* pc_relative */
+      0,                            /* bitpos */
+      complain_overflow_dont,       /* complain_on_overflow */
+      bfd_elf_generic_reloc,        /* special_function */
+      "R_FLARE32_SET8",             /* name */
+      false,                        /* partial_inplace */
+      0,                            /* src_mask */
+      0xff,                         /* dst_mask */
+      false),                       /* pcrel_offset */
+
+  /* 16-bit in-place setting, for local label subtraction.  */
+  HOWTO (R_FLARE32_SET16,         /* type */
+    0,                            /* rightshift */
+    2,                            /* size */
+    16,                           /* bitsize */
+    false,                        /* pc_relative */
+    0,                            /* bitpos */
+    complain_overflow_dont,       /* complain_on_overflow */
+    bfd_elf_generic_reloc,        /* special_function */
+    "R_FLARE32_SET16",            /* name */
+    false,                        /* partial_inplace */
+    0,                            /* src_mask */
+    0xffff,                       /* dst_mask */
+    false),                       /* pcrel_offset */
+
+  /* 32-bit in-place setting, for local label subtraction.  */
+  HOWTO (R_FLARE32_SET32,             /* type */
+      0,                            /* rightshift */
+      4,                            /* size */
+      32,                           /* bitsize */
+      false,                        /* pc_relative */
+      0,                            /* bitpos */
+      complain_overflow_dont,       /* complain_on_overflow */
+      bfd_elf_generic_reloc,        /* special_function */
+      "R_FLARE32_SET32",            /* name */
+      false,                        /* partial_inplace */
+      0,                            /* src_mask */
+      0xffffffff,                   /* dst_mask */
+      false),                       /* pcrel_offset */
+  /* -------- */
   /* 8-bit in-place addition, for local label subtraction.  */
   HOWTO (R_FLARE32_PSEUDO_ADD8,                /* type */
          0,                             /* rightshift */
@@ -462,6 +507,20 @@ static reloc_howto_type flare32_elf_howto_table [] =
          MINUS_ONE,                     /* dst_mask */
          false),                        /* pcrel_offset */
   /* -------- */
+  HOWTO (R_FLARE32_EH_32_PCREL,     /* type */
+      0,                            /* rightshift */
+      4,                            /* size */
+      32,                           /* bitsize */
+      true,                         /* pc_relative */
+      0,                            /* bitpos */
+      complain_overflow_dont,       /* complain_on_overflow */
+      bfd_elf_generic_reloc,        /* special_function */
+      "R_FLARE32_EH_32_PCREL",      /* name */
+      false,                        /* partial_inplace */
+      0,                            /* src_mask */
+      MINUS_ONE,                    /* dst_mask */
+      false),                       /* pcrel_offset */
+  /* -------- */
 };
 
 struct flare32_reloc_map
@@ -495,6 +554,9 @@ static const struct flare32_reloc_map flare32_reloc_map [] =
     R_FLARE32_G3_S32_PCREL_NO_RELAX },
   /* -------- */
   //{ BFD_RELOC_FLARE32_FDE_32_PCREL, R_FLARE32_FDE_32_PCREL },
+  { BFD_RELOC_FLARE32_SET8, R_FLARE32_SET8 },
+  { BFD_RELOC_FLARE32_SET16, R_FLARE32_SET16 },
+  { BFD_RELOC_FLARE32_SET32, R_FLARE32_SET32 },
   /* -------- */
   //{ BFD_RELOC_CTOR, R_FLARE32_32 },
   /* -------- */
@@ -506,6 +568,8 @@ static const struct flare32_reloc_map flare32_reloc_map [] =
   { BFD_RELOC_FLARE32_PSEUDO_SUB16, R_FLARE32_PSEUDO_SUB16 },
   { BFD_RELOC_FLARE32_PSEUDO_SUB32, R_FLARE32_PSEUDO_SUB32 },
   { BFD_RELOC_FLARE32_PSEUDO_SUB64, R_FLARE32_PSEUDO_SUB64 },
+  //--------
+  { BFD_RELOC_FLARE32_EH_32_PCREL, R_FLARE32_EH_32_PCREL }
 };
 
 reloc_howto_type *
@@ -1055,13 +1119,17 @@ flare32_elf_relocate_section (bfd *output_bfd,
         case R_FLARE32_16:
         case R_FLARE32_32:
         case R_FLARE32_64:
+        case R_FLARE32_SET8:
+        case R_FLARE32_SET16:
+        case R_FLARE32_SET32:
+        //case R_FLARE32_SET64:
+        case R_FLARE32_EH_32_PCREL:
         //case R_FLARE32_FDE_32_PCREL:
           r = _bfd_final_link_relocate 
-            //flare32_elf_do_
             (howto, input_bfd,
-                input_section, contents,
-                rel->r_offset, relocation,
-                rel->r_addend);
+            input_section, contents,
+            rel->r_offset, relocation,
+            rel->r_addend);
           break;
 
         case R_FLARE32_G1G5G6_S5:
@@ -1228,21 +1296,12 @@ typedef struct flare32_relax_temp_t
   Elf_Internal_Rela *irel;
   bfd_byte *contents;
   bfd_vma value;
-  //bfd_vma value_pcrel_offset;
-  //bfd_vma dot;
-  //bfd_vma gap;
   reloc_howto_type *howto;
-  bool is_pc_relative;
-  bool rm_prefix;
-  bool was_lpre;
+  bool is_pc_relative: 1;
+  bool rm_prefix: 1;
+  bool was_lpre: 1;
   flare32_temp_t curr_bitsize;
   flare32_temp_t target_bitsize;
-  //flare32_temp_t prefix_insn_bitsize;
-  //flare32_temp_t prefix_insn_bitpos;
-  //flare32_temp_t prefix_insn_mask;
-  //flare32_temp_t insn_bitsize;
-  //flare32_temp_t insn_bitpos;
-  //flare32_temp_t insn_mask;
 } flare32_relax_temp_t;
 
 
@@ -1468,6 +1527,9 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
   {
     if (args->rm_prefix) // remove the `lpre` instruction
     {
+      const unsigned
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
       //printf ("flare32_do_relax_prefix_innards: "
       //  "was_lpre && rm_prefix: %s\n",
       //  args->howto->name);
@@ -1476,7 +1538,10 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
       {
         flare32_temp_t
           insn = bfd_get_16 (args->abfd,
-            args->contents + args->irel->r_offset + 4),
+            args->contents + args->irel->r_offset
+            //+ 4
+            + insn_dist
+            ),
           //simm = flare32_get_insn_field_ei
           //  (&flare32_enc_info_g3_s9, insn);
           simm = args->value;
@@ -1489,15 +1554,25 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
           else // if (args->is_pc_relative)
           {
             (void) flare32_set_insn_field_ei_p
-              (&flare32_enc_info_g3_s9, &insn, simm - 4ull);
+              (&flare32_enc_info_g3_s9, &insn,
+              simm
+                //- 4ull
+                - insn_dist
+              );
           }
 
         bfd_put_16 (args->abfd, insn,
-          args->contents + args->irel->r_offset + 4);
+          args->contents + args->irel->r_offset
+          //+ 4
+          + insn_dist
+          );
       }
 
       if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
-        args->irel->r_offset, 4))
+        args->irel->r_offset,
+        //4
+        insn_dist
+        ))
       {
         return false;
       }
@@ -1509,15 +1584,29 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
     }
     else // if (!args->rm_prefix) // convert the `lpre` to a `pre`
     {
+      const unsigned
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER),
+        prefix_insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_PRE);
       //printf ("flare32_do_relax_prefix_innards: "
       //  "was_lpre && !rm_prefix: %s\n",
       //  args->howto->name);
       if (!args->is_pc_relative)
       {
+        //const unsigned
+        //  prefix_insn_dist = flare32_have_plp_distance
+        //    (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_PRE);
         bfd_put_16 (args->abfd,
           flare32_enc_temp_insn_pre (bfd_get_16 (args->abfd,
-            args->contents + args->irel->r_offset + 2)),
-          args->contents + args->irel->r_offset + 2);
+            args->contents + args->irel->r_offset
+              //+ 2
+              + prefix_insn_dist
+              )),
+          args->contents + args->irel->r_offset
+            //+ 2
+            + prefix_insn_dist
+            );
       }
       else // if (args->is_pc_relative)
       {
@@ -1525,14 +1614,18 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
           //curr_prefix_insn = bfd_get_32 (args->abfd,
           //  args->contents + args->irel->r_offset),
           insn = bfd_get_16 (args->abfd,
-            args->contents + args->irel->r_offset + 4),
+            args->contents + args->irel->r_offset
+            //+ 4
+            + insn_dist
+            ),
           //simm = flare32_get_g3_s32 (curr_prefix_insn, insn),
           simm = args->value,
           prefix_insn = flare32_enc_temp_insn_pre (0x0);
 
         flare32_put_g3_s21 (&prefix_insn, &insn,
           simm
-          - 2ull
+          //- 2ull
+          - prefix_insn_dist
         );
         //simm = flare32_get_g3_s21 (prefix_insn, insn)
         //  //- 2ull
@@ -1540,13 +1633,22 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
         //flare32_put_g3_s21 (&prefix_insn, &insn, simm);
 
         bfd_put_16 (args->abfd, prefix_insn,
-          args->contents + args->irel->r_offset + 2);
+          args->contents + args->irel->r_offset
+          //+ 2
+          + prefix_insn_dist
+          );
         bfd_put_16 (args->abfd, insn,
-          args->contents + args->irel->r_offset + 4);
+          args->contents + args->irel->r_offset
+          //+ 4
+          + insn_dist
+          );
       }
 
       if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
-        args->irel->r_offset, 2U))
+        args->irel->r_offset,
+        //2U
+        prefix_insn_dist
+        ))
       {
         return false;
       }
@@ -1560,6 +1662,9 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
   }
   else // if (!args->was_lpre) // remove the `pre` instruction
   {
+    const unsigned
+      insn_dist = flare32_have_plp_distance
+        (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
     //printf ("flare32_do_relax_prefix_innards: "
     //  "!was_lpre: %s\n",
     //  args->howto->name);
@@ -1567,7 +1672,10 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
     {
       flare32_temp_t
         insn = bfd_get_16 (args->abfd,
-          args->contents + args->irel->r_offset + 2),
+          args->contents + args->irel->r_offset
+          //+ 2
+          + insn_dist
+          ),
         //simm = flare32_get_insn_field_ei
         //  (&flare32_enc_info_g3_s9, insn);
         simm = args->value;
@@ -1581,14 +1689,24 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
         else // if (args->is_pc_relative)
         {
           (void) flare32_set_insn_field_ei_p
-            (&flare32_enc_info_g3_s9, &insn, simm - 2ull);
+            (&flare32_enc_info_g3_s9, &insn,
+            simm
+              //- 2ull
+              - insn_dist
+            );
         }
 
       bfd_put_16 (args->abfd, insn,
-        args->contents + args->irel->r_offset + 2);
+        args->contents + args->irel->r_offset
+          //+ 2
+          + insn_dist
+        );
     }
     if (!flare32_elf_relax_delete_bytes (args->abfd, args->sec,
-      args->irel->r_offset, 2))
+      args->irel->r_offset,
+      //2
+      insn_dist
+    ))
     {
       return false;
     }

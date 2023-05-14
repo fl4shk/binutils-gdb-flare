@@ -23,6 +23,7 @@
 #define _FLARE32_H_
 
 #include "bfd.h"
+#include <stdlib.h>
 #include <stdint.h>
 
 #define FLARE32_N_ONES(n) \
@@ -551,6 +552,8 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 /* the left shift amount for a single `pre`/`lpre`/`index` when storing a
   "whole" instruction in a `flare32_temp_t` */
 #define FLARE32_ONE_EXT_BITPOS (16ull)
+#define FLARE32_NO_EXT_MASK ((1ull << FLARE32_ONE_EXT_BITPOS) - 1ull)
+#define FLARE32_ONE_EXT_MASK (~(FLARE32_NO_EXT_MASK))
 
 #define FLARE32_PRE_EXT_LSMASK \
   (FLARE32_G0_PRE_S12_MASK << FLARE32_ONE_EXT_BITPOS)
@@ -675,6 +678,36 @@ extern const flare32_reg_t reg_pc;
 #define FLARE32_TOTAL_NUM_REGS \
   (FLARE32_TOTAL_NUM_NON_PC_REGS + 1ull)
 /* -------- */
+typedef enum flare32_have_plp_t {
+  FLARE32_HAVE_PLP_NEITHER,
+  FLARE32_HAVE_PLP_PRE,
+  FLARE32_HAVE_PLP_LPRE,
+} flare32_have_plp_t;
+static inline unsigned
+flare32_have_plp_insn_length (flare32_have_plp_t have_plp)
+{
+  switch (have_plp)
+  {
+    case FLARE32_HAVE_PLP_NEITHER:
+      return 2;
+    case FLARE32_HAVE_PLP_PRE:
+      return 4;
+    case FLARE32_HAVE_PLP_LPRE:
+      return 6;
+    default:
+      abort ();
+      return 0;
+  }
+}
+static inline unsigned
+flare32_have_plp_distance
+  (flare32_have_plp_t from, flare32_have_plp_t to)
+{
+  return (
+    flare32_have_plp_insn_length (from)
+    - flare32_have_plp_insn_length (to)
+  );
+}
 typedef enum flare32_oparg_t
 {
   FLARE32_OA_BAD,
@@ -760,16 +793,19 @@ typedef struct flare32_opc_info_t
 //extern const char *flare32_op_oa_htab_key
 //  (char *cbuf, unsigned cbuf_lim, const char *name, flare32_oparg_t oparg);
 
-typedef struct flare32_opci_list_t
-{
-  const flare32_opc_info_t *opc_info;
-  struct flare32_opci_list_t *next;
-} flare32_opci_list_t;
-
-extern flare32_opci_list_t *flare32_opci_list_create (void);
-extern flare32_opci_list_t *flare32_opci_list_append
-  (flare32_opci_list_t *self, const flare32_opc_info_t *opc_info);
-extern void flare32_opci_list_delete (flare32_opci_list_t *self);
+// TODO: change this to use a `realloc ()`ed 2D dynamic array instead.
+// For that, we can use an `htab_t` that maps instruction name keys to
+// indices into 2D dynamic array. I think this would probably be faster?
+//typedef struct flare32_opci_list_t
+//{
+//  const flare32_opc_info_t *opc_info;
+//  struct flare32_opci_list_t *next;
+//} flare32_opci_list_t;
+//
+//extern flare32_opci_list_t *flare32_opci_list_create (void);
+//extern flare32_opci_list_t *flare32_opci_list_append
+//  (flare32_opci_list_t *self, const flare32_opc_info_t *opc_info);
+//extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 
 //typedef struct flare32_opci_list2d_t
 //{
@@ -780,6 +816,41 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 //extern flare32_opci_list2d_t *flare32_opci_list2d_append
 //  (flare32_opci_list2d_t *self, flare32_opci_list_t *list);
 //extern void flare32_opci_list2d_delete (flare32_opci_list2d_t *self);
+
+typedef struct flare32_opci_vec_t
+{
+  const flare32_opc_info_t **data;
+  size_t size;
+} flare32_opci_vec_t;
+
+extern flare32_opci_vec_t *flare32_opci_vec_create (void);
+extern const flare32_opc_info_t *flare32_opci_vec_append
+  (flare32_opci_vec_t *self, const flare32_opc_info_t *to_append);
+extern void flare32_opci_vec_delete (flare32_opci_vec_t *self);
+
+typedef struct flare32_opci_v2d_t
+{
+  flare32_opci_vec_t *data;
+  size_t size;
+} flare32_opci_v2d_t;
+//extern flare32_opci_v2d_t *flare32_opci_v2d_create (void);
+extern void flare32_opci_v2d_create (flare32_opci_v2d_t *self);
+extern flare32_opci_vec_t *flare32_opci_v2d_append
+  (flare32_opci_v2d_t *self, flare32_opci_vec_t *to_append);
+extern void flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self);
+
+//typedef struct flare32_relax_general_t
+//{
+//  bool
+//    was_lpre: 1,
+//    rm_prefix: 1,
+//    is_pc_relative: 1;
+//  bfd *abfd;
+//  asection *sec;
+//  bfd_vma value;
+//  bfd_byte *buf;
+//  reloc_howto_type *howto;
+//} flare32_relax_general_t;
 
 
 #define FLARE32_OPC_INFO_NULL_OP (-1ull)
@@ -822,6 +893,9 @@ extern void flare32_opci_list_delete (flare32_opci_list_t *self);
 #define FLARE32_G7_SPRLDST_OPC_INFO_LIM (4ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g7_sprldst[FLARE32_G7_SPRLDST_OPC_INFO_LIM];
+
+/* This is definitely excessive, but it should work fine */
+#define FLARE32_MAX_UNIQUE_OPCI_NAMES (512ull)
 /* -------- */
 /* -------- */
 static inline flare32_temp_t

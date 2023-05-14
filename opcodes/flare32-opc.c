@@ -44,33 +44,33 @@
 //    "[%s][%x]", name, (unsigned) oparg);
 //  return (const char *) cbuf;
 //}
-flare32_opci_list_t *flare32_opci_list_create (void)
-{
-  flare32_opci_list_t *ret = (flare32_opci_list_t *) malloc
-    (sizeof (flare32_opci_list_t));
-  ret->opc_info = NULL;
-  ret->next = NULL;
-  return ret;
-}
-flare32_opci_list_t *flare32_opci_list_append
-  (flare32_opci_list_t *self, const flare32_opc_info_t *opc_info)
-{
-  flare32_opci_list_t *ret = flare32_opci_list_create ();
-  ret->opc_info = opc_info;
-  self->next = ret;
-  return ret;
-}
-void flare32_opci_list_delete (flare32_opci_list_t *self)
-{
-  flare32_opci_list_t
-    *p,
-    *next = NULL;
-  for (p=self; p!=NULL; p=next)
-  {
-    next = p->next;
-    free (p);
-  }
-}
+//flare32_opci_list_t *flare32_opci_list_create (void)
+//{
+//  flare32_opci_list_t *ret = (flare32_opci_list_t *) malloc
+//    (sizeof (flare32_opci_list_t));
+//  ret->opc_info = NULL;
+//  ret->next = NULL;
+//  return ret;
+//}
+//flare32_opci_list_t *flare32_opci_list_append
+//  (flare32_opci_list_t *self, const flare32_opc_info_t *opc_info)
+//{
+//  flare32_opci_list_t *ret = flare32_opci_list_create ();
+//  ret->opc_info = opc_info;
+//  self->next = ret;
+//  return ret;
+//}
+//void flare32_opci_list_delete (flare32_opci_list_t *self)
+//{
+//  flare32_opci_list_t
+//    *p,
+//    *next = NULL;
+//  for (p=self; p!=NULL; p=next)
+//  {
+//    next = p->next;
+//    free (p);
+//  }
+//}
 
 //flare32_opci_list2d_t *flare32_opci_list2d_create (void)
 //{
@@ -96,3 +96,67 @@ void flare32_opci_list_delete (flare32_opci_list_t *self)
 //  flare32_opci_list_delete (self->list);
 //  free (self);
 //}
+
+flare32_opci_vec_t *
+flare32_opci_vec_create (void)
+{
+  flare32_opci_vec_t
+    *ret = (flare32_opci_vec_t *) malloc (sizeof (flare32_opci_vec_t));
+  ret->data = NULL;
+  ret->size = 0u;
+
+  return ret;
+}
+const flare32_opc_info_t *
+flare32_opci_vec_append (flare32_opci_vec_t *self,
+  const flare32_opc_info_t *to_append)
+{
+  const size_t
+    old_size = self->size;
+  ++self->size;
+
+  self->data = (const flare32_opc_info_t **)realloc
+    (self->data, sizeof (*self->data) * self->size);
+  self->data[old_size] = to_append;
+
+  return self->data[old_size];
+}
+void
+flare32_opci_vec_delete (flare32_opci_vec_t *self)
+{
+  if (self->data != NULL)
+  {
+    free (self->data);
+  }
+  free (self);
+}
+
+void
+flare32_opci_v2d_create (flare32_opci_v2d_t *self)
+{
+  self->data = NULL;
+  self->size = 0u;
+}
+flare32_opci_vec_t *
+flare32_opci_v2d_append (flare32_opci_v2d_t *self,
+  flare32_opci_vec_t *to_append)
+{
+  const size_t
+    old_size = self->size;
+  ++self->size;
+
+  self->data = (flare32_opci_vec_t *)realloc
+    (self->data, sizeof (*self->data) * self->size);
+  //self->data[old_size] = to_append;
+  memcpy (self->data + old_size, to_append, sizeof (*to_append));
+
+  return (self->data + old_size);
+}
+void
+flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self)
+{
+  if (self->data != NULL)
+  {
+    flare32_opci_vec_delete (self->data);
+  }
+}

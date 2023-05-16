@@ -97,15 +97,11 @@
 //  free (self);
 //}
 
-flare32_opci_vec_t *
-flare32_opci_vec_create (void)
+void
+flare32_opci_vec_create (flare32_opci_vec_t *self)
 {
-  flare32_opci_vec_t
-    *ret = (flare32_opci_vec_t *) malloc (sizeof (flare32_opci_vec_t));
-  ret->data = NULL;
-  ret->size = 0u;
-
-  return ret;
+  self->data = NULL;
+  self->size = 0u;
 }
 const flare32_opc_info_t *
 flare32_opci_vec_append (flare32_opci_vec_t *self,
@@ -122,13 +118,13 @@ flare32_opci_vec_append (flare32_opci_vec_t *self,
   return self->data[old_size];
 }
 void
-flare32_opci_vec_delete (flare32_opci_vec_t *self)
+flare32_opci_vec_delete_data (flare32_opci_vec_t *self)
 {
   if (self->data != NULL)
   {
     free (self->data);
   }
-  free (self);
+  //free (self);
 }
 
 void
@@ -139,24 +135,45 @@ flare32_opci_v2d_create (flare32_opci_v2d_t *self)
 }
 flare32_opci_vec_t *
 flare32_opci_v2d_append (flare32_opci_v2d_t *self,
-  flare32_opci_vec_t *to_append)
+  const flare32_opci_vec_t *to_append)
 {
+  //const size_t
+  //  old_size = self->size;
+  //++self->size;
+
+  //self->data = (flare32_opci_vec_t *)realloc
+  //  (self->data, sizeof (*self->data) * self->size);
+  ////self->data[old_size] = to_append;
+  //memcpy (self->data + old_size, to_append, sizeof (*to_append));
+
+  //return (self->data + old_size);
+
   const size_t
     old_size = self->size;
   ++self->size;
 
   self->data = (flare32_opci_vec_t *)realloc
     (self->data, sizeof (*self->data) * self->size);
-  //self->data[old_size] = to_append;
   memcpy (self->data + old_size, to_append, sizeof (*to_append));
 
   return (self->data + old_size);
 }
+//void
+//flare32_opci_v2d_append_opci (flare32_opci_v2d_t *self,
+//  const flare32_opc_info_t *opc_info, size_t index)
+//{
+//}
+
 void
 flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self)
 {
   if (self->data != NULL)
   {
-    flare32_opci_vec_delete (self->data);
+    //flare32_opci_vec_delete_data (self->data);
+    for (size_t i=0; i<self->size; ++i)
+    {
+      flare32_opci_vec_delete_data (self->data + i);
+    }
+    free (self->data);
   }
 }

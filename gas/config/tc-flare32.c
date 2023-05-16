@@ -379,29 +379,30 @@ flare32_opci_v2d_and_index_hash_append
     = !no_relax
       ? opc_info->names[names_ind]
       : opc_info->nr_names[names_ind];
-  flare32_opci_vec_t *opci_vec;
+  flare32_opci_vec_t *opci_vec_ptr;
 
   if (opc_info->oparg == FLARE32_OA_BAD)
   {
     return;
   }
 
-  opci_vec = flare32_opci_vec_lookup (temp_name);
+  opci_vec_ptr = flare32_opci_vec_lookup (temp_name);
 
-  if (opci_vec == NULL)
+  if (opci_vec_ptr == NULL)
   {
-    opci_vec = flare32_opci_vec_create ();
-    flare32_opci_vec_append (opci_vec, opc_info);
+    flare32_opci_vec_t opci_vec;
+    flare32_opci_vec_create (&opci_vec);
+    flare32_opci_vec_append (&opci_vec, opc_info);
 
     str_hash_insert (flare32_opci_v2d_index_hash,
       temp_name,
       flare32_opci_v2d_index_arr + flare32_opci_v2d.size,
       0);
-    flare32_opci_v2d_append (&flare32_opci_v2d, opci_vec);
+    flare32_opci_v2d_append (&flare32_opci_v2d, &opci_vec);
   }
   else /* if (opci_vec != NULL) */
   {
-    flare32_opci_vec_append (opci_vec, opc_info);
+    flare32_opci_vec_append (opci_vec_ptr, opc_info);
   }
 }
 
@@ -553,9 +554,7 @@ add_fne_cl_insn (const flare32_cl_insn_t *cl_insn,
   // `dwarf2_emit_insn ()`, so maybe that's what I need too?
   //dwarf2_emit_insn (nbytes);
   dwarf2_emit_insn (0);
-  flare32_number_to_chars (p,
-    cl_insn->data,
-    nbytes);
+  flare32_number_to_chars (p, cl_insn->data, nbytes);
 
   /* Per RISC-V: */
   /* We need to start a new frag after any instruction that can be
@@ -586,8 +585,7 @@ add_gas_relaxed_cl_insn
   symbolS *symbol, offsetT offset)
 {
   frag_grow (max_chars);
-  //move_cl_insn (cl_insn, frag_now,
-  //  frag_more (0) - frag_now->fr_literal);
+  move_cl_insn (cl_insn, frag_now, frag_more (0) - frag_now->fr_literal);
 
   flare32_cl_insn_vec_append (cl_insn);
 
@@ -2130,91 +2128,215 @@ flare32_relax_frag (asection *sec, fragS *fragP,
   return 0;
 }
 
-/* Relax a machine dependent frag.  This returns the amount by which
-   the current size of the frag should change.  */
+/* Convert a machine dependent frag. */
 void
 md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   segT asec ATTRIBUTE_UNUSED, fragS *fragP ATTRIBUTE_UNUSED)
 {
-//  bfd_byte *buf;
-//  expressionS exp;
-//  fixS *fixP;
-//  //flare32_temp_t insn;
-//  //flare32_cl_insn_t *cl_insn;
-//  //flare32_temp_t
-//  //  grp_value,
-//  //  temp_insn_1;
-//  flare32_relax_temp_t relax_temp;
-//  flare32_relax_insn_t *relax_insn;
-//  flare32_cl_insn_t *cl_insn;
-//  //int reloc;
-//  bfd_reloc_code_real_type *r_type;
-//
-//  // TODO: Not sure whether I need to add `fragP->fr_fix`??
-//  // `fragP->fr_fix` is
-//  // "the number of characters we know we're going to emit to 
-//  // the output file".
-//  buf = (bfd_byte *)fragP->fr_literal + fragP->fr_fix;
-//  //buf = (bfd_byte *)fragP->fr_literal;
-//
-//  //cl_insn = flare32_cl_insn_vec + fragP->fr_subtype;
-//  //grp_value = flare32_get_insn_field_ei
-//  //  (&flare32_enc_info_grp_16, relax_insn->data);
-//
-//  flare32_relax_temp_ctor (&relax_temp, fragP, asec, false);
-//  cl_insn = relax_temp.cl_insn;
-//  relax_insn = &cl_insn->relax_insn;
-//  r_type = &cl_insn->r_type;
-//
-//  /* Idea borrowed from "tc-arm.c": `md_convert_frag ()` */
-//  if (fragP->fr_symbol == NULL)
-//  {
-//    exp.X_op = O_constant;
-//  }
-//  else /* if (fragP->fr_symbol != NULL) */
-//  {
-//    exp.X_op = O_symbol;
-//    exp.X_add_symbol = fragP->fr_symbol;
-//  }
-//  exp.X_add_number = fragP->fr_offset;
-//
-//  gas_assert (fragP->fr_var == have_plp_insn_length (cl_insn->have_plp));
-//
-//  //switch (relax_insn->grp_value)
-//  //{
-//  //  case FLARE32_G1_GRP_VALUE:
-//  //  case FLARE32_G5_GRP_VALUE:
-//  //  case FLARE32_G6_GRP_VALUE:
-//  //    break;
-//  //  case FLARE32_G3_GRP_VALUE:
-//  //    break;
-//  //  default:
-//  //    abort ();
-//  //    break;
-//  //}
-//  //switch (cl_insn->have_plp)
-//  //{
-//  //  case FLARE32_HAVE_PLP_NEITHER:
-//  //    break;
-//  //  case FLARE32_HAVE_PLP_PRE:
-//  //    break;
-//  //  case FLARE32_HAVE_PLP_LPRE:
-//  //    break;
-//  //  default:
-//  //    abort ();
-//  //    break;
-//  //}
-//  if (!relax_insn->is_pcrel)
-//  {
-//  }
-//  else /* if (relax_insn->is_pcrel) */
-//  {
-//  }
-//  fixP->fx_file = fragP->fr_file;
-//  fixP->fx_line = fragP->fr_line;
-//  gas_assert (buf == (bfd_byte *)fragP->fr_literal
-//    + fragP->fr_fix + fragP->fr_var);
-//  fragP->fr_fix += fragP->fr_var;
+  bfd_byte *buf;
+  expressionS exp;
+  fixS *fixP;
+  flare32_relax_temp_t relax_temp;
+  flare32_relax_insn_t *relax_insn;
+  flare32_cl_insn_t *cl_insn;
+  unsigned whole_insn_length;
+  //int reloc;
+  bfd_reloc_code_real_type *r_type;
+
+  // TODO: Not sure whether I need to add `fragP->fr_fix`??
+  // `fragP->fr_fix` is
+  // "the number of characters we know we're going to emit to 
+  // the output file".
+  buf = (bfd_byte *)fragP->fr_literal + fragP->fr_fix;
+  //buf = (bfd_byte *)fragP->fr_literal;
+
+  flare32_relax_temp_ctor (&relax_temp, fragP, asec, false);
+  cl_insn = relax_temp.cl_insn;
+  relax_insn = &cl_insn->relax_insn;
+  r_type = &cl_insn->r_type;
+
+  /* Idea borrowed from "tc-arm.c": `md_convert_frag ()` */
+  if (fragP->fr_symbol == NULL)
+  {
+    exp.X_op = O_constant;
+  }
+  else /* if (fragP->fr_symbol != NULL) */
+  {
+    exp.X_op = O_symbol;
+    exp.X_add_symbol = fragP->fr_symbol;
+  }
+  exp.X_add_number = fragP->fr_offset;
+
+  gas_assert (fragP->fr_var == have_plp_insn_length (cl_insn->have_plp));
+
+  switch (*r_type)
+  {
+    case BFD_RELOC_FLARE32_G1G5G6_S5:
+    case BFD_RELOC_FLARE32_G3_S9_PCREL:
+      if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
+      {
+        whole_insn_length = fragP->fr_var;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel, *r_type);
+      }
+      else
+      {
+        abort ();
+      }
+      break;
+
+    case BFD_RELOC_FLARE32_G1G5G6_S17:
+    case BFD_RELOC_FLARE32_G3_S21_PCREL:
+      if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
+      {
+        // convert `pre` to having no prefix at all
+        //whole_insn_length = fragP->fr_var;
+        const unsigned
+          old_insn_dist = flare32_have_plp_distance
+            (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER),
+          n_insn_dist = 0;
+
+        const flare32_temp_t
+          insn = bfd_getb16 (buf + old_insn_dist);
+        bfd_putb16 (insn, buf + n_insn_dist);
+
+        whole_insn_length = fragP->fr_var;
+        *r_type = !relax_insn->is_pcrel
+          ? BFD_RELOC_FLARE32_G1G5G6_S5
+          : BFD_RELOC_FLARE32_G3_S9_PCREL;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel,
+        //  ((*r_type) = !relax_insn->is_pcrel
+        //    ? BFD_RELOC_FLARE32_G1G5G6_S5
+        //    : BFD_RELOC_FLARE32_G3_S9_PCREL));
+      }
+      else if (
+        fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_PRE)
+      )
+      {
+        whole_insn_length = fragP->fr_var;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel, *r_type);
+      }
+      else
+      {
+        abort ();
+      }
+      break;
+    case BFD_RELOC_FLARE32_G1G5G6_S32:
+    case BFD_RELOC_FLARE32_G3_S32_PCREL:
+      if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
+      {
+        // convert `lpre` to having no prefix at all
+        const unsigned
+          old_insn_dist = flare32_have_plp_distance
+            (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER),
+          n_insn_dist = 0;
+
+        const flare32_temp_t
+          insn = bfd_getb16 (buf + old_insn_dist);
+        bfd_putb16 (insn, buf + n_insn_dist);
+
+        whole_insn_length = fragP->fr_var;
+        *r_type = !relax_insn->is_pcrel
+          ? BFD_RELOC_FLARE32_G1G5G6_S5
+          : BFD_RELOC_FLARE32_G3_S9_PCREL;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel,
+        //  ((*r_type) = !relax_insn->is_pcrel
+        //    ? BFD_RELOC_FLARE32_G1G5G6_S5
+        //    : BFD_RELOC_FLARE32_G3_S9_PCREL));
+      }
+      else if (
+        fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_PRE)
+      )
+      {
+        // convert `lpre` to `pre`
+        const unsigned
+          old_insn_dist = have_plp_distance
+            (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER),
+          //old_pre_dist = have_plp_distance
+          //  (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_PRE),
+          //old_lpre_dist = 0,
+          n_pre_dist = 0,
+          n_insn_dist = have_plp_distance
+            (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_PRE) + n_pre_dist;
+        const flare32_temp_t
+          insn = bfd_getb16 (buf + old_insn_dist),
+          //old_lpre_insn = bfd_getb32 (buf),
+          //simm = !relax_insn->is_pcrel
+          //  ? flare32_get_g1g5g6_s32 (old_lpre_insn, insn)
+          //  : flare32_get_g3_s32 (old_lpre_insn, insn),
+          prefix_insn = flare32_enc_temp_insn_pre (0x0);
+
+        // Turns out we didn't need to set the immediate fields here,
+        // unlike with `flare32_do_relax_prefix_innards`
+        // in "../../bfd/elf32-flare32.c"
+        //if (!relax_insn->is_pcrel)
+        //{
+        //  flare32_put_g1g5g6_s17 (&prefix_insn, &insn, simm);
+        //}
+        //else /* if (relax_insn->is_pcrel) */
+        //{
+        //  flare32_put_g3_s21 (&prefix_insn, &insn, simm - old_pre_dist);
+        //}
+
+        bfd_putb16 (prefix_insn, buf + n_pre_dist);
+        bfd_putb16 (insn, buf + n_insn_dist);
+
+        whole_insn_length = fragP->fr_var;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel,
+        //  ((*r_type)
+        //    = !relax_insn->is_pcrel
+        //      ? BFD_RELOC_FLARE32_G1G5G6_S17
+        //      : BFD_RELOC_FLARE32_G3_S21_PCREL));
+        *r_type = !relax_insn->is_pcrel
+          ? BFD_RELOC_FLARE32_G1G5G6_S17
+          : BFD_RELOC_FLARE32_G3_S21_PCREL;
+      }
+      else if (
+        fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_LPRE)
+      )
+      {
+        whole_insn_length = fragP->fr_var;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel, *r_type);
+      }
+      else
+      {
+        abort ();
+      }
+      break;
+
+    case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
+    case BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX:
+      if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_LPRE))
+      {
+        whole_insn_length = fragP->fr_var;
+        //fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+        //  whole_insn_length, &exp, (int) relax_insn->is_pcrel, *r_type);
+      }
+      else
+      {
+        abort ();
+      }
+      break;
+
+    default:
+      abort ();
+      break;
+  }
+
+  fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
+    whole_insn_length, &exp, (int) relax_insn->is_pcrel, *r_type);
+  buf += whole_insn_length;
+
+  fixP->fx_file = fragP->fr_file;
+  fixP->fx_line = fragP->fr_line;
+  gas_assert (buf == (bfd_byte *)fragP->fr_literal
+    + fragP->fr_fix + fragP->fr_var);
+  fragP->fr_fix += fragP->fr_var;
 }
 
 

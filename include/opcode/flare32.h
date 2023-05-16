@@ -823,10 +823,11 @@ typedef struct flare32_opci_vec_t
   size_t size;
 } flare32_opci_vec_t;
 
-extern flare32_opci_vec_t *flare32_opci_vec_create (void);
+//extern flare32_opci_vec_t *flare32_opci_vec_create (void);
+extern void flare32_opci_vec_create (flare32_opci_vec_t *self);
 extern const flare32_opc_info_t *flare32_opci_vec_append
   (flare32_opci_vec_t *self, const flare32_opc_info_t *to_append);
-extern void flare32_opci_vec_delete (flare32_opci_vec_t *self);
+extern void flare32_opci_vec_delete_data (flare32_opci_vec_t *self);
 
 typedef struct flare32_opci_v2d_t
 {
@@ -836,7 +837,9 @@ typedef struct flare32_opci_v2d_t
 //extern flare32_opci_v2d_t *flare32_opci_v2d_create (void);
 extern void flare32_opci_v2d_create (flare32_opci_v2d_t *self);
 extern flare32_opci_vec_t *flare32_opci_v2d_append
-  (flare32_opci_v2d_t *self, flare32_opci_vec_t *to_append);
+  (flare32_opci_v2d_t *self, const flare32_opci_vec_t *to_append);
+//extern void flare32_opci_v2d_append_opci (flare32_opci_v2d_t *self,
+//  const flare32_opc_info_t *opc_info, size_t index);
 extern void flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self);
 
 //typedef struct flare32_relax_general_t

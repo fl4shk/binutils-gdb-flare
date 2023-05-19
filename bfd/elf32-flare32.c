@@ -507,6 +507,35 @@ static reloc_howto_type flare32_elf_howto_table [] =
          MINUS_ONE,                     /* dst_mask */
          false),                        /* pcrel_offset */
   /* -------- */
+  /* 6-bit in-place setting, for local label subtraction.  */
+  HOWTO (R_FLARE32_CFA_SET6,            /* type */
+      0,                            /* rightshift */
+      1,                            /* size */
+      8,                            /* bitsize */
+      false,                        /* pc_relative */
+      0,                            /* bitpos */
+      complain_overflow_dont,       /* complain_on_overflow */
+      bfd_elf_generic_reloc,        /* special_function */
+      "R_FLARE32_CFA_SET6",             /* name */
+      false,                        /* partial_inplace */
+      0,                            /* src_mask */
+      0x3f,                         /* dst_mask */
+      false),                       /* pcrel_offset */
+  /* 6-bit in-place addition, for local label subtraction.  */
+  HOWTO (R_FLARE32_CFA_SUB6,            /* type */
+      0,                            /* rightshift */
+      1,                            /* size */
+      8,                            /* bitsize */
+      false,                        /* pc_relative */
+      0,                            /* bitpos */
+      complain_overflow_dont,       /* complain_on_overflow */
+      flare32_elf_add_sub_reloc,    /* special_function */
+      "R_FLARE32_CFA_SUB6",             /* name */
+      false,                        /* partial_inplace */
+      0,                            /* src_mask */
+      0x3f,                         /* dst_mask */
+      false),                       /* pcrel_offset */
+  /* -------- */
   HOWTO (R_FLARE32_EH_32_PCREL,     /* type */
       0,                            /* rightshift */
       4,                            /* size */
@@ -568,7 +597,10 @@ static const struct flare32_reloc_map flare32_reloc_map [] =
   { BFD_RELOC_FLARE32_PSEUDO_SUB16, R_FLARE32_PSEUDO_SUB16 },
   { BFD_RELOC_FLARE32_PSEUDO_SUB32, R_FLARE32_PSEUDO_SUB32 },
   { BFD_RELOC_FLARE32_PSEUDO_SUB64, R_FLARE32_PSEUDO_SUB64 },
-  //--------
+  /* -------- */
+  { BFD_RELOC_FLARE32_CFA_SET6, R_FLARE32_CFA_SET6 },
+  { BFD_RELOC_FLARE32_CFA_SUB6, R_FLARE32_CFA_SUB6 },
+  /* -------- */
   { BFD_RELOC_FLARE32_EH_32_PCREL, R_FLARE32_EH_32_PCREL }
 };
 
@@ -1013,6 +1045,16 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
         - relocation;
       bfd_put (howto->bitsize, input_bfd, relocation, contents + address);
       break;
+    case R_FLARE32_CFA_SUB6:
+    {
+      bfd_vma old_value = bfd_get (howto->bitsize, input_bfd,
+        contents + address);
+      relocation = (old_value & ~howto->dst_mask)
+        | (((old_value & howto->dst_mask) - relocation)
+          & howto->dst_mask);
+      bfd_put (howto->bitsize, input_bfd, relocation, contents + address);
+    }
+      break;
   }
 
   //switch (howto->type)
@@ -1123,6 +1165,7 @@ flare32_elf_relocate_section (bfd *output_bfd,
         case R_FLARE32_SET16:
         case R_FLARE32_SET32:
         //case R_FLARE32_SET64:
+        case R_FLARE32_CFA_SET6:
         case R_FLARE32_EH_32_PCREL:
         //case R_FLARE32_FDE_32_PCREL:
           r = _bfd_final_link_relocate 
@@ -1158,6 +1201,7 @@ flare32_elf_relocate_section (bfd *output_bfd,
         case R_FLARE32_PSEUDO_SUB16:
         case R_FLARE32_PSEUDO_SUB32:
         case R_FLARE32_PSEUDO_SUB64:
+        case R_FLARE32_CFA_SUB6:
           r = flare32_elf_do_add_sub_reloc (input_bfd, howto,
                 input_section, contents,
                 rel->r_offset, relocation,

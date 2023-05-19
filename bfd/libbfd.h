@@ -1354,6 +1354,8 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_FLARE32_PSEUDO_SUB32",
   "BFD_RELOC_FLARE32_PSEUDO_SUB64",
   "BFD_RELOC_FLARE32_CFA",
+  "BFD_RELOC_FLARE32_CFA_SET6",
+  "BFD_RELOC_FLARE32_CFA_SUB6",
   "BFD_RELOC_FLARE32_EH_32_PCREL",
 
   "BFD_RELOC_FT32_10",

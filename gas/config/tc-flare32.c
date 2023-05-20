@@ -1841,35 +1841,35 @@ flare32_md_atof (int type, char *litP, int *sizeP)
   //return NULL;
 }
 
-struct flare32_opt_t
-{
-  ///* -mrelax, -mno-relax: do (or not) relaxing in GAS */
-  //bool relax: 1;
-  ///* -mgasrelax, -mno-gasrelax: do (or not) relaxing in GAS */
-  //bool gasrelax: 1;
-  /* -mlinkrelax, -mno-linkrelax: generate (or not) relocations for
-    linker relaxation. */
-  bool linkrelax: 1;
-};
-static struct flare32_opt_t flare32_opt = { false };
+//struct flare32_opt_t
+//{
+//  ///* -mrelax, -mno-relax: do (or not) relaxing in GAS */
+//  //bool relax: 1;
+//  ///* -mgasrelax, -mno-gasrelax: do (or not) relaxing in GAS */
+//  //bool gasrelax: 1;
+//  /* -mlinkrelax, -mno-linkrelax: generate (or not) relocations for
+//    linker relaxation. */
+//  bool linkrelax: 1;
+//};
+//static struct flare32_opt_t flare32_opt = { false };
 
-enum options
-{
-  //OPTION_RELAX = OPTION_MD_BASE + 1,
-  //OPTION_NO_RELAX,
-  //OPTION_GASRELAX,
-  //OPTION_NO_GASRELAX,
-  OPTION_LINKRELAX = OPTION_MD_BASE + 1,
-  OPTION_NO_LINKRELAX,
-};
+//enum options
+//{
+//  //OPTION_RELAX = OPTION_MD_BASE + 1,
+//  //OPTION_NO_RELAX,
+//  //OPTION_GASRELAX,
+//  //OPTION_NO_GASRELAX,
+//  OPTION_LINKRELAX = OPTION_MD_BASE + 1,
+//  OPTION_NO_LINKRELAX,
+//};
 struct option md_longopts[] =
 {
   //{ "mrelax", no_argument, NULL, OPTION_RELAX },
   //{ "mno-relax", no_argument, NULL, OPTION_NO_RELAX },
   //{ "mgasrelax", no_argument, NULL, OPTION_GASRELAX },
   //{ "mno-gasrelax", no_argument, NULL, OPTION_NO_GASRELAX },
-  { "mlinkrelax", no_argument, NULL, OPTION_LINKRELAX },
-  { "mno-linkrelax", no_argument, NULL, OPTION_NO_LINKRELAX },
+  //{ "mlinkrelax", no_argument, NULL, OPTION_LINKRELAX },
+  //{ "mno-linkrelax", no_argument, NULL, OPTION_NO_LINKRELAX },
   { NULL, no_argument, NULL, 0},
 };
 size_t md_longopts_size = sizeof (md_longopts);
@@ -1898,16 +1898,16 @@ md_parse_option (int c ATTRIBUTE_UNUSED, const char *arg ATTRIBUTE_UNUSED)
     //case OPTION_NO_GASRELAX:
     //  flare32_opt.gasrelax = false;
     //  break;
-    case OPTION_LINKRELAX:
-      flare32_opt.linkrelax = true;
-      break;
-    case OPTION_NO_LINKRELAX:
-      flare32_opt.linkrelax = false;
-      break;
+    //case OPTION_LINKRELAX:
+    //  flare32_opt.linkrelax = true;
+    //  break;
+    //case OPTION_NO_LINKRELAX:
+    //  flare32_opt.linkrelax = false;
+    //  break;
     default:
       return 0;
   }
-  return 1;
+  //return 1;
   //return 0;
 }
 
@@ -1915,15 +1915,17 @@ md_parse_option (int c ATTRIBUTE_UNUSED, const char *arg ATTRIBUTE_UNUSED)
 void
 md_show_usage (FILE *stream ATTRIBUTE_UNUSED)
 {
-  fprintf (stream,
-    _("Flare32 options:\n"
-      //"-mrelax      perform relaxing in GAS, and generate relocations for linker relaxation   (same effect as having both -mgasrelax and -mlinkrelax) (default not enabled).\n"
-      //"-mno-relax   don't perform relaxing in GAS, and don't generate relocations for linker relaxation (same effect as having both -mno-gasrelax and -mno-linkrelax) (default not enabled).\n"
-      //"-mgasrelax      perform relaxing in GAS (default not enabled).\n"
-      //"-mno-gasrelax   don't perform relaxing in GAS (default not enabled).\n"
-      "-mlinkrelax      generate relocations for linker relaxation (default not enabled).\n"
-      "-mno-linkrelax   don't generate relocations for linker relaxation (default not enabled).\n")
-    );
+  //fprintf (stream,
+  //  _("Flare32 options:\n"
+  //    "There are no Flare32-specific options.\n"
+  //    //"-mrelax      perform relaxing in GAS, and generate relocations for linker relaxation   (same effect as having both -mgasrelax and -mlinkrelax) (default not enabled).\n"
+  //    //"-mno-relax   don't perform relaxing in GAS, and don't generate relocations for linker relaxation (same effect as having both -mno-gasrelax and -mno-linkrelax) (default not enabled).\n"
+  //    //"-mgasrelax      perform relaxing in GAS (default not enabled).\n"
+  //    //"-mno-gasrelax   don't perform relaxing in GAS (default not enabled).\n"
+  //    //"-mlinkrelax      generate relocations for linker relaxation (default not enabled).\n"
+  //    //"-mno-linkrelax   don't generate relocations for linker relaxation (default not enabled).\n"
+  //  )
+  //);
 }
 
 void
@@ -1945,9 +1947,13 @@ md_begin (void)
   //char cbuf[FLARE32_HTAB_KEY_BUF_LIM];
   //flare32_opci_v2d_t *opci_list;
   /* -------- */
-  /* This means we should always do linker relaxing */
+  // old: /* This means we should always do linker relaxing */
   //linkrelax = true;
-  linkrelax = flare32_opt.linkrelax;
+  //linkrelax = flare32_opt.linkrelax;
+
+  // Note: even with `linkrelax` set to `false`, linker relaxing can be
+  // enabled with this linker option: `--relax`.
+  linkrelax = false;
   /* -------- */
   flare32_opci_v2d_index_hash = str_htab_create ();
   flare32_opci_v2d_create (&flare32_opci_v2d);

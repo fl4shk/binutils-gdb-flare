@@ -1317,20 +1317,27 @@ md_apply_fix (fixS *fixP,
       lpre_offs,
       pre_offs,
       insn_offs;
+    reloc_howto_type *howto;
   } tmp;
   memset (&tmp, 0, sizeof (tmp));
   tmp.buf = (bfd_byte *) (fixP->fx_frag->fr_literal + fixP->fx_where);
   //bool relaxable = false;
 
-  /* Remember value for tc_gen_reloc */
-  /* Note: `valP` is set to an expression using `fixP->fx_offset`
-    in `fixup_segment ()` in "../write.c" */
-  //fixP->fx_addnumber = *valP;
-  fixP->fx_addnumber = fixP->fx_offset;
-
   //fprintf (stderr,
-  //  "md_apply_fix (): begin: %li %li\n",
+  //  "md_apply_fix (): begin: %lx %lx\n",
   //  (long)(*valP), (long)fixP->fx_offset);
+
+  //if (!fixP->fx_done)
+  {
+    //fprintf (stderr,
+    //  "md_apply_fix (): !fixP->fx_done: %lx\n",
+    //  *valP);
+    /* Remember value for tc_gen_reloc */
+    /* Note: `valP` is set to an expression using `fixP->fx_offset`
+      in `fixup_segment ()` in "../write.c" */
+    fixP->fx_addnumber = *valP;
+    //fixP->fx_addnumber = fixP->fx_offset;
+  }
 
   switch (fixP->fx_r_type)
   {
@@ -1345,6 +1352,8 @@ md_apply_fix (fixS *fixP,
         flare32_set_insn_field_ei_p
           (&flare32_enc_info_g1g5g6_s5, &tmp.insn,
             (flare32_temp_t)(*valP));
+        fixP->fx_addnumber = *valP = flare32_get_insn_field_ei
+          (&flare32_enc_info_g1g5g6_s5, tmp.insn);
         bfd_putb16 (tmp.insn, tmp.buf);
         //if (
         //  //!linkrelax
@@ -1353,6 +1362,9 @@ md_apply_fix (fixS *fixP,
         {
           fixP->fx_done = true;
         }
+        //fprintf (stderr,
+        //  "md_apply_fix (): s5: %lx\n",
+        //  fixP->fx_addnumber);
       }
       break;
     case BFD_RELOC_FLARE32_G1G5G6_S17:
@@ -1368,6 +1380,8 @@ md_apply_fix (fixS *fixP,
         tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
         flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
           (flare32_temp_t)(*valP));
+        fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s17
+          (tmp.prefix_insn, tmp.insn);
         bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
         bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (
@@ -1499,6 +1513,7 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_FLARE32_PSEUDO_SUB16:
     case BFD_RELOC_FLARE32_PSEUDO_SUB32:
     case BFD_RELOC_FLARE32_PSEUDO_SUB64:
+    case BFD_RELOC_FLARE32_CFA_SUB6:
       break;
 
     case BFD_RELOC_32:
@@ -1563,7 +1578,7 @@ md_apply_fix (fixS *fixP,
             break;
 
           /* Blindly copied from RISC-V. */
-          case BFD_RELOC_RISCV_CFA:
+          case BFD_RELOC_FLARE32_CFA:
             /* Load the byte to get the tmp.subtype.  */
             tmp.subtype = bfd_get_8 (NULL, 
               &((fragS *) (fixP->fx_frag->fr_opcode))->fr_literal
@@ -1638,6 +1653,8 @@ md_apply_fix (fixS *fixP,
         tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
         flare32_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
           (flare32_temp_t)(*valP));
+        fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s32
+          (tmp.prefix_insn, tmp.insn);
         bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
         bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (fixP->fx_addsy == NULL)
@@ -1649,9 +1666,13 @@ md_apply_fix (fixS *fixP,
 
     default:
       /* We ignore generic BFD relocations we don't know about. */
-      if (bfd_reloc_type_lookup (stdoutput, fixP->fx_r_type) != NULL)
+      if (
+        (tmp.howto = bfd_reloc_type_lookup (stdoutput, fixP->fx_r_type))
+          != NULL
+      )
       {
-        as_fatal (_("internal: bad relocations #%d"), fixP->fx_r_type);
+        as_fatal (_("internal: bad relocation \"%s\" #%d"),
+          tmp.howto->name, fixP->fx_r_type);
       }
       break;
   }
@@ -1660,6 +1681,8 @@ md_apply_fix (fixS *fixP,
   {
     as_bad_subtract (fixP);
   }
+
+  //fixP->fx_offset = 0;
 
   //long val = *valP;
   //long newval;
@@ -2565,6 +2588,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   if (fragP->fr_symbol == NULL)
   {
     exp.X_op = O_constant;
+    //exp.X_unsigned = 0;
   }
   else /* if (fragP->fr_symbol != NULL) */
   {
@@ -2591,7 +2615,11 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
+          //4,
           &exp, (int) relax_insn->is_pcrel, *r_type);
+        //fprintf (stderr,
+        //  "md_convert_frag (): s5 or s9: %lx\n",
+        //  fixP->fx_offset);
       }
       else
       {
@@ -2620,6 +2648,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
           : BFD_RELOC_FLARE32_G3_S9_PCREL;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
+          //4,
           &exp, (int) relax_insn->is_pcrel, *r_type);
       }
       else if (
@@ -2655,6 +2684,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
           : BFD_RELOC_FLARE32_G3_S9_PCREL;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
+          //4,
           &exp, (int) relax_insn->is_pcrel, *r_type);
       }
       else if (

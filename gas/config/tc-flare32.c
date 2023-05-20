@@ -2221,6 +2221,9 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           //self->length = 2;
           // TODO: determine if we need this `abort ()` call
           abort ();
+          //self->prefix_insn_bitsize = 0;
+          //self->insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+          //self->target_bitsize = self->insn_bitsize;
           break;
         case FLARE32_HAVE_PLP_PRE:
           self->prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
@@ -2246,7 +2249,7 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           //return 2;
           //self->length = 2;
           // TODO: determine if we need this `abort ()` call
-          abort ();
+          //abort ();
           break;
         case FLARE32_HAVE_PLP_PRE:
           self->prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
@@ -3332,6 +3335,33 @@ md_assemble (char *str)
         pd.parse_good = true;
       }
         break;
+      case FLARE32_OA_RA_RB_LDST_32:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        if (*pd.op_end != '[')
+        {
+          break;
+        }
+        ++pd.op_end;
+
+        FLARE32_PARSE_GPR (reg_b);
+        if (*pd.op_end != ']')
+        {
+          break;
+        }
+        ++pd.op_end;
+
+        pd.ex.X_op = O_constant;
+        pd.ex.X_add_number = 0x0;
+
+        pd.parse_good = true;
+        pd.have_imm = true;
+      }
+        break;
       case FLARE32_OA_RA_RB_RC_LDST:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -3358,6 +3388,40 @@ md_assemble (char *str)
 
         pd.parse_good = true;
         pd.have_index = true;
+      }
+        break;
+      case FLARE32_OA_RA_RB_RC_LDST_32:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        if (*pd.op_end != '[')
+        {
+          break;
+        }
+        ++pd.op_end;
+
+        FLARE32_PARSE_GPR (reg_b);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_GPR (reg_c);
+
+        if (*pd.op_end != ']')
+        {
+          break;
+        }
+        ++pd.op_end;
+
+        pd.parse_good = true;
+        pd.have_index = true;
+
+        pd.ex.X_op = O_constant;
+        pd.ex.X_add_number = 0x0;
+
+        pd.parse_good = true;
+        pd.have_imm = true;
       }
         break;
       case FLARE32_OA_RA_RB_S5_LDST:

@@ -754,12 +754,12 @@ static const flare32_opc_info_t
   /* Following are some pseudo instructions */
   /* ldr rA, [rB] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST_32,
     {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
   /* ldr rA, [rB, rC] */
   {&flare32_grp_info_g5,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST_32,
     {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
   /* ldr rA, [rB, rC, #simm] */
@@ -789,12 +789,12 @@ static const flare32_opc_info_t
   /* Following are some pseudo instructions */
   /* st rA, [rB] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_LDST_32,
     {"str", "str"}, {"str.nr", "str.nr"}},
 
   /* str rA, [rB, rC] */
   {&flare32_grp_info_g6,
-    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RB_RC_LDST_32,
     {"str", "str"}, {"str.nr", "str.nr"}},
 
   /* str rA, [rB, rC, #simm] */

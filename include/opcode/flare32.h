@@ -1136,7 +1136,7 @@ flare32_sign_extend (flare32_temp_t value,
   else
   {
     value &= ~(((flare32_temp_t) -1ll) << bits)
-		  | ((((flare32_temp_t) 1ull) << bits) - 1ll);
+      | ((((flare32_temp_t) 1ull) << bits) - 1ll);
   }
 
   return value;

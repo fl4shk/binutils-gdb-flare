@@ -517,6 +517,9 @@ print_insn_flare32 (bfd_vma addr, struct disassemble_info *info)
           ((iword >> FLARE32_ONE_EXT_BITPOS), iword),
           flare32_enc_info_g3_s9.bitsize
             + flare32_enc_info_g0_pre_s12.bitsize);
+        //fpr (stream,
+        //  "testificate: %lu\n",
+        //  simm);
       }
       else if (length == 6) /* `lpre` */
       {

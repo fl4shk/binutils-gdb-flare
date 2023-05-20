@@ -282,6 +282,21 @@ do_print_insn_flare32 (const flare32_opc_info_t *opc_info,
       }
     }
       break;
+    case FLARE32_OA_PC_RB:
+    {
+      if (length != 2)
+      {
+        fpr (stream, "bad (grp 0x%x; `FLARE32_OA_PC_RB`: %s)",
+          (unsigned) grp,
+          "`pre`/lpre`");
+      }
+      else
+      {
+        fpr (stream, "%s\tpc, %s",
+          opc_info->names[fw], gprs[rb_ind].name);
+      }
+    }
+      break;
     case FLARE32_OA_RA_RB_LDST:
     {
       if (length != 2)

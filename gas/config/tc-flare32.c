@@ -3322,6 +3322,18 @@ md_assemble (char *str)
         pd.parse_good = true;
       }
         break;
+      case FLARE32_OA_PC_RB:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_PC ();
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_GPR (reg_b);
+
+        pd.parse_good = true;
+      }
+        break;
       case FLARE32_OA_RA_IMPLICIT_SP:
       {
         FLARE32_SKIP_ISSPACE ();
@@ -3337,6 +3349,16 @@ md_assemble (char *str)
         FLARE32_SKIP_ISSPACE ();
 
         FLARE32_PARSE_SPR (reg_a);
+        pd.reg_b = flare32_reg_lookup ("sp");
+
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE32_OA_PC_IMPLICIT_SP:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_PC ();
         pd.reg_b = flare32_reg_lookup ("sp");
 
         pd.parse_good = true;
@@ -3667,7 +3689,7 @@ md_assemble (char *str)
 
   if (!pd.have_cpy64)
   {
-    pd.reg_b = (const flare32_reg_t *)NULL;
+    //pd.reg_b = (const flare32_reg_t *)NULL;
     flare32_assemble_post_parse_worker (&pd, false);
   }
   else // if (pd.have_cpy64)

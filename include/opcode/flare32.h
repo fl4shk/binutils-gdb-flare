@@ -402,7 +402,7 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 #define FLARE32_G4_OP_ENUM_PUSH_SA_RB (0x7ull)
 #define FLARE32_G4_OP_ENUM_POP_RA_RB (0x8ull)
 #define FLARE32_G4_OP_ENUM_POP_SA_RB (0x9ull)
-#define FLARE32_G4_OP_ENUM_INDEX_RA (0xaull)
+#define FLARE32_G4_OP_ENUM_POP_PC_RB (0xaull)
 #define FLARE32_G4_OP_ENUM_MUL_RA_RB (0xbull)
 #define FLARE32_G4_OP_ENUM_UDIV_RA_RB (0xcull)
 #define FLARE32_G4_OP_ENUM_SDIV_RA_RB (0xdull)
@@ -424,7 +424,7 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 #define FLARE32_G4_OP_ENUM_CPY_RA_SB (0x1cull)
 #define FLARE32_G4_OP_ENUM_CPY_SA_RB (0x1dull)
 #define FLARE32_G4_OP_ENUM_CPY_SA_SB (0x1eull)
-#define FLARE32_G4_OP_ENUM_RESERVED_31 (0x1full)
+#define FLARE32_G4_OP_ENUM_INDEX_RA (0x1full)
 /* -------- */
 /* the `grp` field of group 5 instructions */
 #define FLARE32_G5_GRP_VALUE (0x5ull)
@@ -729,8 +729,10 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_SB,
   FLARE32_OA_SA_RB,
   FLARE32_OA_SA_SB,
+  FLARE32_OA_PC_RB,
   FLARE32_OA_RA_IMPLICIT_SP,
   FLARE32_OA_SA_IMPLICIT_SP,
+  FLARE32_OA_PC_IMPLICIT_SP,
   FLARE32_OA_RA_RB_LDST,
   FLARE32_OA_RA_RB_LDST_32,
   FLARE32_OA_RA_RB_RC_LDST,
@@ -879,7 +881,7 @@ extern void flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self);
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g3[FLARE32_G3_OPC_INFO_LIM];
 
-#define FLARE32_G4_OPC_INFO_LIM (32ull + 4ull + 6ull)
+#define FLARE32_G4_OPC_INFO_LIM (32ull + 5ull + 6ull)
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g4[FLARE32_G4_OPC_INFO_LIM];
 

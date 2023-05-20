@@ -566,10 +566,10 @@ static const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_POP_SA_RB, FLARE32_OA_SA_RB,
     {"pop", "pop"}, {"pop.nr", "pop.nr"}},
 
-  /* index rA */
+  /* pop pc, rB */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA,
-    {"index", "index"}, {"index.nr", "index.nr"}},
+    FLARE32_G4_OP_ENUM_POP_PC_RB, FLARE32_OA_PC_RB,
+    {"pop", "pop"}, {"pop.nr", "pop.nr"}},
 
   /* mul rA, rB */
   {&flare32_grp_info_g4,
@@ -674,9 +674,13 @@ static const flare32_opc_info_t
     {"cpy", "cpy"}, {"cpy.nr", "cpy.nr"}},
 
   /* reserved */
+  //{&flare32_grp_info_g4,
+  //  FLARE32_G4_OP_ENUM_RESERVED_31, FLARE32_OA_BAD,
+  //  {"bad", "bad"}, {"bad.nr", "bad.nr"}},
+  /* index rA */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_RESERVED_31, FLARE32_OA_BAD,
-    {"bad", "bad"}, {"bad.nr", "bad.nr"}},
+    FLARE32_G4_OP_ENUM_INDEX_RA, FLARE32_OA_RA,
+    {"index", "index"}, {"index.nr", "index.nr"}},
   /* -------- */
   /* Following are some pseudo instructions. */
   /* push rA
@@ -701,6 +705,12 @@ static const flare32_opc_info_t
     Note: implicit `sp` */
   {&flare32_grp_info_g4,
     FLARE32_G4_OP_ENUM_POP_SA_RB, FLARE32_OA_SA_IMPLICIT_SP,
+    {"pop", "pop"}, {"pop.nr", "pop.nr"}},
+
+  /* pop pc
+    Note: implicit `sp` */
+  {&flare32_grp_info_g4,
+    FLARE32_G4_OP_ENUM_POP_PC_RB, FLARE32_OA_PC_IMPLICIT_SP,
     {"pop", "pop"}, {"pop.nr", "pop.nr"}},
   /* -------- */
   /* ldub rA, [rB, rC] */

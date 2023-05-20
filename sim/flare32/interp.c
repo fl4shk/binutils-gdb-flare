@@ -1498,6 +1498,25 @@ sim_engine_run (SIM_DESC sd,
             }
           }
             break;
+          case FLARE32_G4_OP_ENUM_POP_PC_RB:
+          {
+            if (ra_ind < FLARE32_NUM_SPRS)
+            {
+              int32_t
+                *rb = &cpu.gprs[rb_ind];
+
+              FLARE32_TRACE_INSN (opc_info->names[fw]);
+              *rb += sizeof (pc);
+              pc = rd32 (scpu, opc, *rb);
+            }
+            else
+            {
+              FLARE32_TRACE_INSN ("SIGILL_G4_POP_PC_RB");
+              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+                SIM_SIGILL);
+            }
+          }
+            break;
           case FLARE32_G4_OP_ENUM_MUL_RA_RB:
           {
             int32_t
@@ -1903,7 +1922,7 @@ sim_engine_run (SIM_DESC sd,
           }
             break;
           case FLARE32_G4_OP_ENUM_INDEX_RA:
-          case FLARE32_G4_OP_ENUM_RESERVED_31:
+          //case FLARE32_G4_OP_ENUM_RESERVED_31:
           default:
           {
             FLARE32_TRACE_INSN ("SIGILL_G4");

@@ -1337,45 +1337,47 @@ md_apply_fix (fixS *fixP,
     /* Just force these to become relocs */
     case BFD_RELOC_FLARE32_G1G5G6_S5:
       ////tmp.buf = bfd_putb16 (bfd_getb16 (tmp.buf));
-      //if (fixP->fx_addsy == NULL
-      //  || flare32_relaxable_symbol (fixP->fx_addsy))
-      //{
-      //  tmp.insn = bfd_getb16 (tmp.buf);
-      //  flare32_set_insn_field_ei_p
-      //    (&flare32_enc_info_g1g5g6_s5, &tmp.insn,
-      //      (flare32_temp_t)(*valP));
-      //  bfd_putb16 (tmp.insn, tmp.buf);
-      //  if (
-      //    //!linkrelax
-      //    //&& 
-      //    fixP->fx_addsy == NULL)
-      //  {
-      //    fixP->fx_done = true;
-      //  }
-      //}
+      if (fixP->fx_addsy == NULL
+        //|| flare32_relaxable_symbol (fixP->fx_addsy)
+        )
+      {
+        tmp.insn = bfd_getb16 (tmp.buf);
+        flare32_set_insn_field_ei_p
+          (&flare32_enc_info_g1g5g6_s5, &tmp.insn,
+            (flare32_temp_t)(*valP));
+        bfd_putb16 (tmp.insn, tmp.buf);
+        //if (
+        //  //!linkrelax
+        //  //&& 
+        //  fixP->fx_addsy == NULL)
+        {
+          fixP->fx_done = true;
+        }
+      }
       break;
     case BFD_RELOC_FLARE32_G1G5G6_S17:
-      //if (fixP->fx_addsy == NULL
-      //  || flare32_relaxable_symbol (fixP->fx_addsy))
-      //{
-      //  tmp.pre_offs = 0;
-      //  tmp.insn_offs = tmp.pre_offs
-      //  + flare32_have_plp_distance
-      //    (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
-      //  tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
-      //  tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
-      //  flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
-      //    (flare32_temp_t)(*valP));
-      //  bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
-      //  bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
-      //  if (
-      //    //!linkrelax
-      //    //&&
-      //    fixP->fx_addsy == NULL)
-      //  {
-      //    fixP->fx_done = true;
-      //  }
-      //}
+      if (fixP->fx_addsy == NULL
+        //|| flare32_relaxable_symbol (fixP->fx_addsy)
+        )
+      {
+        tmp.pre_offs = 0;
+        tmp.insn_offs = tmp.pre_offs
+        + flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
+        tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
+        tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+        flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
+          (flare32_temp_t)(*valP));
+        bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
+        bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+        //if (
+        //  //!linkrelax
+        //  //&&
+        //  fixP->fx_addsy == NULL)
+        {
+          fixP->fx_done = true;
+        }
+      }
       break;
     //case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
     //  if (fixP->fx_addsy == NULL)
@@ -1618,21 +1620,31 @@ md_apply_fix (fixS *fixP,
             break;
         }
       }
-      //else if (
-      //  (
-      //    fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
-      //    || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
-      //  ) && (
-      //    fixP->fx_addsy == NULL
-      //    || flare32_relaxable_symbol (fixP->fx_addsy)
-      //  )
-      //)
-      //{
-      //  if (fixP->fx_addsy == NULL)
-      //  {
-      //    fixP->fx_done = true;
-      //  }
-      //}
+      else if (
+        (
+          fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+        ) && (
+          fixP->fx_addsy == NULL
+          //|| flare32_relaxable_symbol (fixP->fx_addsy)
+        )
+      )
+      {
+        tmp.lpre_offs = 0;
+        tmp.insn_offs = tmp.lpre_offs
+          + flare32_have_plp_distance
+            (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
+        tmp.prefix_insn = bfd_getb32 (tmp.buf + tmp.lpre_offs);
+        tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+        flare32_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
+          (flare32_temp_t)(*valP));
+        bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
+        bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+        //if (fixP->fx_addsy == NULL)
+        {
+          fixP->fx_done = true;
+        }
+      }
       break;
 
     default:
@@ -2369,12 +2381,12 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
       }
       else
       {
-        if (relax_insn->is_pcrel)
-        {
-          fprintf (stderr,
-            "flare32_relax_temp_ctor (): pcrel: shrink by 2: %li\n",
-            (long)(self->value - shrink_one_unit_dist));
-        }
+        //if (relax_insn->is_pcrel)
+        //{
+        //  fprintf (stderr,
+        //    "flare32_relax_temp_ctor (): pcrel: shrink by 2: %li\n",
+        //    (long)(self->value - shrink_one_unit_dist));
+        //}
         self->length
           //= 4;
           = have_plp_insn_length (FLARE32_HAVE_PLP_PRE);

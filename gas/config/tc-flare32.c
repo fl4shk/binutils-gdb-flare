@@ -116,10 +116,15 @@ typedef struct flare32_relax_insn_t
     curr_bitsize,
     target_bitsize,
     grp_value;
+  //flare32_oparg_t
+  //  oparg;
+  const flare32_opc_info_t
+    *opc_info;
   bool
     is_pcrel: 1,
     was_lpre: 1,
     have_imm: 1;
+    //imm_unsigned: 1;
   //unsigned
   //  length;
 } flare32_relax_insn_t;
@@ -135,6 +140,9 @@ typedef struct flare32_cl_insn_t
   flare32_temp_t data;
 
   bfd_reloc_code_real_type r_type;
+  bool
+    no_relax: 1,
+    small_imm_unsigned: 1;
 
   //symbolS *fr_symbol;
   ///* Idea for the following members borrowed from "tc-riscv.c":
@@ -151,8 +159,9 @@ typedef struct flare32_cl_insn_t
 static bool
 flare32_cl_insn_no_relax (const flare32_cl_insn_t *cl_insn)
 {
-  return (cl_insn->r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
-    || cl_insn->r_type == BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX);
+  //return (cl_insn->r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+  //  || cl_insn->r_type == BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX);
+  return cl_insn->no_relax;
 }
 
 typedef struct flare32_relax_temp_t
@@ -173,7 +182,8 @@ static bool
 have_relaxable_temp_insn (fragS *fragP);
 static bool
 relax_can_shrink_value (bfd_vma value,
-  flare32_temp_t curr_bitsize, flare32_temp_t target_bitsize);
+  flare32_temp_t curr_bitsize, flare32_temp_t target_bitsize,
+  bool have_small_imm_unsigned_target);
 static void
 flare32_relax_insn_ctor (flare32_relax_insn_t *self,
   flare32_cl_insn_t *cl_insn);
@@ -234,9 +244,9 @@ static relax_substateT
 //      case FLARE32_OA_RA_FP_S5:
 //        printf ("FLARE32_OA_RA_FP_S5\n");
 //        break;
-//      case FLARE32_OA_S5:
-//        printf ("FLARE32_OA_S5\n");
-//        break;
+//      //case FLARE32_OA_S5:
+//      //  printf ("FLARE32_OA_S5\n");
+//      //  break;
 //      case FLARE32_OA_RA:
 //        printf ("FLARE32_OA_RA\n");
 //        break;
@@ -474,13 +484,14 @@ typedef struct flare32_parse_data_t
     nlen;
     //nbytes;
   bool
-    have_index,
-    have_imm,
-    have_cpy64,
-    //have_simm,
-    is_pcrel,
-    no_relax,
-    parse_good;
+    have_index : 1,
+    have_imm : 1,
+    small_imm_unsigned: 1,
+    have_cpy64 : 1,
+    //have_simm : 1,
+    is_pcrel : 1,
+    no_relax : 1,
+    parse_good : 1;
   expressionS
     ex,
     ex_1;
@@ -693,7 +704,7 @@ flare32_enc_temp_insn_lpre_rshift
     case FLARE32_G5_GRP_VALUE:
     case FLARE32_G6_GRP_VALUE:
       return flare32_enc_temp_insn_g1g5g6_lpre
-        (simm >> FLARE32_G1G5G6_S5_BITSIZE);
+        (simm >> FLARE32_G1G5G6_I5_BITSIZE);
     case FLARE32_G3_GRP_VALUE:
       return flare32_enc_temp_insn_g3_lpre
         (simm >> FLARE32_G3_S9_BITSIZE);
@@ -715,7 +726,7 @@ flare32_enc_temp_insn_lpre_rshift
 //    case FLARE32_G5_GRP_VALUE:
 //    case FLARE32_G6_GRP_VALUE:
 //      return flare32_enc_temp_insn_pre
-//        (simm >> FLARE32_G1G5G6_S5_BITSIZE);
+//        (simm >> FLARE32_G1G5G6_I5_BITSIZE);
 //    case FLARE32_G3_GRP_VALUE:
 //      return flare32_enc_temp_insn_pre
 //        (simm >> FLARE32_G3_S9_BITSIZE);
@@ -1342,6 +1353,7 @@ md_apply_fix (fixS *fixP,
   switch (fixP->fx_r_type)
   {
     /* Just force these to become relocs */
+    case BFD_RELOC_FLARE32_G1G5G6_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S5:
       ////tmp.buf = bfd_putb16 (bfd_getb16 (tmp.buf));
       if (fixP->fx_addsy == NULL
@@ -1350,10 +1362,10 @@ md_apply_fix (fixS *fixP,
       {
         tmp.insn = bfd_getb16 (tmp.buf);
         flare32_set_insn_field_ei_p
-          (&flare32_enc_info_g1g5g6_s5, &tmp.insn,
+          (&flare32_enc_info_g1g5g6_i5, &tmp.insn,
             (flare32_temp_t)(*valP));
         fixP->fx_addnumber = *valP = flare32_get_insn_field_ei
-          (&flare32_enc_info_g1g5g6_s5, tmp.insn);
+          (&flare32_enc_info_g1g5g6_i5, tmp.insn);
         bfd_putb16 (tmp.insn, tmp.buf);
         //if (
         //  //!linkrelax
@@ -1367,6 +1379,7 @@ md_apply_fix (fixS *fixP,
         //  fixP->fx_addnumber);
       }
       break;
+    case BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S17:
       if (fixP->fx_addsy == NULL
         //|| flare32_relaxable_symbol (fixP->fx_addsy)
@@ -1374,8 +1387,8 @@ md_apply_fix (fixS *fixP,
       {
         tmp.pre_offs = 0;
         tmp.insn_offs = tmp.pre_offs
-        + flare32_have_plp_distance
-          (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
+          + flare32_have_plp_distance
+            (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
         tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
         tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
         flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
@@ -1503,6 +1516,8 @@ md_apply_fix (fixS *fixP,
       //}
       break;
 
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_ADD32:
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_SUB32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_ADD32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_SUB32:
     case BFD_RELOC_FLARE32_PSEUDO_ADD8:
@@ -1519,6 +1534,8 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_32:
     /* TODO: determine whether the below two `case`s should be here, or
       below the `if` statement. */
+    //case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
+    //case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     //case BFD_RELOC_FLARE32_G1G5G6_S32:
     //case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
       /* Blindly copied from RISC-V. */
@@ -1542,6 +1559,8 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_64:
     case BFD_RELOC_16:
     case BFD_RELOC_8:
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     case BFD_RELOC_FLARE32_G1G5G6_S32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
     case BFD_RELOC_FLARE32_CFA:
@@ -1570,6 +1589,12 @@ md_apply_fix (fixS *fixP,
           case BFD_RELOC_8:
             fixP->fx_r_type = BFD_RELOC_FLARE32_PSEUDO_ADD8;
             fixP->fx_next->fx_r_type = BFD_RELOC_FLARE32_PSEUDO_SUB8;
+            break;
+          case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
+          case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
+            fixP->fx_r_type = BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_ADD32;
+            fixP->fx_next->fx_r_type
+              = BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_SUB32;
             break;
           case BFD_RELOC_FLARE32_G1G5G6_S32:
           case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
@@ -1637,7 +1662,10 @@ md_apply_fix (fixS *fixP,
       }
       else if (
         (
-          fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+          fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5
+          || fixP->fx_r_type
+            == BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
           || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
         ) && (
           fixP->fx_addsy == NULL
@@ -2210,15 +2238,19 @@ have_relaxable_temp_insn (fragS *fragP)
 
 static bool
 relax_can_shrink_value (bfd_vma value,
-  flare32_temp_t curr_bitsize, flare32_temp_t target_bitsize)
+  flare32_temp_t curr_bitsize, flare32_temp_t target_bitsize,
+  bool have_small_imm_unsigned_target)
 {
   flare32_temp_t
-    curr_value_se = flare32_sign_extend (value, curr_bitsize),
-    target_value_se = flare32_sign_extend (value, target_bitsize);
+    curr_value_ext = flare32_sign_extend (value, curr_bitsize),
+    target_value_ext
+      = !have_small_imm_unsigned_target
+      ? flare32_sign_extend (value, target_bitsize)
+      : flare32_zero_extend (value, target_bitsize);
 
   return (
-    (uint32_t) curr_value_se
-    == (uint32_t) target_value_se
+    (uint32_t) curr_value_ext
+    == (uint32_t) target_value_ext
   );
 }
 
@@ -2242,21 +2274,24 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           //return false;
           //return 2;
           //self->length = 2;
-          // TODO: determine if we need this `abort ()` call
-          abort ();
+          // For the sake of not having assembler errors somewhere down the
+          // line, don't include this `abort ()` call, in case any new
+          // instructions are added to this instruction group and don't
+          // have an immediate.
+          //abort ();
           //self->prefix_insn_bitsize = 0;
-          //self->insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+          //self->insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
           //self->target_bitsize = self->insn_bitsize;
           break;
         case FLARE32_HAVE_PLP_PRE:
           self->prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
-          self->insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+          self->insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
           self->target_bitsize = self->insn_bitsize;
           break;
         case FLARE32_HAVE_PLP_LPRE:
           self->prefix_insn_bitsize
             = FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE;
-          self->insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+          self->insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
           self->target_bitsize
             = FLARE32_G0_PRE_S12_BITSIZE + self->insn_bitsize;
           self->was_lpre = true;
@@ -2271,7 +2306,10 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           //return false;
           //return 2;
           //self->length = 2;
-          // TODO: determine if we need this `abort ()` call
+          // For the sake of not having assembler errors somewhere down the
+          // line, don't include this `abort ()` call, in case any new
+          // instructions are added to this instruction group and don't
+          // have an immediate.
           //abort ();
           break;
         case FLARE32_HAVE_PLP_PRE:
@@ -2295,8 +2333,6 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
       break;
     default:
       //return false;
-      // TODO: determine if we need this `abort ()` call
-      //abort ();
       break;
   }
   self->curr_bitsize
@@ -2375,7 +2411,8 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
           - shrink_one_unit_dist,
       //self->value,
       relax_insn->curr_bitsize,
-      relax_insn->target_bitsize)
+      relax_insn->target_bitsize,
+      (!relax_insn->was_lpre && cl_insn->small_imm_unsigned))
     )
     {
       if ((self->rm_prefix = (
@@ -2389,7 +2426,8 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
               - shrink_two_units_dist,
           //self->value,
           relax_insn->prefix_insn_bitsize,
-          relax_insn->insn_bitsize)
+          relax_insn->insn_bitsize,
+          cl_insn->small_imm_unsigned)
       )))
       {
         //if (relax_insn->is_pcrel)
@@ -2460,7 +2498,7 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
             if (!relax_insn->is_pcrel)
             {
               (void) flare32_set_insn_field_ei_p
-                (&flare32_enc_info_g1g5g6_s5,
+                (&flare32_enc_info_g1g5g6_i5,
                 &cl_insn->data,
                 self->value);
             }
@@ -2504,7 +2542,7 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
           if (!relax_insn->is_pcrel)
           {
             (void) flare32_set_insn_field_ei_p
-              (&flare32_enc_info_g1g5g6_s5, &cl_insn->data, self->value);
+              (&flare32_enc_info_g1g5g6_i5, &cl_insn->data, self->value);
           }
           else
           {
@@ -2608,6 +2646,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
 
   switch (*r_type)
   {
+    case BFD_RELOC_FLARE32_G1G5G6_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S5:
     case BFD_RELOC_FLARE32_G3_S9_PCREL:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
@@ -2627,6 +2666,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       }
       break;
 
+    case BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S17:
     case BFD_RELOC_FLARE32_G3_S21_PCREL:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
@@ -2643,9 +2683,14 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type = !relax_insn->is_pcrel
-          ? BFD_RELOC_FLARE32_G1G5G6_S5
-          : BFD_RELOC_FLARE32_G3_S9_PCREL;
+        *r_type
+          = !cl_insn->small_imm_unsigned
+          ? (
+            !relax_insn->is_pcrel
+            ? BFD_RELOC_FLARE32_G1G5G6_S5
+            : BFD_RELOC_FLARE32_G3_S9_PCREL
+          )
+          : BFD_RELOC_FLARE32_G1G5G6_U5;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
           //4,
@@ -2664,6 +2709,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         abort ();
       }
       break;
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S32:
     case BFD_RELOC_FLARE32_G3_S32_PCREL:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
@@ -2679,9 +2725,13 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type = !relax_insn->is_pcrel
-          ? BFD_RELOC_FLARE32_G1G5G6_S5
-          : BFD_RELOC_FLARE32_G3_S9_PCREL;
+        *r_type = 
+          !cl_insn->small_imm_unsigned
+          ? (
+            !relax_insn->is_pcrel
+            ? BFD_RELOC_FLARE32_G1G5G6_S5
+            : BFD_RELOC_FLARE32_G3_S9_PCREL
+          ) : BFD_RELOC_FLARE32_G1G5G6_U5;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
           //4,
@@ -2725,9 +2775,13 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type = !relax_insn->is_pcrel
-          ? BFD_RELOC_FLARE32_G1G5G6_S17
-          : BFD_RELOC_FLARE32_G3_S21_PCREL;
+        *r_type
+          = !cl_insn->small_imm_unsigned
+          ? (
+            !relax_insn->is_pcrel
+            ? BFD_RELOC_FLARE32_G1G5G6_S17
+            : BFD_RELOC_FLARE32_G3_S21_PCREL
+          ) : BFD_RELOC_FLARE32_G1G5G6_S17;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           4, &exp, (int) relax_insn->is_pcrel, *r_type);
       }
@@ -2745,6 +2799,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       }
       break;
 
+    case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
     case BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_LPRE))
@@ -2788,7 +2843,8 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
   //bfd_reloc_code_real_type r_type;
 
   memset (&cl_insn, 0, sizeof (cl_insn));
-  //cl_insn.no_relax = pd->no_relax;
+  cl_insn.no_relax = pd->no_relax;
+  cl_insn.small_imm_unsigned = pd->small_imm_unsigned;
   if (!pd->have_imm)
   {
     //pd->nbytes = 2;
@@ -2809,6 +2865,8 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
     ////  pd->nbytes
     ////}
     ////else
+    //if (!flare32_oparg_has_u5(pd->opc_info->oparg))
+    if (!cl_insn.small_imm_unsigned)
     {
       //pd->nbytes = 6;
       cl_insn.r_type
@@ -2824,6 +2882,13 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
             : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
           )
         );
+    }
+    else
+    {
+      cl_insn.r_type
+        = !pd->no_relax
+        ? BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5
+        : BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX;
     }
     //pd->p = frag_more (pd->nbytes);
 
@@ -3200,7 +3265,21 @@ md_assemble (char *str)
       //  pd.have_imm = true;
       //}
       //  break;
-      case FLARE32_OA_S5:
+      case FLARE32_OA_RA_U5:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_EXP ();
+
+        pd.parse_good = true;
+        pd.have_imm = true;
+        pd.small_imm_unsigned = true;
+      }
+        break;
+      case FLARE32_OA_U5:
       {
         FLARE32_SKIP_ISSPACE ();
 
@@ -3208,6 +3287,7 @@ md_assemble (char *str)
 
         pd.parse_good = true;
         pd.have_imm = true;
+        pd.small_imm_unsigned = true;
       }
         break;
       case FLARE32_OA_RA:
@@ -3674,12 +3754,12 @@ md_assemble (char *str)
     //  2);
     //dwarf2_emit_insn (2);
 
-    /* Per RISC-V: */
-    /* We need to start a new frag after any instruction that can be
-      optimized away or compressed by the linker during relaxation,
-      to prevent the assembler from computing static offsets across such
-      an instruction.
-      This is necessary to get correct EH info.  */
+    ///* Per RISC-V: */
+    ///* We need to start a new frag after any instruction that can be
+    //  optimized away or compressed by the linker during relaxation,
+    //  to prevent the assembler from computing static offsets across such
+    //  an instruction.
+    //  This is necessary to get correct EH info.  */
     //frag_wane (frag_now);
     //frag_new (0);
   }

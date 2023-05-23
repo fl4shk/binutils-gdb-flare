@@ -29,8 +29,11 @@
 
 /* Forward declarations. */
 /* Special function for
+  `R_FLARE32_G1G5G6_U5`, `R_FLARE32_G1G5G6_S17_FOR_U5`,
+    `R_FLARE32_G1G5G6_S32_FOR_U5`,
+    `R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX`,
   `R_FLARE32_G1G5G6_S5`, `R_FLARE32_G1G5G6_S17`, `R_FLARE32_G1G5G6_S32`,
-  `R_FLARE32_G1G5G6_S32_NO_RELAX`,
+    `R_FLARE32_G1G5G6_S32_NO_RELAX`,
   `R_FLARE32_G3_S9_PCREL`, `R_FLARE32_G3_S21_PCREL`,
   `R_FLARE32_G3_S32_PCREL`, `R_FLARE32_G3_S32_PCREL_NO_RELAX` */
 static bfd_reloc_status_type
@@ -138,18 +141,115 @@ static reloc_howto_type flare32_elf_howto_table [] =
   /* -------- */
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 without `pre`/`lpre` */
+  HOWTO (R_FLARE32_G1G5G6_U5,   /* type */
+      0,                        /* rightshift */
+      1,                        /* size (0 = byte, 1 = short, 2 = long) */
+      5,                        /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_unsigned, /* complain_on_overflow */
+      flare32_elf_non_sub_imm_reloc,    /* special_function */
+      "R_FLARE32_G1G5G6_U5",    /* name */
+      false,                    /* partial_inplace */
+      0x0000,                   /* src_mask */
+      FLARE32_G1G5G6_I5_MASK,   /* dst_mask */
+      false),                   /* pcrel_offset */
+
+  /* A relocation for the immediate value of an instruction in 
+  group 1, 5, or 6 with `pre` */
+  HOWTO (R_FLARE32_G1G5G6_S17_FOR_U5,  /* type */
+      0,                        /* rightshift */
+      2,                        /* size (0 = byte, 1 = short, 2 = long) */
+      17,                       /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_dont,   /* complain_on_overflow */
+      flare32_elf_non_sub_imm_reloc,  /* special_function */
+      "R_FLARE32_G1G5G6_S17_FOR_U5",   /* name */
+      false,                    /* partial_inplace */
+      0x00000000,               /* src_mask */
+      /* dst_mask */
+      (FLARE32_PRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK), //0x0fff1f00,
+      false),                   /* pcrel_offset */
+
+  /* A relocation for the immediate value of an instruction in 
+  group 1, 5, or 6 with `lpre` */
+  HOWTO (R_FLARE32_G1G5G6_S32_FOR_U5,  /* type */
+      0,                        /* rightshift */
+      4,                        /* size (0 = byte, 1 = short, 2 = long) */
+      32,                       /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_dont,   /* complain_on_overflow */
+      flare32_elf_non_sub_imm_reloc,  /* special_function */
+      "R_FLARE32_G1G5G6_S32_FOR_U5",   /* name */
+      false,                    /* partial_inplace */
+      0x0,                      /* src_mask */
+      /* dst_mask */
+      //(bfd_vma)0x07ffffff1f00, 
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
+      false),                   /* pcrel_offset */
+
+  HOWTO (R_FLARE32_G1G5G6_S32_FOR_U5_ADD32,  /* type */
+      0,                        /* rightshift */
+      4,                        /* size (0 = byte, 1 = short, 2 = long) */
+      32,                       /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_dont,   /* complain_on_overflow */
+      flare32_elf_add_sub_reloc,  /* special_function */
+      "R_FLARE32_G1G5G6_S32_FOR_U5_ADD32",   /* name */
+      false,                    /* partial_inplace */
+      0x0,                      /* src_mask */
+      /* dst_mask */
+      //(bfd_vma)0x07ffffff1f00, 
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
+      false),                   /* pcrel_offset */
+  HOWTO (R_FLARE32_G1G5G6_S32_FOR_U5_SUB32,  /* type */
+      0,                        /* rightshift */
+      4,                        /* size (0 = byte, 1 = short, 2 = long) */
+      32,                       /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_dont,   /* complain_on_overflow */
+      flare32_elf_add_sub_reloc,  /* special_function */
+      "R_FLARE32_G1G5G6_S32_FOR_U5_SUB32",   /* name */
+      false,                    /* partial_inplace */
+      0x0,                      /* src_mask */
+      /* dst_mask */
+      //(bfd_vma)0x07ffffff1f00, 
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
+      false),                   /* pcrel_offset */
+
+  HOWTO (R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX,  /* type */
+      0,                        /* rightshift */
+      4,                        /* size (0 = byte, 1 = short, 2 = long) */
+      32,                       /* bitsize */
+      false,                    /* pc_relative */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
+      complain_overflow_dont,   /* complain_on_overflow */
+      flare32_elf_non_sub_imm_reloc,  /* special_function */
+      "R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX",   /* name */
+      false,                    /* partial_inplace */
+      0x0,                      /* src_mask */
+      /* dst_mask */
+      //(bfd_vma)0x07ffffff1f00, 
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
+      false),                   /* pcrel_offset */
+  /* A relocation for the immediate value of an instruction in 
+  group 1, 5, or 6 without `pre`/`lpre` */
   HOWTO (R_FLARE32_G1G5G6_S5,   /* type */
       0,                        /* rightshift */
       1,                        /* size (0 = byte, 1 = short, 2 = long) */
       5,                        /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_signed, /* complain_on_overflow */
       flare32_elf_non_sub_imm_reloc,    /* special_function */
       "R_FLARE32_G1G5G6_S5",    /* name */
       false,                    /* partial_inplace */
       0x0000,                   /* src_mask */
-      FLARE32_G1G5G6_S5_MASK,   /* dst_mask */
+      FLARE32_G1G5G6_I5_MASK,   /* dst_mask */
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
@@ -159,14 +259,14 @@ static reloc_howto_type flare32_elf_howto_table [] =
       2,                        /* size (0 = byte, 1 = short, 2 = long) */
       17,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare32_elf_non_sub_imm_reloc,  /* special_function */
       "R_FLARE32_G1G5G6_S17",   /* name */
       false,                    /* partial_inplace */
       0x00000000,               /* src_mask */
       /* dst_mask */
-      (FLARE32_PRE_EXT_LSMASK | FLARE32_G1G5G6_S5_MASK), //0x0fff1f00,
+      (FLARE32_PRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK), //0x0fff1f00,
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
@@ -176,7 +276,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare32_elf_non_sub_imm_reloc,  /* special_function */
       "R_FLARE32_G1G5G6_S32",   /* name */
@@ -184,7 +284,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_S5_MASK),
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
       false),                   /* pcrel_offset */
 
   HOWTO (R_FLARE32_G1G5G6_S32_ADD32,  /* type */
@@ -192,7 +292,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare32_elf_add_sub_reloc,  /* special_function */
       "R_FLARE32_G1G5G6_S32_ADD32",   /* name */
@@ -200,14 +300,14 @@ static reloc_howto_type flare32_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_S5_MASK),
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
       false),                   /* pcrel_offset */
   HOWTO (R_FLARE32_G1G5G6_S32_SUB32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare32_elf_add_sub_reloc,  /* special_function */
       "R_FLARE32_G1G5G6_S32_SUB32",   /* name */
@@ -215,7 +315,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_S5_MASK),
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
       false),                   /* pcrel_offset */
 
   HOWTO (R_FLARE32_G1G5G6_S32_NO_RELAX,  /* type */
@@ -223,7 +323,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE32_G1G5G6_S5_BITPOS, /* bitpos */
+      FLARE32_G1G5G6_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare32_elf_non_sub_imm_reloc,  /* special_function */
       "R_FLARE32_G1G5G6_S32_NO_RELAX",   /* name */
@@ -231,7 +331,7 @@ static reloc_howto_type flare32_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_S5_MASK),
+      (FLARE32_G1G5G6_LPRE_EXT_LSMASK | FLARE32_G1G5G6_I5_MASK),
       false),                   /* pcrel_offset */
   /* -------- */
   /* A relocation for the immediate value of an instruction in 
@@ -567,6 +667,16 @@ static const struct flare32_reloc_map flare32_reloc_map [] =
   { BFD_RELOC_32, R_FLARE32_32 },
   { BFD_RELOC_64, R_FLARE32_64 },
   /* -------- */
+  { BFD_RELOC_FLARE32_G1G5G6_U5, R_FLARE32_G1G5G6_U5 },
+  { BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5, R_FLARE32_G1G5G6_S17_FOR_U5 },
+  { BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5, R_FLARE32_G1G5G6_S32_FOR_U5 },
+  { BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_ADD32,
+    R_FLARE32_G1G5G6_S32_FOR_U5_ADD32 },
+  { BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_SUB32,
+    R_FLARE32_G1G5G6_S32_FOR_U5_SUB32 },
+  { BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX,
+    R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX },
+
   { BFD_RELOC_FLARE32_G1G5G6_S5, R_FLARE32_G1G5G6_S5 },
   { BFD_RELOC_FLARE32_G1G5G6_S17, R_FLARE32_G1G5G6_S17 },
   { BFD_RELOC_FLARE32_G1G5G6_S32, R_FLARE32_G1G5G6_S32 },
@@ -696,8 +806,11 @@ flare32_elf_info_to_howto (bfd *abfd,
 //  return bfd_reloc_ok;
 //}
 /* Special function for
+  `R_FLARE32_G1G5G6_U5`, `R_FLARE32_G1G5G6_S17_FOR_U5`,
+    `R_FLARE32_G1G5G6_S32_FOR_U5`,
+    `R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX`,
   `R_FLARE32_G1G5G6_S5`, `R_FLARE32_G1G5G6_S17`, `R_FLARE32_G1G5G6_S32`,
-  `R_FLARE32_G1G5G6_S32_NO_RELAX`,
+    `R_FLARE32_G1G5G6_S32_NO_RELAX`,
   `R_FLARE32_G3_S9_PCREL`, `R_FLARE32_G3_S21_PCREL`,
   `R_FLARE32_G3_S32_PCREL`, `R_FLARE32_G3_S32_PCREL_NO_RELAX` */
 static bfd_reloc_status_type
@@ -773,7 +886,11 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
   if (!howto->pc_relative)
   {
     BFD_ASSERT (
-      howto->type == R_FLARE32_G1G5G6_S5
+      howto->type == R_FLARE32_G1G5G6_U5
+      || howto->type == R_FLARE32_G1G5G6_S17_FOR_U5
+      || howto->type == R_FLARE32_G1G5G6_S32_FOR_U5
+      || howto->type == R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+      || howto->type == R_FLARE32_G1G5G6_S5
       || howto->type == R_FLARE32_G1G5G6_S17
       || howto->type == R_FLARE32_G1G5G6_S32
       || howto->type == R_FLARE32_G1G5G6_S32_NO_RELAX
@@ -782,37 +899,51 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     //printf ("flare32_elf_do_non_sub_imm_reloc: !pc_relative: %i\n",
     //  (signed) relocation);
 
-    if (howto->type == R_FLARE32_G1G5G6_S5)
+    if (howto->type == R_FLARE32_G1G5G6_U5
+      || howto->type == R_FLARE32_G1G5G6_S5)
     {
+      flare32_temp_t val = 0;
       insn = bfd_get_16 (input_bfd, contents + address);
-      relocation += flare32_sign_extend
-        (flare32_get_insn_field_ei
-          (&flare32_enc_info_g1g5g6_s5, insn),
-        FLARE32_G1G5G6_S5_BITSIZE);
+      val = flare32_get_insn_field_ei
+        (&flare32_enc_info_g1g5g6_i5, insn);
+      relocation += howto->type == R_FLARE32_G1G5G6_S5
+        ? flare32_sign_extend
+          (val, FLARE32_G1G5G6_I5_BITSIZE)
+        : flare32_zero_extend
+          (val, FLARE32_G1G5G6_I5_BITSIZE);
       bfd_put_16 (input_bfd, insn, contents + address);
     }
-    else if (howto->type == R_FLARE32_G1G5G6_S17)
+    else if (howto->type == R_FLARE32_G1G5G6_S17_FOR_U5
+      || howto->type == R_FLARE32_G1G5G6_S17)
     {
+      const unsigned
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
       prefix_insn = bfd_get_16 (input_bfd, contents + address);
-      insn = bfd_get_16 (input_bfd, contents + address + 2U);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       relocation += flare32_sign_extend
         (flare32_get_g1g5g6_s17 (prefix_insn, insn),
-        FLARE32_G1G5G6_S5_BITSIZE + FLARE32_G0_PRE_S12_BITSIZE);
+        FLARE32_G1G5G6_I5_BITSIZE + FLARE32_G0_PRE_S12_BITSIZE);
       flare32_put_g1g5g6_s17 (&prefix_insn, &insn, relocation);
       bfd_put_16 (input_bfd, prefix_insn, contents + address);
-      bfd_put_16 (input_bfd, insn, contents + address + 2U);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
     else // if (
-      //howto->type == R_FLARE32_G1G5G6_S32
+      //howto->type == R_FLARE32_G1G5G6_S32_FOR_U5
+      //|| howto->type == R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+      //|| howto->type == R_FLARE32_G1G5G6_S32
       //|| howto->type == R_FLARE32_G1G5G6_S32_NO_RELAX
     //)
     {
+      const unsigned
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
       prefix_insn = bfd_get_32 (input_bfd, contents + address);
-      insn = bfd_get_16 (input_bfd, contents + address + 4U);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       relocation += flare32_get_g1g5g6_s32 (prefix_insn, insn);
       flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
       bfd_put_32 (input_bfd, prefix_insn, contents + address);
-      bfd_put_16 (input_bfd, insn, contents + address + 4U);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
   }
   else // if (howto->pc_relative)
@@ -841,13 +972,16 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
 
     if (howto->type == R_FLARE32_G3_S9_PCREL)
     {
+      const unsigned
+        temp_length = flare32_have_plp_insn_length
+          (FLARE32_HAVE_PLP_NEITHER);
       insn = bfd_get_16 (input_bfd, contents + address);
       //relocation += flare32_sign_extend
       //  (flare32_get_insn_field_ei (&flare32_enc_info_g3_s9, insn), 
       //    FLARE32_G3_S9_BITSIZE)
       //  - 2ull
       //  ;
-      relocation -= 2ull;
+      relocation -= temp_length;
       //flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
       flare32_set_insn_field_ei_p (&flare32_enc_info_g3_s9, &insn,
         relocation);
@@ -855,36 +989,46 @@ flare32_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     }
     else if (howto->type == R_FLARE32_G3_S21_PCREL)
     {
+      const unsigned
+        temp_length = flare32_have_plp_insn_length
+          (FLARE32_HAVE_PLP_PRE),
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
       prefix_insn = bfd_get_16 (input_bfd, contents + address);
-      insn = bfd_get_16 (input_bfd, contents + address + 2ull);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       //relocation += flare32_sign_extend
       //  (flare32_get_g3_s21 (prefix_insn, insn),
       //  FLARE32_G3_S9_BITSIZE + FLARE32_G0_PRE_S12_BITSIZE)
       //  - 4ull
       //  //- 2ull
       //  ;
-      relocation -= 4ull;
+      relocation -= temp_length;
       flare32_put_g3_s21 (&prefix_insn, &insn, relocation);
       bfd_put_16 (input_bfd, prefix_insn, contents + address);
-      bfd_put_16 (input_bfd, insn, contents + address + 2ull);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
     else // if (
       //howto->type == R_FLARE32_G3_S32_PCREL
       //|| howto->type == R_FLARE32_G3_S32_PCREL_NO_RELAX
     //)
     {
+      const unsigned
+        temp_length = flare32_have_plp_insn_length
+          (FLARE32_HAVE_PLP_LPRE),
+        insn_dist = flare32_have_plp_distance
+          (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
       prefix_insn = bfd_get_32 (input_bfd, contents + address);
-      insn = bfd_get_16 (input_bfd, contents + address + 4ull);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       //relocation += 
       //  flare32_sign_extend (flare32_get_g3_s32 (prefix_insn, insn),
       //    FLARE32_G3_S9_BITSIZE + FLARE32_G3_G0_LPRE_S23_BITSIZE)
       //  - 6ull
       //  //- 4ull
       //  ;
-      relocation -= 6ull;
+      relocation -= temp_length;
       flare32_put_g3_s32 (&prefix_insn, &insn, relocation);
       bfd_put_32 (input_bfd, prefix_insn, contents + address);
-      bfd_put_16 (input_bfd, insn, contents + address + 4ull);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
   }
   /* -------- */
@@ -959,6 +1103,8 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
 
   switch (howto->type)
   {
+    case R_FLARE32_G1G5G6_S32_FOR_U5_ADD32:
+    case R_FLARE32_G1G5G6_S32_FOR_U5_SUB32:
     case R_FLARE32_G1G5G6_S32_ADD32:
     case R_FLARE32_G1G5G6_S32_SUB32:
     //case R_FLARE32_G3_S32_PCREL_ADD32:
@@ -980,11 +1126,13 @@ flare32_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
 
       switch (howto->type)
       {
+        case R_FLARE32_G1G5G6_S32_FOR_U5_ADD32:
         case R_FLARE32_G1G5G6_S32_ADD32:
           simm = flare32_get_g1g5g6_s32 (prefix_insn, insn);
           relocation += simm;
           flare32_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
           break;
+        case R_FLARE32_G1G5G6_S32_FOR_U5_SUB32:
         case R_FLARE32_G1G5G6_S32_SUB32:
           simm = flare32_get_g1g5g6_s32 (prefix_insn, insn);
           //relocation -= simm;
@@ -1175,6 +1323,10 @@ flare32_elf_relocate_section (bfd *output_bfd,
             rel->r_addend);
           break;
 
+        case R_FLARE32_G1G5G6_U5:
+        case R_FLARE32_G1G5G6_S17_FOR_U5:
+        case R_FLARE32_G1G5G6_S32_FOR_U5:
+        case R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
         case R_FLARE32_G1G5G6_S5:
         case R_FLARE32_G1G5G6_S17:
         case R_FLARE32_G1G5G6_S32:
@@ -1189,6 +1341,8 @@ flare32_elf_relocate_section (bfd *output_bfd,
                 rel->r_addend);
           break;
 
+        case R_FLARE32_G1G5G6_S32_FOR_U5_ADD32:
+        case R_FLARE32_G1G5G6_S32_FOR_U5_SUB32:
         case R_FLARE32_G1G5G6_S32_ADD32:
         case R_FLARE32_G1G5G6_S32_SUB32:
         //case R_FLARE32_G3_S32_PCREL_ADD32:
@@ -1293,41 +1447,52 @@ flare32_elf_relocate_section (bfd *output_bfd,
 }
 /* -------- */
 static bool
-flare32_relax_can_shrink_value (bfd_vma value,
-                                flare32_temp_t curr_bitsize,
-                                flare32_temp_t target_bitsize)
+relax_can_shrink_value (bfd_vma value,
+  flare32_temp_t curr_bitsize, flare32_temp_t target_bitsize,
+  bool have_small_imm_unsigned_target)
 {
-  //bool ret = (
-  //  (bfd_signed_vma) value
-  //    == ((
-  //      (bfd_signed_vma) value
-  //      << (curr_bitsize - target_bitsize)
-  //    ) >> (curr_bitsize - target_bitsize))
+  ////bool ret = (
+  ////  (bfd_signed_vma) value
+  ////    == ((
+  ////      (bfd_signed_vma) value
+  ////      << (curr_bitsize - target_bitsize)
+  ////    ) >> (curr_bitsize - target_bitsize))
+  ////);
+
+
+  ////flare32_temp_t shift_amount = curr_bitsize - target_bitsize;
+  ////bfd_vma
+  ////  target_value = value 
+  ////    & (((bfd_vma) 1ull << shift_amount) - (bfd_vma) 1ull),
+  ////  target_value_se
+  ////    = flare32_sign_extend (target_value, target_bitsize);
+  ////printf ("flare32 relax can shrink: 0x%x; 0x%x 0x%x; %d %d\n",
+  ////  (unsigned) value,
+  ////  (unsigned) target_value, (unsigned) target_value_se,
+  ////  (unsigned) curr_bitsize, (unsigned) target_bitsize);
+  //flare32_temp_t
+  //  curr_value_se = flare32_sign_extend (value, curr_bitsize),
+  //  target_value_se = flare32_sign_extend (value, target_bitsize);
+
+  ////printf ("flare32_relax_can_shrink_value: 0x%x; 0x%x 0x%x; %d\n",
+  ////  (unsigned) value,
+  ////  (unsigned) curr_value_se, (unsigned) target_value_se,
+  ////  (uint32_t) curr_value_se == (uint32_t) target_value_se);
+
+  //return (
+  //  (uint32_t) curr_value_se
+  //  == (uint32_t) target_value_se
   //);
-
-
-  //flare32_temp_t shift_amount = curr_bitsize - target_bitsize;
-  //bfd_vma
-  //  target_value = value 
-  //    & (((bfd_vma) 1ull << shift_amount) - (bfd_vma) 1ull),
-  //  target_value_se
-  //    = flare32_sign_extend (target_value, target_bitsize);
-  //printf ("flare32 relax can shrink: 0x%x; 0x%x 0x%x; %d %d\n",
-  //  (unsigned) value,
-  //  (unsigned) target_value, (unsigned) target_value_se,
-  //  (unsigned) curr_bitsize, (unsigned) target_bitsize);
   flare32_temp_t
-    curr_value_se = flare32_sign_extend (value, curr_bitsize),
-    target_value_se = flare32_sign_extend (value, target_bitsize);
-
-  //printf ("flare32_relax_can_shrink_value: 0x%x; 0x%x 0x%x; %d\n",
-  //  (unsigned) value,
-  //  (unsigned) curr_value_se, (unsigned) target_value_se,
-  //  (uint32_t) curr_value_se == (uint32_t) target_value_se);
+    curr_value_ext = flare32_sign_extend (value, curr_bitsize),
+    target_value_ext
+      = !have_small_imm_unsigned_target
+      ? flare32_sign_extend (value, target_bitsize)
+      : flare32_zero_extend (value, target_bitsize);
 
   return (
-    (uint32_t) curr_value_se
-    == (uint32_t) target_value_se
+    (uint32_t) curr_value_ext
+    == (uint32_t) target_value_ext
   );
 }
 typedef struct flare32_relax_temp_t
@@ -1344,6 +1509,7 @@ typedef struct flare32_relax_temp_t
   bool is_pc_relative: 1;
   bool rm_prefix: 1;
   bool was_lpre: 1;
+  bool small_imm_unsigned: 1;
   flare32_temp_t curr_bitsize;
   flare32_temp_t target_bitsize;
 } flare32_relax_temp_t;
@@ -1593,7 +1759,7 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
           if (!args->is_pc_relative)
           {
             (void) flare32_set_insn_field_ei_p
-              (&flare32_enc_info_g1g5g6_s5, &insn, simm);
+              (&flare32_enc_info_g1g5g6_i5, &insn, simm);
           }
           else // if (args->is_pc_relative)
           {
@@ -1622,9 +1788,12 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
       }
       args->irel->r_info
         = ELF32_R_INFO (ELF32_R_SYM (args->irel->r_info),
-          !args->is_pc_relative
-          ? R_FLARE32_G1G5G6_S5
-          : R_FLARE32_G3_S9_PCREL);
+          !args->small_imm_unsigned
+          ? (
+            !args->is_pc_relative
+            ? R_FLARE32_G1G5G6_S5
+            : R_FLARE32_G3_S9_PCREL
+          ) : R_FLARE32_G1G5G6_U5);
     }
     else // if (!args->rm_prefix) // convert the `lpre` to a `pre`
     {
@@ -1699,9 +1868,12 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
 
       args->irel->r_info
         = ELF32_R_INFO (ELF32_R_SYM (args->irel->r_info),
-          !args->is_pc_relative
-          ? R_FLARE32_G1G5G6_S17
-          : R_FLARE32_G3_S21_PCREL);
+          !args->small_imm_unsigned
+          ? (
+            !args->is_pc_relative
+            ? R_FLARE32_G1G5G6_S17
+            : R_FLARE32_G3_S21_PCREL
+          ) : R_FLARE32_G1G5G6_S17_FOR_U5);
     }
   }
   else // if (!args->was_lpre) // remove the `pre` instruction
@@ -1728,7 +1900,7 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
         if (!args->is_pc_relative)
         {
           (void) flare32_set_insn_field_ei_p
-            (&flare32_enc_info_g1g5g6_s5, &insn, simm);
+            (&flare32_enc_info_g1g5g6_i5, &insn, simm);
         }
         else // if (args->is_pc_relative)
         {
@@ -1756,9 +1928,12 @@ flare32_do_relax_prefix_innards (flare32_relax_temp_t *args)
     }
     args->irel->r_info
       = ELF32_R_INFO (ELF32_R_SYM (args->irel->r_info),
-        !args->is_pc_relative
-        ? R_FLARE32_G1G5G6_S5
-        : R_FLARE32_G3_S9_PCREL);
+        !args->small_imm_unsigned
+        ? (
+          !args->is_pc_relative
+          ? R_FLARE32_G1G5G6_S5
+          : R_FLARE32_G3_S9_PCREL
+        ) : R_FLARE32_G1G5G6_U5);
   }
 
   return true;
@@ -1791,7 +1966,9 @@ flare32_do_relax_prefix (bfd *abfd,
   //{
   //}
   //else
-  if (howto->type == R_FLARE32_G1G5G6_S17
+  if (howto->type == R_FLARE32_G1G5G6_S17_FOR_U5
+    || howto->type == R_FLARE32_G1G5G6_S32_FOR_U5
+    || howto->type == R_FLARE32_G1G5G6_S17
     || howto->type == R_FLARE32_G1G5G6_S32
     //|| howto->type == R_FLARE32_G1G5G6_S32_SUB32
     || howto->type == R_FLARE32_G3_S21_PCREL
@@ -1815,7 +1992,13 @@ flare32_do_relax_prefix (bfd *abfd,
       curr_bitsize, target_bitsize = 0;
       //target_value = 0;
     bool
-      was_lpre = false;
+      was_lpre = false,
+      small_imm_unsigned = false;
+    const unsigned
+      shrink_one_unit_dist = flare32_have_plp_distance
+        (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_PRE),
+      shrink_two_units_dist = flare32_have_plp_distance
+        (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
 
     if (howto->pc_relative)
     {
@@ -1830,21 +2013,26 @@ flare32_do_relax_prefix (bfd *abfd,
       //+ 4;
       ;
 
-    if (howto->type == R_FLARE32_G1G5G6_S17)
+    if (howto->type == R_FLARE32_G1G5G6_S17_FOR_U5
+      || howto->type == R_FLARE32_G1G5G6_S17)
     {
+      small_imm_unsigned = (howto->type == R_FLARE32_G1G5G6_S17_FOR_U5);
       prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
-      insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+      insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
       
       target_bitsize = insn_bitsize;
     }
-    else if (howto->type == R_FLARE32_G1G5G6_S32
+    else if (
+      howto->type == R_FLARE32_G1G5G6_S32_FOR_U5
+      || howto->type == R_FLARE32_G1G5G6_S32
       //|| howto->type == R_FLARE32_G1G5G6_S32_SUB32
     )
     {
+      small_imm_unsigned = (howto->type == R_FLARE32_G1G5G6_S32_FOR_U5);
       was_lpre = true;
 
       prefix_insn_bitsize = FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE;
-      insn_bitsize = FLARE32_G1G5G6_S5_BITSIZE;
+      insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
 
       target_bitsize = FLARE32_G0_PRE_S12_BITSIZE + insn_bitsize;
     }
@@ -1879,11 +2067,18 @@ flare32_do_relax_prefix (bfd *abfd,
     //  (unsigned) prefix_insn_bitsize, (unsigned) insn_bitsize,
     //  (unsigned) target_bitsize, (unsigned) curr_bitsize);
 
-    if (flare32_relax_can_shrink_value
-      (!howto->pc_relative ? value
-        : gap - 2ull,
+    if (relax_can_shrink_value
+      (!howto->pc_relative
+        ? value
+        : gap - shrink_one_unit_dist,
         //: gap,
-      curr_bitsize, target_bitsize))
+      curr_bitsize, target_bitsize,
+      !was_lpre && (
+        //howto->type >= R_FLARE32_G1G5G6_U5
+        //&& howto->type <= R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+        small_imm_unsigned
+      ))
+    )
     {
       //printf ("flare32 partial relax: can shrink 0\n");
 
@@ -1903,6 +2098,7 @@ flare32_do_relax_prefix (bfd *abfd,
         howto->pc_relative, /* is_pc_relative */
         true, /* rm_prefix */
         was_lpre, /* was_lpre */
+        small_imm_unsigned, /* small_imm_unsigned */
         curr_bitsize, /* curr_bitsize */
         target_bitsize, /* target_bitsize */
         //prefix_insn_bitsize,
@@ -1915,11 +2111,18 @@ flare32_do_relax_prefix (bfd *abfd,
 
       args.rm_prefix = (
         !was_lpre 
-        || flare32_relax_can_shrink_value 
-          (!howto->pc_relative ? value
-            : gap - 4ull, 
+        || relax_can_shrink_value 
+          (!howto->pc_relative
+            ? value
+            : gap - shrink_two_units_dist, 
             //: gap, 
-          prefix_insn_bitsize, insn_bitsize)
+            prefix_insn_bitsize, insn_bitsize,
+            //(
+            //  howto->type >= R_FLARE32_G1G5G6_U5
+            //  && howto->type <= R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+            //)
+            small_imm_unsigned
+            )
       );
 
       if (!flare32_do_relax_prefix_innards (&args))

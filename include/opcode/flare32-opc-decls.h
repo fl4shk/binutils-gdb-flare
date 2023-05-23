@@ -96,11 +96,11 @@ static const flare32_enc_info_t
     FLARE32_G3_G0_LPRE_S23_RSMASK,
     FLARE32_G3_G0_LPRE_S23_MASK},
   /* -------- */
-  flare32_enc_info_g1g5g6_s5 =
-    {FLARE32_G1G5G6_S5_BITSIZE,
-    FLARE32_G1G5G6_S5_BITPOS,
-    FLARE32_G1G5G6_S5_RSMASK,
-    FLARE32_G1G5G6_S5_MASK},
+  flare32_enc_info_g1g5g6_i5 =
+    {FLARE32_G1G5G6_I5_BITSIZE,
+    FLARE32_G1G5G6_I5_BITPOS,
+    FLARE32_G1G5G6_I5_RSMASK,
+    FLARE32_G1G5G6_I5_MASK},
   flare32_enc_info_g1_op =
     {FLARE32_G1_OP_BITSIZE,
     FLARE32_G1_OP_BITPOS,
@@ -254,19 +254,19 @@ static const flare32_opc_info_t
     FLARE32_G1_OP_ENUM_CPY_RA_S5, FLARE32_OA_RA_S5,
     {"cpy", "cpy"}, {"cpy.nr", "cpy.nr"}},
 
-  /* lsl rA, #simm */
+  /* lsl rA, #imm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_LSL_RA_S5, FLARE32_OA_RA_S5,
+    FLARE32_G1_OP_ENUM_LSL_RA_U5, FLARE32_OA_RA_U5,
     {"lsl", "lsl"}, {"lsl.nr", "lsl.nr"}},
 
-  /* lsr rA, #simm */
+  /* lsr rA, #imm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_LSR_RA_S5, FLARE32_OA_RA_S5,
+    FLARE32_G1_OP_ENUM_LSR_RA_U5, FLARE32_OA_RA_U5,
     {"lsr", "lsr"}, {"lsr.nr", "lsr.nr"}},
   /* -------- */
-  /* asr rA, #simm */
+  /* asr rA, #imm */
   {&flare32_grp_info_g1,
-    FLARE32_G1_OP_ENUM_ASR_RA_S5, FLARE32_OA_RA_S5,
+    FLARE32_G1_OP_ENUM_ASR_RA_U5, FLARE32_OA_RA_U5,
     {"asr", "asr"}, {"asr.nr", "asr.nr"}},
 
   /* and rA, #simm */
@@ -284,14 +284,14 @@ static const flare32_opc_info_t
     FLARE32_G1_OP_ENUM_XOR_RA_S5, FLARE32_OA_RA_S5,
     {"xor", "xor"}, {"xor.nr", "xor.nr"}},
   /* -------- */
-  /* ze rA, #simm */
+  /* ze rA, #imm */
   {&flare32_grp_info_g1,
-  FLARE32_G1_OP_ENUM_ZE_RA_S5, FLARE32_OA_RA_S5,
+  FLARE32_G1_OP_ENUM_ZE_RA_U5, FLARE32_OA_RA_U5,
     {"ze", "ze"}, {"ze.nr", "ze.nr"}},
 
-  /* se rA, #simm */
+  /* se rA, #imm */
   {&flare32_grp_info_g1,
-  FLARE32_G1_OP_ENUM_SE_RA_S5, FLARE32_OA_RA_S5,
+  FLARE32_G1_OP_ENUM_SE_RA_U5, FLARE32_OA_RA_U5,
     {"se", "se"}, {"se.nr", "se.nr"}},
 
   /* swi rA, #simm */
@@ -299,9 +299,9 @@ static const flare32_opc_info_t
   FLARE32_G1_OP_ENUM_SWI_RA_S5, FLARE32_OA_RA_S5,
     {"swi", "swi"}, {"swi.nr", "swi.nr"}},
 
-  /* swi #simm */
+  /* swi #imm */
   {&flare32_grp_info_g1,
-  FLARE32_G1_OP_ENUM_SWI_S5, FLARE32_OA_S5,
+  FLARE32_G1_OP_ENUM_SWI_U5, FLARE32_OA_U5,
     {"swi", "swi"}, {"swi.nr", "swi.nr"}},
   /* -------- */
   /* Pseudo instructions start here */

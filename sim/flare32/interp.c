@@ -494,7 +494,7 @@ sim_engine_run (SIM_DESC sd,
   bool have_index_insn, have_pre_insn, have_lpre_insn;
   flare32_temp_t
     index_insn, prefix_insn, insn,
-    grp, subgrp, ra_ind, rb_ind, rc_ind, simm, fw,
+    grp, subgrp, ra_ind, rb_ind, rc_ind, simm, uimm, fw,
     nbytes;
   const flare32_opc_info_t
     *opc_info;
@@ -511,7 +511,7 @@ sim_engine_run (SIM_DESC sd,
     have_pre_insn = false;
     have_lpre_insn = false;
     index_insn = prefix_insn = insn = 0x0;
-    grp = subgrp = ra_ind = rb_ind = rc_ind = simm = fw = 0x0;
+    grp = subgrp = ra_ind = rb_ind = rc_ind = simm = uimm = fw = 0x0;
     nbytes = 0x0;
     opc_info = (const flare32_opc_info_t *) NULL;
 
@@ -624,19 +624,22 @@ sim_engine_run (SIM_DESC sd,
 
         opc_info = &flare32_opc_info_g1
           [flare32_get_insn_field_ei (&flare32_enc_info_g1_op, insn)];
-        //simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn);
+        //simm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn);
         if (have_pre_insn || have_lpre_insn)
         {
-          simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5,
+          simm = uimm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5,
               insn);
         }
         else
         {
           simm = flare32_sign_extend 
-            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn),
-            flare32_enc_info_g1g5g6_s5.bitsize);
+            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn),
+            flare32_enc_info_g1g5g6_i5.bitsize);
+          uimm = flare32_zero_extend 
+            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn),
+            flare32_enc_info_g1g5g6_i5.bitsize);
         }
 
         switch (opc_info->opcode)
@@ -723,25 +726,25 @@ sim_engine_run (SIM_DESC sd,
             *ra = simm;
           }
             break;
-          case FLARE32_G1_OP_ENUM_LSL_RA_S5:
+          case FLARE32_G1_OP_ENUM_LSL_RA_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = (uint32_t) (*ra) << (uint32_t) simm;
+            *ra = (uint32_t) (*ra) << (uint32_t) uimm;
           }
             break;
-          case FLARE32_G1_OP_ENUM_LSR_RA_S5:
+          case FLARE32_G1_OP_ENUM_LSR_RA_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = (uint32_t) (*ra) >> (uint32_t) simm;
+            *ra = (uint32_t) (*ra) >> (uint32_t) uimm;
           }
             break;
-          case FLARE32_G1_OP_ENUM_ASR_RA_S5:
+          case FLARE32_G1_OP_ENUM_ASR_RA_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = (int32_t) (*ra) >> (uint32_t) simm;
+            *ra = (int32_t) (*ra) >> (uint32_t) uimm;
           }
             break;
           case FLARE32_G1_OP_ENUM_AND_RA_S5:
@@ -765,22 +768,22 @@ sim_engine_run (SIM_DESC sd,
             *ra ^= simm;
           }
             break;
-          case FLARE32_G1_OP_ENUM_ZE_RA_S5:
+          case FLARE32_G1_OP_ENUM_ZE_RA_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = (int32_t) flare32_zero_extend (*ra, simm);
+            *ra = (int32_t) flare32_zero_extend (*ra, uimm);
           }
             break;
-          case FLARE32_G1_OP_ENUM_SE_RA_S5:
+          case FLARE32_G1_OP_ENUM_SE_RA_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = (int32_t) flare32_sign_extend (*ra, simm);
+            *ra = (int32_t) flare32_sign_extend (*ra, uimm);
           }
             break;
           case FLARE32_G1_OP_ENUM_SWI_RA_S5:
-          case FLARE32_G1_OP_ENUM_SWI_S5:
+          case FLARE32_G1_OP_ENUM_SWI_U5:
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
@@ -789,7 +792,9 @@ sim_engine_run (SIM_DESC sd,
               = (opc_info->opcode == FLARE32_G1_OP_ENUM_SWI_RA_S5
                 ? *ra 
                 : 0x0)
-                + simm;
+                + (opc_info->opcode == FLARE32_G1_OP_ENUM_SWI_RA_S5
+                  ? simm
+                  : uimm);
 
             switch ((uint32_t) (*sty))
             {
@@ -1942,19 +1947,19 @@ sim_engine_run (SIM_DESC sd,
           addr = 0;
 
         opc_info = &flare32_opc_info_g5[0];
-        //simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn);
+        //simm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn);
         if (have_pre_insn || have_lpre_insn)
         {
-          simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5,
+          simm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5,
               insn);
         }
         else
         {
           simm = flare32_sign_extend 
-            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn),
-            flare32_enc_info_g1g5g6_s5.bitsize);
+            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn),
+            flare32_enc_info_g1g5g6_i5.bitsize);
         }
 
 
@@ -1975,19 +1980,19 @@ sim_engine_run (SIM_DESC sd,
           addr = 0;
 
         opc_info = &flare32_opc_info_g6[0];
-        //simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn);
+        //simm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+        //  | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn);
         if (have_pre_insn || have_lpre_insn)
         {
-          simm = (simm << flare32_enc_info_g1g5g6_s5.bitsize)
-            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5,
+          simm = (simm << flare32_enc_info_g1g5g6_i5.bitsize)
+            | flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5,
               insn);
         }
         else
         {
           simm = flare32_sign_extend 
-            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_s5, insn),
-            flare32_enc_info_g1g5g6_s5.bitsize);
+            (flare32_get_insn_field_ei (&flare32_enc_info_g1g5g6_i5, insn),
+            flare32_enc_info_g1g5g6_i5.bitsize);
         }
 
         addr = rb + rc + simm;

@@ -27,6 +27,7 @@
 #include "opcode/flare32.h"
 #include "elf/flare32.h"
 #include "opcode/flare32-opc-decls.h"
+#include "opcode/flare32-relax-reloc-lookup.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -116,10 +117,12 @@ typedef struct flare32_relax_insn_t
     curr_bitsize,
     target_bitsize,
     grp_value;
+  //const flare32_grp_info_t
+  //  *grp_info;
   //flare32_oparg_t
   //  oparg;
-  const flare32_opc_info_t
-    *opc_info;
+  //const flare32_opc_info_t
+  //  *opc_info;
   bool
     is_pcrel: 1,
     was_lpre: 1,
@@ -139,10 +142,14 @@ typedef struct flare32_cl_insn_t
   /* The actual data of the encoded instruction. */
   flare32_temp_t data;
 
-  bfd_reloc_code_real_type r_type;
+  bfd_reloc_code_real_type reloc;
   bool
     no_relax: 1,
-    small_imm_unsigned: 1;
+    is_small_imm_unsigned: 1,
+    is_g7_icreload: 1;
+
+  const flare32_opc_info_t
+    *opc_info;
 
   //symbolS *fr_symbol;
   ///* Idea for the following members borrowed from "tc-riscv.c":
@@ -159,8 +166,8 @@ typedef struct flare32_cl_insn_t
 static bool
 flare32_cl_insn_no_relax (const flare32_cl_insn_t *cl_insn)
 {
-  //return (cl_insn->r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
-  //  || cl_insn->r_type == BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX);
+  //return (cl_insn->reloc == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+  //  || cl_insn->reloc == BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX);
   return cl_insn->no_relax;
 }
 
@@ -457,19 +464,19 @@ flare32_cl_insn_vec_delete (void)
 
 typedef struct flare32_parse_data_t
 {
-  char
-    *op_start,
-    *op_end,
-    *op_end_prev,
-    //*p,
-    pend,
-    op_name[FLARE32_OPC_INFO_NAME_MAX_LEN + 1];
+  //char
+  //  //*op_start,
+  //  //*op_end;
+  //  //*op_end_prev,
+  //  ////*p,
+  //  //pend,
+  //  //op_name[FLARE32_OPC_INFO_NAME_MAX_LEN + 1];
   const flare32_opc_info_t
     *opc_info;
   //flare32_opci_list_t
   //  *opci_list;
-  flare32_opci_vec_t
-    *opci_vec;
+  //flare32_opci_vec_t
+  //  *opci_vec;
   flare32_temp_t
     //index_insn,
     prefix_insn,
@@ -480,13 +487,14 @@ typedef struct flare32_parse_data_t
     *reg_a,
     *reg_b,
     *reg_c;
-  size_t
-    nlen;
-    //nbytes;
+  //size_t
+  //  nlen;
+  //  //nbytes;
   bool
     have_index : 1,
     have_imm : 1,
-    small_imm_unsigned: 1,
+    is_small_imm_unsigned: 1,
+    is_g7_icreload: 1,
     have_cpy64 : 1,
     //have_simm : 1,
     is_pcrel : 1,
@@ -547,11 +555,11 @@ add_fne_cl_insn (const flare32_cl_insn_t *cl_insn,
 
   p = frag_more (nbytes);
 
-  howto = bfd_reloc_type_lookup (stdoutput, cl_insn->r_type);
+  howto = bfd_reloc_type_lookup (stdoutput, cl_insn->reloc);
   if (howto == NULL)
   {
     as_bad (_("internal: unsupported Flare32 relocation number %d"),
-      cl_insn->r_type);
+      cl_insn->reloc);
   }
 
   //fixP = 
@@ -561,7 +569,7 @@ add_fne_cl_insn (const flare32_cl_insn_t *cl_insn,
     bfd_get_reloc_size (howto), /* size */
     address_expr, /* exp */
     (int) cl_insn->relax_insn.is_pcrel, /* pcrel */
-    cl_insn->r_type /* r_type */
+    cl_insn->reloc /* reloc */
     );
 
   // TODO: verify whether `nbytes` should be used as the argument.
@@ -616,7 +624,7 @@ add_gas_relaxed_cl_insn
 static void
 append_cl_insn (flare32_cl_insn_t *cl_insn,
                 expressionS *address_expr
-                //bfd_reloc_code_real_type r_type
+                //bfd_reloc_code_real_type reloc
                 )
 {
   //flare32_relax_temp_t
@@ -703,15 +711,24 @@ flare32_enc_temp_insn_lpre_rshift
     case FLARE32_G1_GRP_VALUE:
     case FLARE32_G5_GRP_VALUE:
     case FLARE32_G6_GRP_VALUE:
-      return flare32_enc_temp_insn_g1g5g6_lpre
+      return flare32_enc_temp_insn_g0_lpre_s27
         (simm >> FLARE32_G1G5G6_I5_BITSIZE);
     case FLARE32_G3_GRP_VALUE:
-      return flare32_enc_temp_insn_g3_lpre
+      return flare32_enc_temp_insn_g0_lpre_s23
         (simm >> FLARE32_G3_S9_BITSIZE);
+    case FLARE32_G7_GRP_VALUE:
+      if (
+        opc_info->grp_info->subgrp
+        == &flare32_enc_info_g7_icreload_subgrp
+      )
+      {
+        return flare32_enc_temp_insn_g0_lpre_s27
+          (simm >> FLARE32_G7_ICRELOAD_S5_BITSIZE);
+      }
     default:
-      abort ();
       break;
   }
+  abort ();
 }
 //static flare32_temp_t
 //flare32_enc_temp_insn_pre_rshift
@@ -784,6 +801,12 @@ flare32_enc_temp_insn_non_pre_lpre
         return flare32_enc_temp_insn_g7_sprldst
           (opc_info->opcode, ra_ind, rb_ind);
       }
+      else if (opc_info->grp_info->subgrp
+        == &flare32_enc_info_g7_icreload_subgrp)
+      {
+        return flare32_enc_temp_insn_g7_icreload
+          (ra_ind, simm);
+      }
       else
       {
         abort ();
@@ -828,7 +851,7 @@ flare32_enc_temp_insn_index (flare32_temp_t rc_ind)
 //    fixP->fx_subsy, /* add_symbol */
 //    0u,             /* offset */
 //    fixP->fx_pcrel, /* pcrel */
-//    r_type_sub);    /* r_type */
+//    r_type_sub);    /* reloc */
 //
 //  fixP->fx_r_type = r_type_add;
 //  fixP->fx_subsy = NULL;
@@ -959,7 +982,7 @@ flare32_enc_temp_insn_index (flare32_temp_t rc_ind)
 //      fixP->fx_subsy, /* add_symbol */
 //      0u,             /* offset */
 //      fixP->fx_pcrel, /* pcrel */
-//      r_type_sub);    /* r_type */
+//      r_type_sub);    /* reloc */
 //
 //    fixP->fx_r_type = r_type_add;
 //    fixP->fx_subsy = NULL;
@@ -1293,9 +1316,9 @@ flare32_relaxable_symbol (symbolS *sym)
 //}
 
 //static flare32_temp_t
-//flare32_apply_const_reloc (bfd_reloc_code_real_type r_type, bfd_vma value)
+//flare32_apply_const_reloc (bfd_reloc_code_real_type reloc, bfd_vma value)
 //{
-//  switch (r_type)
+//  switch (reloc)
 //  {
 //    case BFD_RELOC_32:
 //      return value;
@@ -1355,17 +1378,30 @@ md_apply_fix (fixS *fixP,
     /* Just force these to become relocs */
     case BFD_RELOC_FLARE32_G1G5G6_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S5:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S5:
       ////tmp.buf = bfd_putb16 (bfd_getb16 (tmp.buf));
       if (fixP->fx_addsy == NULL
         //|| flare32_relaxable_symbol (fixP->fx_addsy)
         )
       {
         tmp.insn = bfd_getb16 (tmp.buf);
-        flare32_set_insn_field_ei_p
-          (&flare32_enc_info_g1g5g6_i5, &tmp.insn,
-            (flare32_temp_t)(*valP));
-        fixP->fx_addnumber = *valP = flare32_get_insn_field_ei
-          (&flare32_enc_info_g1g5g6_i5, tmp.insn);
+        if (fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_U5
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S5)
+        {
+          flare32_set_insn_field_ei_p
+            (&flare32_enc_info_g1g5g6_i5, &tmp.insn,
+              (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_insn_field_ei
+            (&flare32_enc_info_g1g5g6_i5, tmp.insn);
+        }
+        else /* if (fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S5) */
+        {
+          flare32_set_insn_field_ei_p
+            (&flare32_enc_info_g7_icreload_s5, &tmp.insn,
+              (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_insn_field_ei
+            (&flare32_enc_info_g7_icreload_s5, tmp.insn);
+        }
         bfd_putb16 (tmp.insn, tmp.buf);
         //if (
         //  //!linkrelax
@@ -1381,6 +1417,7 @@ md_apply_fix (fixS *fixP,
       break;
     case BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S17:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S17:
       if (fixP->fx_addsy == NULL
         //|| flare32_relaxable_symbol (fixP->fx_addsy)
         )
@@ -1391,10 +1428,23 @@ md_apply_fix (fixS *fixP,
             (FLARE32_HAVE_PLP_PRE, FLARE32_HAVE_PLP_NEITHER);
         tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
         tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
-        flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
-          (flare32_temp_t)(*valP));
-        fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s17
-          (tmp.prefix_insn, tmp.insn);
+        if (fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S17)
+        {
+          flare32_put_g1g5g6_s17 (&tmp.prefix_insn, &tmp.insn,
+            (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s17
+            (tmp.prefix_insn, tmp.insn);
+        }
+        else /* if (
+          fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S17
+        ) */
+        {
+          flare32_put_g7_icreload_s17 (&tmp.prefix_insn, &tmp.insn,
+            (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_g7_icreload_s17
+            (tmp.prefix_insn, tmp.insn);
+        }
         bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
         bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (
@@ -1520,6 +1570,8 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_SUB32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_ADD32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_SUB32:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_ADD32:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_SUB32:
     case BFD_RELOC_FLARE32_PSEUDO_ADD8:
     case BFD_RELOC_FLARE32_PSEUDO_ADD16:
     case BFD_RELOC_FLARE32_PSEUDO_ADD32:
@@ -1532,12 +1584,14 @@ md_apply_fix (fixS *fixP,
       break;
 
     case BFD_RELOC_32:
-    /* TODO: determine whether the below two `case`s should be here, or
-      below the `if` statement. */
+    /* TODO: determine whether the below `case`s should be here, or below
+      the `if` statement. */
     //case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
     //case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     //case BFD_RELOC_FLARE32_G1G5G6_S32:
     //case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
+    //case BFD_RELOC_FLARE32_G7_ICRELOAD_S32:
+    //case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX:
       /* Blindly copied from RISC-V. */
       /* Use pc-relative relocation for FDE initial location.
          The symbol address in .eh_frame may be adjusted in
@@ -1563,6 +1617,8 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     case BFD_RELOC_FLARE32_G1G5G6_S32:
     case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX:
     case BFD_RELOC_FLARE32_CFA:
       if (fixP->fx_addsy && fixP->fx_subsy)
       {
@@ -1600,6 +1656,12 @@ md_apply_fix (fixS *fixP,
           case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
             fixP->fx_r_type = BFD_RELOC_FLARE32_G1G5G6_S32_ADD32;
             fixP->fx_next->fx_r_type = BFD_RELOC_FLARE32_G1G5G6_S32_SUB32;
+            break;
+          case BFD_RELOC_FLARE32_G7_ICRELOAD_S32:
+          case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX:
+            fixP->fx_r_type = BFD_RELOC_FLARE32_G7_ICRELOAD_S32_ADD32;
+            fixP->fx_next->fx_r_type
+              = BFD_RELOC_FLARE32_G7_ICRELOAD_S32_SUB32;
             break;
 
           /* Blindly copied from RISC-V. */
@@ -1667,6 +1729,9 @@ md_apply_fix (fixS *fixP,
             == BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
           || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
           || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S32
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX
         ) && (
           fixP->fx_addsy == NULL
           //|| flare32_relaxable_symbol (fixP->fx_addsy)
@@ -1679,10 +1744,27 @@ md_apply_fix (fixS *fixP,
             (FLARE32_HAVE_PLP_LPRE, FLARE32_HAVE_PLP_NEITHER);
         tmp.prefix_insn = bfd_getb32 (tmp.buf + tmp.lpre_offs);
         tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
-        flare32_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
-          (flare32_temp_t)(*valP));
-        fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s32
-          (tmp.prefix_insn, tmp.insn);
+        if (fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5
+          || fixP->fx_r_type
+            == BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX)
+        {
+          flare32_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
+            (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_g1g5g6_s32
+            (tmp.prefix_insn, tmp.insn);
+        }
+        else /* if (
+          fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S32
+          || fixP->fx_r_type == BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX
+        ) */
+        {
+          flare32_put_g7_icreload_s32 (&tmp.prefix_insn, &tmp.insn,
+            (flare32_temp_t)(*valP));
+          fixP->fx_addnumber = *valP = flare32_get_g7_icreload_s32
+            (tmp.prefix_insn, tmp.insn);
+        }
         bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
         bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (fixP->fx_addsy == NULL)
@@ -2126,6 +2208,14 @@ md_begin (void)
     flare32_opci_v2d_and_index_hash_append (opc_info, false, 0);
     flare32_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
+
+  for (count=0, opc_info=flare32_opc_info_g7_icreload;
+    count++<FLARE32_G7_ICRELOAD_OPC_INFO_LIM;
+    ++opc_info)
+  {
+    flare32_opci_v2d_and_index_hash_append (opc_info, false, 0);
+    flare32_opci_v2d_and_index_hash_append (opc_info, true, 0);
+  }
   /* -------- */
   /* Insert `const flare32_reg_t *`s */
   for (count=0, reg=gprs; count++<FLARE32_NUM_GPRS; ++reg)
@@ -2290,7 +2380,7 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           break;
         case FLARE32_HAVE_PLP_LPRE:
           self->prefix_insn_bitsize
-            = FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE;
+            = FLARE32_G0_LPRE_S27_BITSIZE;
           self->insn_bitsize = FLARE32_G1G5G6_I5_BITSIZE;
           self->target_bitsize
             = FLARE32_G0_PRE_S12_BITSIZE + self->insn_bitsize;
@@ -2320,7 +2410,7 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
           break;
         case FLARE32_HAVE_PLP_LPRE:
           self->prefix_insn_bitsize
-            = FLARE32_G3_G0_LPRE_S23_BITSIZE;
+            = FLARE32_G0_LPRE_S23_BITSIZE;
           self->insn_bitsize = FLARE32_G3_S9_BITSIZE;
           self->target_bitsize
             = FLARE32_G0_PRE_S12_BITSIZE + self->insn_bitsize;
@@ -2330,6 +2420,31 @@ flare32_relax_insn_ctor (flare32_relax_insn_t *self,
       }
       self->is_pcrel = true;
       self->have_imm = true;
+      break;
+    case FLARE32_G7_GRP_VALUE:
+      if (cl_insn->opc_info->grp_info->subgrp
+        == &flare32_enc_info_g7_icreload_subgrp)
+      {
+        switch (cl_insn->have_plp)
+        {
+          case FLARE32_HAVE_PLP_NEITHER:
+            break;
+          case FLARE32_HAVE_PLP_PRE:
+            self->prefix_insn_bitsize = FLARE32_G0_PRE_S12_BITSIZE;
+            self->insn_bitsize = FLARE32_G7_ICRELOAD_S5_BITSIZE;
+            self->target_bitsize = self->insn_bitsize;
+            break;
+          case FLARE32_HAVE_PLP_LPRE:
+            self->prefix_insn_bitsize
+              = FLARE32_G0_LPRE_S27_BITSIZE;
+            self->insn_bitsize = FLARE32_G7_ICRELOAD_S5_BITSIZE;
+            self->target_bitsize
+              = FLARE32_G0_PRE_S12_BITSIZE + self->insn_bitsize;
+            self->was_lpre = true;
+            break;
+        }
+        self->have_imm = true;
+      }
       break;
     default:
       //return false;
@@ -2412,7 +2527,7 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
       //self->value,
       relax_insn->curr_bitsize,
       relax_insn->target_bitsize,
-      (!relax_insn->was_lpre && cl_insn->small_imm_unsigned))
+      (!relax_insn->was_lpre && cl_insn->is_small_imm_unsigned))
     )
     {
       if ((self->rm_prefix = (
@@ -2427,7 +2542,7 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
           //self->value,
           relax_insn->prefix_insn_bitsize,
           relax_insn->insn_bitsize,
-          cl_insn->small_imm_unsigned)
+          cl_insn->is_small_imm_unsigned)
       )))
       {
         //if (relax_insn->is_pcrel)
@@ -2559,7 +2674,7 @@ flare32_relax_temp_ctor (flare32_relax_temp_t *self,
       {
         flare32_temp_t
           insn = (cl_insn->data & FLARE32_NO_EXT_MASK),
-          prefix_insn = flare32_enc_temp_insn_g3_lpre (0x0);
+          prefix_insn = flare32_enc_temp_insn_g0_lpre_s23 (0x0);
         cl_insn->have_plp = FLARE32_HAVE_PLP_LPRE;
 
         if (!relax_insn->is_pcrel)
@@ -2608,7 +2723,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   flare32_cl_insn_t *cl_insn;
   unsigned whole_insn_length;
   //int reloc;
-  bfd_reloc_code_real_type *r_type;
+  bfd_reloc_code_real_type *reloc;
 
   // TODO: Not sure whether I need to add `fragP->fr_fix`??
   // `fragP->fr_fix` is
@@ -2620,7 +2735,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   flare32_relax_temp_ctor (&relax_temp, fragP, asec, true);
   cl_insn = relax_temp.cl_insn;
   relax_insn = &cl_insn->relax_insn;
-  r_type = &cl_insn->r_type;
+  reloc = &cl_insn->reloc;
 
   /* Idea borrowed from "tc-arm.c": `md_convert_frag ()` */
   if (fragP->fr_symbol == NULL)
@@ -2644,18 +2759,19 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     gas_assert (fragP->fr_var == have_plp_insn_length (cl_insn->have_plp));
   }
 
-  switch (*r_type)
+  switch (*reloc)
   {
     case BFD_RELOC_FLARE32_G1G5G6_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S5:
     case BFD_RELOC_FLARE32_G3_S9_PCREL:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S5:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
       {
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
           //4,
-          &exp, (int) relax_insn->is_pcrel, *r_type);
+          &exp, (int) relax_insn->is_pcrel, *reloc);
         //fprintf (stderr,
         //  "md_convert_frag (): s5 or s9: %lx\n",
         //  fixP->fx_offset);
@@ -2669,6 +2785,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S17:
     case BFD_RELOC_FLARE32_G3_S21_PCREL:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S17:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
       {
         // convert `pre` to having no prefix at all
@@ -2683,18 +2800,23 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type
-          = !cl_insn->small_imm_unsigned
-          ? (
-            !relax_insn->is_pcrel
-            ? BFD_RELOC_FLARE32_G1G5G6_S5
-            : BFD_RELOC_FLARE32_G3_S9_PCREL
-          )
-          : BFD_RELOC_FLARE32_G1G5G6_U5;
+        *reloc
+          //= !relax_insn->is_pcrel
+          //? (
+          //  !cl_insn->is_g7_icreload
+          //  ? (
+          //    !cl_insn->is_small_imm_unsigned
+          //    ? BFD_RELOC_FLARE32_G1G5G6_S5
+          //    : BFD_RELOC_FLARE32_G1G5G6_U5
+          //  ) : BFD_RELOC_FLARE32_G7_ICRELOAD_S17
+          //) : BFD_RELOC_FLARE32_G3_S9_PCREL;
+          = flare32_relax_reloc_lookup
+            (relax_insn->is_pcrel, cl_insn->is_g7_icreload,
+            cl_insn->is_small_imm_unsigned)->small.reloc;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
           //4,
-          &exp, (int) relax_insn->is_pcrel, *r_type);
+          &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else if (
         fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_PRE)
@@ -2702,7 +2824,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       {
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
-          4, &exp, (int) relax_insn->is_pcrel, *r_type);
+          4, &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else
       {
@@ -2712,6 +2834,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5:
     case BFD_RELOC_FLARE32_G1G5G6_S32:
     case BFD_RELOC_FLARE32_G3_S32_PCREL:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_NEITHER))
       {
         // convert `lpre` to having no prefix at all
@@ -2725,17 +2848,23 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type = 
-          !cl_insn->small_imm_unsigned
-          ? (
-            !relax_insn->is_pcrel
-            ? BFD_RELOC_FLARE32_G1G5G6_S5
-            : BFD_RELOC_FLARE32_G3_S9_PCREL
-          ) : BFD_RELOC_FLARE32_G1G5G6_U5;
+        *reloc
+          //!relax_insn->is_pcrel
+          //? (
+          //  !cl_insn->is_g7_icreload
+          //  ? (
+          //    !cl_insn->is_small_imm_unsigned
+          //    ? BFD_RELOC_FLARE32_G1G5G6_S5
+          //    : BFD_RELOC_FLARE32_G1G5G6_U5
+          //  ) : BFD_RELOC_FLARE32_G7_ICRELOAD_S5
+          //) : BFD_RELOC_FLARE32_G3_S9_PCREL;
+          = flare32_relax_reloc_lookup
+            (relax_insn->is_pcrel, cl_insn->is_g7_icreload,
+            cl_insn->is_small_imm_unsigned)->small.reloc;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           (!relax_insn->is_pcrel ? 1 : 2),
           //4,
-          &exp, (int) relax_insn->is_pcrel, *r_type);
+          &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else if (
         fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_PRE)
@@ -2775,15 +2904,21 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         bfd_putb16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
-        *r_type
-          = !cl_insn->small_imm_unsigned
-          ? (
-            !relax_insn->is_pcrel
-            ? BFD_RELOC_FLARE32_G1G5G6_S17
-            : BFD_RELOC_FLARE32_G3_S21_PCREL
-          ) : BFD_RELOC_FLARE32_G1G5G6_S17;
+        *reloc
+          //= !relax_insn->is_pcrel
+          //? (
+          //  !cl_insn->is_g7_icreload
+          //  ? (
+          //    !cl_insn->is_small_imm_unsigned
+          //    ? BFD_RELOC_FLARE32_G1G5G6_S17
+          //    : BFD_RELOC_FLARE32_G1G5G6_S17
+          //  ) : BFD_RELOC_FLARE32_G7_ICRELOAD_S17
+          //) : BFD_RELOC_FLARE32_G3_S21_PCREL;
+          = flare32_relax_reloc_lookup
+            (relax_insn->is_pcrel, cl_insn->is_g7_icreload,
+            cl_insn->is_small_imm_unsigned)->pre.reloc;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
-          4, &exp, (int) relax_insn->is_pcrel, *r_type);
+          4, &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else if (
         fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_LPRE)
@@ -2791,7 +2926,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       {
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
-          4, &exp, (int) relax_insn->is_pcrel, *r_type);
+          4, &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else
       {
@@ -2802,11 +2937,12 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX:
     case BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX:
     case BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX:
+    case BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX:
       if (fragP->fr_var == have_plp_insn_length (FLARE32_HAVE_PLP_LPRE))
       {
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
-          4, &exp, (int) relax_insn->is_pcrel, *r_type);
+          4, &exp, (int) relax_insn->is_pcrel, *reloc);
       }
       else
       {
@@ -2815,6 +2951,15 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       break;
 
     default:
+    {
+      reloc_howto_type *howto;
+      /* We ignore generic BFD relocations we don't know about. */
+      if ((howto = bfd_reloc_type_lookup (stdoutput, *reloc)) != NULL)
+      {
+        as_fatal (_("internal: bad relocation \"%s\" #%d"),
+          howto->name, *reloc);
+      }
+    }
       abort ();
       break;
   }
@@ -2840,20 +2985,22 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
 {
   flare32_cl_insn_t cl_insn;
   expressionS *temp_ex;
-  //bfd_reloc_code_real_type r_type;
+  //bfd_reloc_code_real_type reloc;
 
   memset (&cl_insn, 0, sizeof (cl_insn));
   cl_insn.no_relax = pd->no_relax;
-  cl_insn.small_imm_unsigned = pd->small_imm_unsigned;
+  cl_insn.is_small_imm_unsigned = pd->is_small_imm_unsigned;
+  cl_insn.is_g7_icreload = pd->is_g7_icreload;
+  cl_insn.opc_info = pd->opc_info;
   if (!pd->have_imm)
   {
     //pd->nbytes = 2;
     //pd->p = frag_more (2);
     cl_insn.have_plp = FLARE32_HAVE_PLP_NEITHER;
     temp_ex = NULL;
-    cl_insn.r_type = BFD_RELOC_UNUSED;
+    cl_insn.reloc = BFD_RELOC_UNUSED;
   }
-  else // if (pc->have_imm)
+  else // if (pd->have_imm)
   {
     cl_insn.have_plp = FLARE32_HAVE_PLP_LPRE;
     temp_ex = (!which_exp ? &pd->ex : &pd->ex_1);
@@ -2866,30 +3013,39 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
     ////}
     ////else
     //if (!flare32_oparg_has_u5(pd->opc_info->oparg))
-    if (!cl_insn.small_imm_unsigned)
-    {
-      //pd->nbytes = 6;
-      cl_insn.r_type
-        = (!pd->is_pcrel
-          ? (
-            !pd->no_relax
-            ? BFD_RELOC_FLARE32_G1G5G6_S32
-            : BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
-          )
-          : (
-            !pd->no_relax
-            ? BFD_RELOC_FLARE32_G3_S32_PCREL
-            : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
-          )
-        );
-    }
-    else
-    {
-      cl_insn.r_type
-        = !pd->no_relax
-        ? BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5
-        : BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX;
-    }
+
+    //if (!cl_insn.is_small_imm_unsigned)
+    //{
+    //  //pd->nbytes = 6;
+    //  cl_insn.reloc
+    //    = (!pd->is_pcrel
+    //      ? (
+    //        !pd->no_relax
+    //        ? BFD_RELOC_FLARE32_G1G5G6_S32
+    //        : BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX
+    //      )
+    //      : (
+    //        !pd->no_relax
+    //        ? BFD_RELOC_FLARE32_G3_S32_PCREL
+    //        : BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX
+    //      )
+    //    );
+    //}
+    //else
+    //{
+    //  cl_insn.reloc
+    //    = !pd->no_relax
+    //    ? BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5
+    //    : BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX;
+    //}
+    const struct flare32_relax_reloc_tuple
+      *relax_reloc = flare32_relax_reloc_lookup
+        (pd->is_pcrel, pd->is_g7_icreload, pd->is_small_imm_unsigned);
+    cl_insn.reloc
+      = !pd->no_relax
+      ? relax_reloc->lpre.reloc
+      : relax_reloc->lpre_no_relax.reloc;
+
     //pd->p = frag_more (pd->nbytes);
 
     ////if (!pd->have_cpy64)
@@ -2900,7 +3056,7 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
     //  //fprintf (stderr, "testificate: %d\n", (unsigned) pd->no_relax);
     //  //fprintf (stderr, "howto: %d %s\n",
     //  //  (unsigned) pd->no_relax,
-    //  //  bfd_reloc_type_lookup (stdoutput, r_type)->name);
+    //  //  bfd_reloc_type_lookup (stdoutput, reloc)->name);
 
     //  fixP = fix_new_exp (frag_now, /* frag */
     //                      (pd->p - frag_now->fr_literal), /* where */
@@ -2908,7 +3064,7 @@ flare32_assemble_post_parse_worker (flare32_parse_data_t *pd,
     //                      //6,
     //                      temp_ex, /* exp */
     //                      (int) pd->is_pcrel, /* pcrel */
-    //                      r_type /* r_type */
+    //                      reloc /* reloc */
     //                      );
     //  //flare32_fix_sym_handler (fixP);
     //}
@@ -2954,8 +3110,19 @@ void
 md_assemble (char *str)
 {
   flare32_parse_data_t pd;
+  char
+    *op_start = NULL,
+    *op_end = NULL,
+    *op_end_prev = NULL,
+    pend = '\0',
+    op_name[FLARE32_OPC_INFO_NAME_MAX_LEN + 1];
+  flare32_opci_vec_t
+    *opci_vec = NULL;
+  size_t
+    nlen = 0;
 
   (void) memset (&pd, 0, sizeof (pd));
+  (void) memset (op_name, '\0', sizeof (op_name));
 
   /* Drop leading whitespace. */
   while (*str == ' ')
@@ -2966,76 +3133,76 @@ md_assemble (char *str)
   /* Find the opcode end. */
   /* Note: this should still work for the ".f" instructions that set
     `flags`. */
-  pd.op_start = str;
-  for (pd.op_end=str;
-    *pd.op_end
-      && !is_end_of_line[*pd.op_end & 0xff]
-      && *pd.op_end != ' ';
-    ++pd.op_end)
+  op_start = str;
+  for (op_end=str;
+    *op_end
+      && !is_end_of_line[*op_end & 0xff]
+      && *op_end != ' ';
+    ++op_end)
   {
-    ++pd.nlen;
+    ++nlen;
   }
 
-  pd.pend = *pd.op_end;
-  *pd.op_end = '\0';
-  pd.op_end_prev = pd.op_end;
+  pend = *op_end;
+  *op_end = '\0';
+  op_end_prev = op_end;
 
-  //fprintf (stderr, "pd.op_start: %s\n", pd.op_start);
+  //fprintf (stderr, "op_start: %s\n", op_start);
 
-  if (pd.nlen == 0)
+  if (nlen == 0)
   {
     as_bad (_("can't find opcode "));
     return;
   }
-  else if (pd.nlen > FLARE32_OPC_INFO_NAME_MAX_LEN)
+  else if (nlen > FLARE32_OPC_INFO_NAME_MAX_LEN)
   {
     as_bad (_("opcode is longer than maximum length of %d"),
       (unsigned) FLARE32_OPC_INFO_NAME_MAX_LEN);
     return;
   }
 
-  for (size_t i=0; i<pd.nlen; ++i)
+  for (size_t i=0; i<nlen; ++i)
   {
-    /* `pd.op_name` has been set to all '\0's via the earlier `memset ()`
-      call, so we don't have to null terminate `pd.op_name`.
-      Note that `pd.op_name` has a length of
+    /* `op_name` has been set to all '\0's via the earlier `memset ()`
+      call, so we don't have to null terminate `op_name`.
+      Note that `op_name` has a length of
       `FLARE32_OPC_INFO_NAME_MAX_LEN + 1`. */
-    pd.op_name[i] = pd.op_start[i];
+    op_name[i] = op_start[i];
   }
 
-  //pd.opci_list = flare32_opci_list_lookup (pd.op_name);
-  pd.opci_vec = flare32_opci_vec_lookup (pd.op_name);
-  *pd.op_end = pd.pend;
+  //pd.opci_list = flare32_opci_list_lookup (op_name);
+  opci_vec = flare32_opci_vec_lookup (op_name);
+  *op_end = pend;
 
   //if (pd.opci_list == NULL)
-  if (pd.opci_vec == NULL)
+  if (opci_vec == NULL)
   {
-    as_bad (_("unknown opcode %s"), pd.op_name);
+    as_bad (_("unknown opcode %s"), op_name);
     return;
   }
 
 #define FLARE32_SKIP_ISSPACE() \
   do \
   { \
-    while (ISSPACE (*pd.op_end)) \
+    while (ISSPACE (*op_end)) \
     { \
-      ++pd.op_end; \
+      ++op_end; \
     } \
   } while (0)
 #define FLARE32_PARSE_COMMA()  \
   do \
   { \
-    if (*pd.op_end != ',') \
+    if (*op_end != ',') \
     { \
       goto post_oa_switch; \
     } \
-    ++pd.op_end; \
+    ++op_end; \
     FLARE32_SKIP_ISSPACE (); \
   } while (0)
 #define FLARE32_PARSE_GPR(some_reg) \
   do \
   { \
-    pd.some_reg = parse_register_operand (&pd.op_end); \
+    pd.some_reg = parse_register_operand (&op_end); \
     if (pd.some_reg == NULL \
       || pd.some_reg->kind != FLARE32_REG_KIND_GPR) \
     { \
@@ -3045,7 +3212,7 @@ md_assemble (char *str)
 #define FLARE32_PARSE_SPR(some_reg) \
   do \
   { \
-    pd.some_reg = parse_register_operand (&pd.op_end); \
+    pd.some_reg = parse_register_operand (&op_end); \
     if (pd.some_reg == NULL \
       || pd.some_reg->kind != FLARE32_REG_KIND_SPR) \
     { \
@@ -3055,7 +3222,7 @@ md_assemble (char *str)
 #define FLARE32_PARSE_NOENC_REG(name) \
   do \
   { \
-    if (parse_register_operand (&pd.op_end) \
+    if (parse_register_operand (&op_end) \
       != flare32_reg_lookup (name)) \
     { \
       goto post_oa_switch; \
@@ -3064,7 +3231,7 @@ md_assemble (char *str)
 #define FLARE32_PARSE_PC() \
   do \
   { \
-    if (parse_register_operand (&pd.op_end) != &reg_pc) \
+    if (parse_register_operand (&op_end) != &reg_pc) \
     { \
       goto post_oa_switch; \
     } \
@@ -3073,7 +3240,7 @@ md_assemble (char *str)
 #define FLARE32_PARSE_EXP_POST_POUND_WORKER(some_ex) \
   do \
   { \
-    pd.op_end = clear_and_parse_exp_save_ilp (pd.op_end, &pd.some_ex); \
+    op_end = clear_and_parse_exp_save_ilp (op_end, &pd.some_ex); \
     if (pd.some_ex.X_op == O_illegal || pd.some_ex.X_op == O_absent) \
     { \
       goto post_oa_switch; \
@@ -3088,11 +3255,11 @@ md_assemble (char *str)
 #define FLARE32_PARSE_EXP_WORKER(some_ex) \
   do \
   { \
-    if (*pd.op_end != '#') \
+    if (*op_end != '#') \
     { \
       goto post_oa_switch; \
     } \
-    ++pd.op_end; \
+    ++op_end; \
     FLARE32_PARSE_EXP_POST_POUND_WORKER (some_ex); \
   } while (0)
 #define FLARE32_PARSE_EXP() \
@@ -3111,12 +3278,13 @@ md_assemble (char *str)
   //  pd.opci_list=pd.opci_list->next//,
   //    //pd.opc_info=pd.opci_list->opc_info
   //  )
-  for (size_t i=0; i<pd.opci_vec->size; ++i)
+  for (size_t i=0; i<opci_vec->size; ++i)
   {
     const char * const *some_names;
 
+    (void) memset (&pd, 0, sizeof (pd));
     //pd.opc_info = pd.opci_list->opc_info;
-    pd.opc_info = pd.opci_vec->data[i];
+    pd.opc_info = opci_vec->data[i];
     //printf ("flare32 dbg: %s %s %d %d\n",
     //  pd.opc_info->names[0],
     //  pd.opc_info->names[1],
@@ -3124,34 +3292,34 @@ md_assemble (char *str)
     //  (unsigned) pd.opc_info->oparg,
     //  (unsigned) pd.opc_info->opcode
     //);
-    pd.op_end = pd.op_end_prev;
-    pd.is_pcrel = false;
-    pd.reg_a = (const flare32_reg_t *) NULL;
-    pd.reg_b = (const flare32_reg_t *) NULL;
-    pd.reg_c = (const flare32_reg_t *) NULL;
-    pd.simm = 0;
+    op_end = op_end_prev;
+    //pd.is_pcrel = false;
+    //pd.reg_a = (const flare32_reg_t *) NULL;
+    //pd.reg_b = (const flare32_reg_t *) NULL;
+    //pd.reg_c = (const flare32_reg_t *) NULL;
+    //pd.simm = 0;
     pd.no_relax = !(
-      (strncmp (pd.opc_info->names[0], pd.op_name,
+      (strncmp (pd.opc_info->names[0], op_name,
         FLARE32_OPC_INFO_NAME_MAX_LEN) == 0)
-      || (strncmp (pd.opc_info->names[1], pd.op_name,
+      || (strncmp (pd.opc_info->names[1], op_name,
         FLARE32_OPC_INFO_NAME_MAX_LEN) == 0)
     );
     //fprintf (stderr, "pd.no_relax stuff: \"%s\" %i %i %d\n",
-    //  pd.op_name,
-    //  strncmp (pd.opc_info->names[0], pd.op_name,
+    //  op_name,
+    //  strncmp (pd.opc_info->names[0], op_name,
     //    FLARE32_OPC_INFO_NAME_MAX_LEN),
-    //  strncmp (pd.opc_info->names[1], pd.op_name,
+    //  strncmp (pd.opc_info->names[1], op_name,
     //    FLARE32_OPC_INFO_NAME_MAX_LEN),
     //  (unsigned) pd.no_relax);
     some_names = !pd.no_relax ? pd.opc_info->names : pd.opc_info->nr_names;
     pd.fw = (flare32_temp_t) (
       (
         pd.opc_info->grp_info == &flare32_grp_info_g2
-          && strncmp (some_names[1], pd.op_name,
+          && strncmp (some_names[1], op_name,
             FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       ) || (
         pd.opc_info->grp_info == &flare32_grp_info_g7_aluopbh
-        && strncmp (some_names[1], pd.op_name,
+        && strncmp (some_names[1], op_name,
           FLARE32_OPC_INFO_NAME_MAX_LEN) == 0
       )
     );
@@ -3276,7 +3444,7 @@ md_assemble (char *str)
 
         pd.parse_good = true;
         pd.have_imm = true;
-        pd.small_imm_unsigned = true;
+        pd.is_small_imm_unsigned = true;
       }
         break;
       case FLARE32_OA_U5:
@@ -3287,7 +3455,7 @@ md_assemble (char *str)
 
         pd.parse_good = true;
         pd.have_imm = true;
-        pd.small_imm_unsigned = true;
+        pd.is_small_imm_unsigned = true;
       }
         break;
       case FLARE32_OA_RA:
@@ -3451,18 +3619,18 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         pd.parse_good = true;
       }
@@ -3474,18 +3642,18 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         pd.ex.X_op = O_constant;
         pd.ex.X_add_number = 0x0;
@@ -3501,25 +3669,29 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_c);
 
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
+
+        //pd.ex.X_op = O_constant;
+        //pd.ex.X_add_number = 0x0;
 
         pd.parse_good = true;
         pd.have_index = true;
+        //pd.have_imm = true;
       }
         break;
       case FLARE32_OA_RA_RB_RC_LDST_32:
@@ -3529,31 +3701,29 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_GPR (reg_c);
 
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
-
-        pd.parse_good = true;
-        pd.have_index = true;
+        ++op_end;
 
         pd.ex.X_op = O_constant;
         pd.ex.X_add_number = 0x0;
 
         pd.parse_good = true;
         pd.have_imm = true;
+        pd.have_index = true;
       }
         break;
       case FLARE32_OA_RA_RB_S5_LDST:
@@ -3563,22 +3733,22 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
         FLARE32_PARSE_EXP ();
 
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         pd.have_imm = true;
         pd.parse_good = true;
@@ -3591,11 +3761,11 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
@@ -3605,11 +3775,11 @@ md_assemble (char *str)
 
         FLARE32_PARSE_EXP ();
 
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         pd.have_index = true;
         pd.have_imm = true;
@@ -3626,20 +3796,20 @@ md_assemble (char *str)
         FLARE32_PARSE_GPR (reg_b);
         FLARE32_PARSE_COMMA ();
 
-        //if (*pd.op_end != '#') 
+        //if (*op_end != '#') 
         //{
         //  goto post_oa_switch;
         //}
-        //++pd.op_end;
+        //++op_end;
 
-        //pd.op_end = (char *)clear_and_parse_const_dbl_save_ilp (pd.op_end,
+        //op_end = (char *)clear_and_parse_const_dbl_save_ilp (op_end,
         //  &pd.const_dbl);
 
-        //if (pd.op_end == (char *) NULL)
+        //if (op_end == (char *) NULL)
         //{
         //  goto post_oa_switch;
         //}
-        //++pd.op_end;
+        //++op_end;
         FLARE32_PARSE_EXP ();
         FLARE32_PARSE_COMMA ();
 
@@ -3657,18 +3827,18 @@ md_assemble (char *str)
         FLARE32_PARSE_SPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_GPR (reg_b);
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         pd.parse_good = true;
       }
@@ -3680,19 +3850,127 @@ md_assemble (char *str)
         FLARE32_PARSE_SPR (reg_a);
         FLARE32_PARSE_COMMA ();
 
-        if (*pd.op_end != '[')
+        if (*op_end != '[')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
         FLARE32_PARSE_SPR (reg_b);
-        if (*pd.op_end != ']')
+        if (*op_end != ']')
         {
           break;
         }
-        ++pd.op_end;
+        ++op_end;
 
+        pd.parse_good = true;
+      }
+      case FLARE32_OA_RA_S5_JUSTADDR:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+
+        FLARE32_PARSE_EXP ();
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.have_imm = true;
+        pd.is_g7_icreload = true;
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE32_OA_RA_JUSTADDR:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_GPR (reg_a);
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.ex.X_op = O_constant;
+        pd.ex.X_add_number = 0x0;
+
+        pd.have_imm = true;
+        pd.is_g7_icreload = true;
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE32_OA_RA_RC_JUSTADDR:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+        FLARE32_PARSE_GPR (reg_c);
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.ex.X_op = O_constant;
+        pd.ex.X_add_number = 0x0;
+
+        pd.have_imm = true;
+        pd.is_g7_icreload = true;
+        pd.have_index = true;
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE32_OA_RA_RC_S5_JUSTADDR:
+      {
+        FLARE32_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE32_PARSE_GPR (reg_a);
+        FLARE32_PARSE_COMMA ();
+        FLARE32_PARSE_GPR (reg_c);
+        FLARE32_PARSE_COMMA ();
+        FLARE32_PARSE_EXP ();
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.have_index = true;
+        pd.have_imm = true;
+        pd.is_g7_icreload = true;
         pd.parse_good = true;
       }
         break;
@@ -3705,7 +3983,7 @@ md_assemble (char *str)
     FLARE32_SKIP_ISSPACE ();
 
     /* This seems to be necessary */
-    if (*pd.op_end != '\0')
+    if (*op_end != '\0')
     {
       //printf ("testificate\n");
       pd.parse_good = false;
@@ -3743,7 +4021,7 @@ md_assemble (char *str)
     memset (&cl_insn, 0, sizeof (cl_insn));
 
     cl_insn.have_plp = FLARE32_HAVE_PLP_NEITHER;
-    cl_insn.r_type = BFD_RELOC_UNUSED;
+    cl_insn.reloc = BFD_RELOC_UNUSED;
     cl_insn.data = flare32_enc_temp_insn_index
       (pd.reg_c != NULL ? pd.reg_c->index : 0x0ull);
     flare32_relax_insn_ctor (&cl_insn.relax_insn, &cl_insn);

@@ -85,16 +85,16 @@ static const flare32_enc_info_t
     FLARE32_G0_LPRE_FULLGRP_RSMASK,
     FLARE32_G0_LPRE_FULLGRP_16_MASK},
 
-  flare32_enc_info_g1g5g6_g0_lpre_s27 =
-    {FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE,
-    FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
-    FLARE32_G1G5G6_G0_LPRE_S27_RSMASK,
-    FLARE32_G1G5G6_G0_LPRE_S27_MASK},
-  flare32_enc_info_g3_g0_lpre_s23 =
-    {FLARE32_G3_G0_LPRE_S23_BITSIZE,
-    FLARE32_G3_G0_LPRE_S23_BITPOS,
-    FLARE32_G3_G0_LPRE_S23_RSMASK,
-    FLARE32_G3_G0_LPRE_S23_MASK},
+  flare32_enc_info_g0_lpre_s27 =
+    {FLARE32_G0_LPRE_S27_BITSIZE,
+    FLARE32_G0_LPRE_S27_BITPOS,
+    FLARE32_G0_LPRE_S27_RSMASK,
+    FLARE32_G0_LPRE_S27_MASK},
+  flare32_enc_info_g0_lpre_s23 =
+    {FLARE32_G0_LPRE_S23_BITSIZE,
+    FLARE32_G0_LPRE_S23_BITPOS,
+    FLARE32_G0_LPRE_S23_RSMASK,
+    FLARE32_G0_LPRE_S23_MASK},
   /* -------- */
   flare32_enc_info_g1g5g6_i5 =
     {FLARE32_G1G5G6_I5_BITSIZE,
@@ -168,6 +168,22 @@ static const flare32_enc_info_t
     FLARE32_G7_SPRLDST_OP_BITPOS,
     FLARE32_G7_SPRLDST_OP_RSMASK,
     FLARE32_G7_SPRLDST_OP_MASK},
+
+  flare32_enc_info_g7_icreload_subgrp =
+    {FLARE32_G7_ICRELOAD_SUBGRP_BITSIZE,
+    FLARE32_G7_ICRELOAD_SUBGRP_BITPOS,
+    FLARE32_G7_ICRELOAD_SUBGRP_RSMASK,
+    FLARE32_G7_ICRELOAD_SUBGRP_MASK},
+  flare32_enc_info_g7_icreload_fullgrp =
+    {FLARE32_G7_ICRELOAD_FULLGRP_BITSIZE,
+    FLARE32_G7_ICRELOAD_FULLGRP_BITPOS,
+    FLARE32_G7_ICRELOAD_FULLGRP_RSMASK,
+    FLARE32_G7_ICRELOAD_FULLGRP_MASK},
+  flare32_enc_info_g7_icreload_s5 =
+    {FLARE32_G7_ICRELOAD_S5_BITSIZE,
+    FLARE32_G7_ICRELOAD_S5_BITPOS,
+    FLARE32_G7_ICRELOAD_S5_RSMASK,
+    FLARE32_G7_ICRELOAD_S5_MASK},
   /* -------- */
   flare32_enc_info_ra_ind =
     {FLARE32_RA_IND_BITSIZE,
@@ -885,4 +901,39 @@ static const flare32_opc_info_t
   /* -------- */
 };
 /* -------- */
-#endif    // _FLARE32_OPC_DECLS_H_
+static const flare32_grp_info_t flare32_grp_info_g7_icreload =
+{
+  .grp=&flare32_enc_info_grp_16,
+  .grp_value=FLARE32_G7_GRP_VALUE,
+
+  .subgrp=&flare32_enc_info_g7_icreload_subgrp,
+  .subgrp_value=FLARE32_G7_ICRELOAD_SUBGRP_VALUE,
+};
+static const flare32_opc_info_t
+  flare32_opc_info_g7_icreload[FLARE32_G7_ICRELOAD_OPC_INFO_LIM] =
+{
+  /* -------- */
+  /* icreload [rA, #simm] */
+  {&flare32_grp_info_g7_icreload,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_S5_JUSTADDR,
+    {"icreload", "icreload"}, {"icreload.nr", "icreload.nr"}},
+  /* -------- */
+  /* Following are some pseudo instructions */
+  /* icreload [rA] */
+  {&flare32_grp_info_g7_icreload,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_JUSTADDR,
+    {"icreload", "icreload"}, {"icreload.nr", "icreload.nr"}},
+
+  /* icreload [rA, rC] */
+  {&flare32_grp_info_g7_icreload,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_JUSTADDR,
+    {"icreload", "icreload"}, {"icreload.nr", "icreload.nr"}},
+
+  /* icreload [rA, rC, #simm] */
+  {&flare32_grp_info_g7_icreload,
+    FLARE32_OPC_INFO_NULL_OP, FLARE32_OA_RA_RC_S5_JUSTADDR,
+    {"icreload", "icreload"}, {"icreload.nr", "icreload.nr"}},
+  /* -------- */
+};
+/* -------- */
+#endif    /* _FLARE32_OPC_DECLS_H_ */

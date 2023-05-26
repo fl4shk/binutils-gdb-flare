@@ -21,8 +21,8 @@
    Free Software Foundation, 51 Franklin Street - Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-#ifndef _FLARE32_DISASM_INFO_FUNCS_H_
-#define _FLARE32_DISASM_INFO_FUNCS_H_
+#ifndef _FLARE32_DASM_INFO_FUNCS_H_
+#define _FLARE32_DASM_INFO_FUNCS_H_
 
 static inline void
 flare32_dasm_info_ctor (flare32_dasm_info_t *self,
@@ -32,7 +32,7 @@ flare32_dasm_info_ctor (flare32_dasm_info_t *self,
   self->rd16_func = rd16_func;
 }
 
-static inline void
+static void
 flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
 {
   //flare32_dasm_info_t dasm_info;
@@ -138,7 +138,7 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
         self->simm = flare32_sign_extend (flare32_get_g1g5g6_s32
           ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
           flare32_enc_info_g1g5g6_i5.bitsize
-            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
+            + flare32_enc_info_g0_lpre_s27.bitsize);
       }
       /* -------- */
       self->opc_info = &flare32_opc_info_g1
@@ -212,7 +212,7 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
         self->simm = flare32_sign_extend (flare32_get_g3_s32
           ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
           flare32_enc_info_g3_s9.bitsize
-            + flare32_enc_info_g3_g0_lpre_s23.bitsize);
+            + flare32_enc_info_g0_lpre_s23.bitsize);
       }
       /* -------- */
       self->opc_info = &flare32_opc_info_g3
@@ -278,7 +278,7 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
         self->simm = flare32_sign_extend (flare32_get_g1g5g6_s32
           ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
           flare32_enc_info_g1g5g6_i5.bitsize
-            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
+            + flare32_enc_info_g0_lpre_s27.bitsize);
       }
       /* -------- */
       self->opc_info = &flare32_opc_info_g5[0];
@@ -319,7 +319,7 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
         self->simm = flare32_sign_extend (flare32_get_g1g5g6_s32
           ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
           flare32_enc_info_g1g5g6_i5.bitsize
-            + flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
+            + flare32_enc_info_g0_lpre_s27.bitsize);
       }
       /* -------- */
       self->opc_info = &flare32_opc_info_g6[0];
@@ -341,17 +341,20 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
     {
       /* -------- */
       //flare32_temp_t
-      //  aluopbh_subgrp, sprldst_subgrp;
-      self->aluopbh_subgrp = flare32_get_insn_field_ei
+      //  g7_aluopbh_subgrp, g7_sprldst_subgrp;
+      self->g7_aluopbh_subgrp = flare32_get_insn_field_ei
         (&flare32_enc_info_g7_aluopbh_subgrp, self->iword);
-      self->sprldst_subgrp = flare32_get_insn_field_ei
+      self->g7_sprldst_subgrp = flare32_get_insn_field_ei
         (&flare32_enc_info_g7_sprldst_subgrp, self->iword);
-      if (self->aluopbh_subgrp != FLARE32_G7_ALUOPBH_SUBGRP_VALUE
-        && self->sprldst_subgrp != FLARE32_G7_SPRLDST_SUBGRP_VALUE)
-      {
-        break;
-      }
-      if (self->aluopbh_subgrp == FLARE32_G7_ALUOPBH_SUBGRP_VALUE)
+      self->g7_icreload_subgrp = flare32_get_insn_field_ei
+        (&flare32_enc_info_g7_icreload_subgrp, self->iword);
+      //if (self->g7_aluopbh_subgrp != FLARE32_G7_ALUOPBH_SUBGRP_VALUE
+      //  && self->g7_sprldst_subgrp != FLARE32_G7_SPRLDST_SUBGRP_VALUE
+      //  && self->g7_icreload_subgrp != FLARE32_G7_ICRELOAD_SUBGRP_VALUE)
+      //{
+      //  break;
+      //}
+      if (self->g7_aluopbh_subgrp == FLARE32_G7_ALUOPBH_SUBGRP_VALUE)
       {
         self->opc_info = &flare32_opc_info_g7_aluopbh
           [flare32_get_insn_field_ei (&flare32_enc_info_g7_aluopbh_op,
@@ -359,11 +362,45 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
         self->fw = flare32_get_insn_field_ei
           (&flare32_enc_info_g7_aluopbh_w, self->iword);
       }
-      else // if (self->sprldst_subgrp == FLARE32_G7_SPRLDST_SUBGRP_VALUE)
+      else if (self->g7_sprldst_subgrp == FLARE32_G7_SPRLDST_SUBGRP_VALUE)
       {
         self->opc_info = &flare32_opc_info_g7_sprldst
           [flare32_get_insn_field_ei
             (&flare32_enc_info_g7_sprldst_op, self->iword)];
+      }
+      else if (
+        self->g7_icreload_subgrp == FLARE32_G7_ICRELOAD_SUBGRP_VALUE
+      )
+      {
+        self->opc_info = &flare32_opc_info_g7_icreload[0];
+
+        if (self->length == 2)
+        {
+          self->simm
+            //= GET_INSN_FIELD (FLARE32_G1G5G6_S5_MASK,
+            //FLARE32_G1G5G6_S5_BITPOS, self->iword);
+            = flare32_sign_extend (flare32_get_insn_field_ei 
+              (&flare32_enc_info_g7_icreload_s5, self->iword),
+              flare32_enc_info_g7_icreload_s5.bitsize);
+        }
+        else if (self->length == 4) /* `pre` */
+        {
+          self->simm = flare32_sign_extend (flare32_get_g7_icreload_s17
+            ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
+            flare32_enc_info_g7_icreload_s5.bitsize
+              + flare32_enc_info_g0_pre_s12.bitsize);
+        }
+        else if (self->length == 6) /* `lpre` */
+        {
+          self->simm = flare32_sign_extend (flare32_get_g7_icreload_s32
+            ((self->iword >> FLARE32_ONE_EXT_BITPOS), self->iword),
+            flare32_enc_info_g7_icreload_s5.bitsize
+              + flare32_enc_info_g0_lpre_s27.bitsize);
+        }
+      }
+      else
+      {
+        break;
       }
       //do_print_insn_flare32
       //  (self->opc_info,
@@ -387,4 +424,4 @@ flare32_dasm_info_do_disassemble (flare32_dasm_info_t *self)
 
   //return self->length;
 }
-#endif    // _FLARE32_DISASM_INFO_FUNCS_H_
+#endif    // _FLARE32_DASM_INFO_FUNCS_H_

@@ -120,8 +120,8 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 //  flare32_enc_info_g0_lpre_fullgrp,
 //  flare32_enc_info_g0_lpre_subgrp_16,
 //  flare32_enc_info_g0_lpre_fullgrp_16,
-//  flare32_enc_info_g1g5g6_g0_lpre_s27,
-//  flare32_enc_info_g3_g0_lpre_s23,
+//  flare32_enc_info_g0_lpre_s27,
+//  flare32_enc_info_g0_lpre_s23,
 //  /* -------- */
 //  flare32_enc_info_g1g5g6_s5,
 //  flare32_enc_info_g1_op,
@@ -246,24 +246,32 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 //#define FLARE32_LPRE_GRP_16_MASK (FLARE32_LPRE_GRP_RSMASK << FLARE32_LPRE_GRP_BITPOS_16)
 //#define FLARE32_LPRE_GRP_MASK (FLARE32_LPRE_GRP_RSMASK << FLARE32_LPRE_GRP_BITPOS)
 
-/* `lpre` simm27, i.e. when used with an instruction from
+/* `lpre` simm27, when used with an instruction from
   group 1, 5, or 6 */
-#define FLARE32_G1G5G6_G0_LPRE_S27_BITSIZE (27ull)
-#define FLARE32_G1G5G6_G0_LPRE_S27_BITPOS (0ull)
-#define FLARE32_G1G5G6_G0_LPRE_S27_RSMASK \
-  (FLARE32_ENC_RSMASK (G1G5G6_G0_LPRE_S27))
-#define FLARE32_G1G5G6_G0_LPRE_S27_MASK \
-  (FLARE32_ENC_MASK (G1G5G6_G0_LPRE_S27))
+#define FLARE32_G0_LPRE_S27_BITSIZE (27ull)
+#define FLARE32_G0_LPRE_S27_BITPOS (0ull)
+#define FLARE32_G0_LPRE_S27_RSMASK \
+  (FLARE32_ENC_RSMASK (G0_LPRE_S27))
+#define FLARE32_G0_LPRE_S27_MASK \
+  (FLARE32_ENC_MASK (G0_LPRE_S27))
 
-/* `lpre` simm23, i.e. when used with an instruction from group 3 */
-#define FLARE32_G3_G0_LPRE_S23_BITSIZE (23ull)
-#define FLARE32_G3_G0_LPRE_S23_BITPOS (0ull)
-#define FLARE32_G3_G0_LPRE_S23_RSMASK \
-  (FLARE32_ENC_RSMASK (G3_G0_LPRE_S23))
-#define FLARE32_G3_G0_LPRE_S23_MASK \
-  (FLARE32_ENC_MASK (G3_G0_LPRE_S23))
+/* `lpre` simm23, when used with an instruction from group 3 */
+#define FLARE32_G0_LPRE_S23_BITSIZE (23ull)
+#define FLARE32_G0_LPRE_S23_BITPOS (0ull)
+#define FLARE32_G0_LPRE_S23_RSMASK \
+  (FLARE32_ENC_RSMASK (G0_LPRE_S23))
+#define FLARE32_G0_LPRE_S23_MASK \
+  (FLARE32_ENC_MASK (G0_LPRE_S23))
+
+/* `lpre` simm27, when used with an `icreload` instruction from group 7 */
+#define FLARE32_G7_ICRELOAD_G0_LPRE_S27_BITSIZE (27ull)
+#define FLARE32_G7_ICRELOAD_G0_LPRE_S27_BITPOS (0ull)
+#define FLARE32_G7_ICRELOAD_G0_LPRE_S27_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_ICRELOAD_G0_LPRE_S27))
+#define FLARE32_G7_ICRELOAD_G0_LPRE_S27_MASK \
+  (FLARE32_ENC_MASK (G7_ICRELOAD_G0_LPRE_S27))
 /* -------- */
-/* simm5, i.e. when part of an instruction from groups 1, 5, or 6 */
+/* simm5, for when part of an instruction from groups 1, 5, or 6 */
 #define FLARE32_G1G5G6_I5_BITSIZE (5ull)
 #define FLARE32_G1G5G6_I5_BITPOS (8ull)
 #define FLARE32_G1G5G6_I5_RSMASK \
@@ -524,12 +532,48 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 #define FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_RB (0x2ull)
 #define FLARE32_G7_SPRLDST_OP_ENUM_STR_SA_SB (0x3ull)
 
-/* Constant fields of Group 7 spr-using `ldr`/`str` instruction */
+/* Constant fields of Group 7 spr-using `ldr`/`str` instructions */
 #define FLARE32_G7_SPRLDST_SUBGRP_VALUE (0x02ull)
 #define FLARE32_G7_SPRLDST_FULLGRP_VALUE \
   (FLARE32_FULLGRP_VALUE(G7_SPRLDST_SUBGRP, \
     FLARE32_G7_GRP_VALUE, \
     FLARE32_G7_SPRLDST_SUBGRP_VALUE))
+
+/* -------- */
+
+/* The `subgrp` field of the `icreload` instruction in group 7 */
+#define FLARE32_G7_ICRELOAD_SUBGRP_BITSIZE (4ull)
+#define FLARE32_G7_ICRELOAD_SUBGRP_BITPOS \
+  (FLARE32_GRP_16_BITPOS - FLARE32_G7_ICRELOAD_SUBGRP_BITSIZE)
+#define FLARE32_G7_ICRELOAD_SUBGRP_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_ICRELOAD_SUBGRP))
+#define FLARE32_G7_ICRELOAD_SUBGRP_MASK \
+  (FLARE32_ENC_MASK (G7_ICRELOAD_SUBGRP))
+
+#define FLARE32_G7_ICRELOAD_FULLGRP_BITSIZE \
+  (FLARE32_GRP_BITSIZE + FLARE32_G7_ICRELOAD_SUBGRP_BITSIZE)
+#define FLARE32_G7_ICRELOAD_FULLGRP_BITPOS \
+  (FLARE32_G7_ICRELOAD_SUBGRP_BITPOS)
+#define FLARE32_G7_ICRELOAD_FULLGRP_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_ICRELOAD_FULLGRP))
+#define FLARE32_G7_ICRELOAD_FULLGRP_MASK \
+  (FLARE32_ENC_MASK (G7_ICRELOAD_FULLGRP))
+
+/* simm5, for when part of the `icreload` instruction from group 7 */
+#define FLARE32_G7_ICRELOAD_S5_BITSIZE (5ull)
+#define FLARE32_G7_ICRELOAD_S5_BITPOS (4ull)
+#define FLARE32_G7_ICRELOAD_S5_RSMASK \
+  (FLARE32_ENC_RSMASK (G7_ICRELOAD_S5))
+#define FLARE32_G7_ICRELOAD_S5_MASK \
+  (FLARE32_ENC_MASK (G7_ICRELOAD_S5))
+
+/* Constant fields of Group 7 the `icreload` instruction */
+#define FLARE32_G7_ICRELOAD_SUBGRP_VALUE (0x06ull)
+#define FLARE32_G7_ICRELOAD_FULLGRP_VALUE \
+  (FLARE32_FULLGRP_VALUE(G7_ICRELOAD_SUBGRP, \
+    FLARE32_G7_GRP_VALUE, \
+    FLARE32_G7_ICRELOAD_SUBGRP_VALUE))
+
 /* -------- */
 /* encoding of rA */
 #define FLARE32_RA_IND_BITSIZE (4ull)
@@ -555,12 +599,14 @@ flare32_set_insn_field_ei_p (const flare32_enc_info_t *enc_info,
 #define FLARE32_NO_EXT_MASK ((1ull << FLARE32_ONE_EXT_BITPOS) - 1ull)
 #define FLARE32_ONE_EXT_MASK (~(FLARE32_NO_EXT_MASK))
 
-#define FLARE32_PRE_EXT_LSMASK \
+#define FLARE32_G0_PRE_S12_EXT_LSMASK \
   (FLARE32_G0_PRE_S12_MASK << FLARE32_ONE_EXT_BITPOS)
-#define FLARE32_G1G5G6_LPRE_EXT_LSMASK \
-  (FLARE32_G1G5G6_G0_LPRE_S27_MASK << FLARE32_ONE_EXT_BITPOS)
-#define FLARE32_G3_LPRE_EXT_LSMASK \
-  (FLARE32_G3_G0_LPRE_S23_MASK << FLARE32_ONE_EXT_BITPOS)
+#define FLARE32_G0_LPRE_S27_EXT \
+  (FLARE32_G0_LPRE_S27_MASK << FLARE32_ONE_EXT_BITPOS)
+#define FLARE32_G0_LPRE_S23_EXT_LSMASK \
+  (FLARE32_G0_LPRE_S23_MASK << FLARE32_ONE_EXT_BITPOS)
+#define FLARE32_G0_LPRE_S27_EXT_LSMASK \
+  (FLARE32_G7_ICRELOAD_G0_LPRE_S27_MASK << FLARE32_ONE_EXT_BITPOS)
 /* -------- */
 typedef enum flare32_reg_kind_t
 {
@@ -743,6 +789,10 @@ typedef enum flare32_oparg_t
   FLARE32_OA_RA_RB_CPY64,
   FLARE32_OA_SA_RB_LDST,
   FLARE32_OA_SA_SB_LDST,
+  FLARE32_OA_RA_S5_JUSTADDR,
+  FLARE32_OA_RA_JUSTADDR,
+  FLARE32_OA_RA_RC_JUSTADDR,
+  FLARE32_OA_RA_RC_S5_JUSTADDR,
 } flare32_oparg_t;
 //static inline bool
 //flare32_oparg_has_u5 (flare32_oparg_t oparg)
@@ -815,8 +865,9 @@ typedef struct flare32_dasm_info_t
     ra_ind,
     rb_ind,
     fw,
-    aluopbh_subgrp,
-    sprldst_subgrp;
+    g7_aluopbh_subgrp,
+    g7_sprldst_subgrp,
+    g7_icreload_subgrp;
   bfd_byte buffer[2];
   flare32_dasm_info_rd16_func rd16_func;
 } flare32_dasm_info_t;
@@ -934,6 +985,10 @@ extern void flare32_opci_v2d_delete_data (flare32_opci_v2d_t *self);
 //extern const flare32_opc_info_t
 //  flare32_opc_info_g7_sprldst[FLARE32_G7_SPRLDST_OPC_INFO_LIM];
 
+#define FLARE32_G7_ICRELOAD_OPC_INFO_LIM (4ull)
+//extern const flare32_opc_info_t
+//  flare32_opc_info_g7_icreload[FLARE32_G7_ICRELOAD_OPC_INFO_LIM];
+
 /* This is definitely excessive, but it should work fine */
 #define FLARE32_MAX_UNIQUE_OPCI_NAMES (512ull)
 /* -------- */
@@ -954,31 +1009,31 @@ flare32_enc_temp_insn_pre (flare32_temp_t simm12)
   return ret;
 }
 static inline flare32_temp_t
-flare32_enc_temp_insn_g1g5g6_lpre (flare32_temp_t simm27)
+flare32_enc_temp_insn_g0_lpre_s27 (flare32_temp_t simm27)
 {
   flare32_temp_t ret = 0;
   //SET_INSN_FIELD(FLARE32_G0_LPRE_FULLGRP_MASK, FLARE32_G0_LPRE_FULLGRP_BITPOS,
   //  ret, FLARE32_G0_LPRE_FULLGRP_VALUE);
-  //SET_INSN_FIELD(FLARE32_G1G5G6_LPRE_S27_MASK,
-  //  FLARE32_G1G5G6_G0_LPRE_S27_BITPOS, ret, simm27);
+  //SET_INSN_FIELD(FLARE32_G0_LPRE_S27_MASK,
+  //  FLARE32_G0_LPRE_S27_BITPOS, ret, simm27);
   flare32_set_insn_field_p (FLARE32_G0_LPRE_FULLGRP_MASK,
     FLARE32_G0_LPRE_FULLGRP_BITPOS, &ret, FLARE32_G0_LPRE_FULLGRP_VALUE);
-  flare32_set_insn_field_p (FLARE32_G1G5G6_G0_LPRE_S27_MASK,
-    FLARE32_G1G5G6_G0_LPRE_S27_BITPOS, &ret, simm27);
+  flare32_set_insn_field_p (FLARE32_G0_LPRE_S27_MASK,
+    FLARE32_G0_LPRE_S27_BITPOS, &ret, simm27);
   return ret;
 }
 static inline flare32_temp_t
-flare32_enc_temp_insn_g3_lpre (flare32_temp_t simm23)
+flare32_enc_temp_insn_g0_lpre_s23 (flare32_temp_t simm23)
 {
   flare32_temp_t ret = 0;
   //SET_INSN_FIELD(FLARE32_G0_LPRE_FULLGRP_MASK, FLARE32_G0_LPRE_FULLGRP_BITPOS,
   //  ret, FLARE32_G0_LPRE_FULLGRP_VALUE);
-  //SET_INSN_FIELD(FLARE32_G3_LPRE_S23_MASK,
-  //  FLARE32_G3_LPRE_S23_BITPOS, ret, simm23);
+  //SET_INSN_FIELD(FLARE32_G0_LPRE_S23_MASK,
+  //  FLARE32_G0_LPRE_S23_BITPOS, ret, simm23);
   flare32_set_insn_field_p (FLARE32_G0_LPRE_FULLGRP_MASK,
     FLARE32_G0_LPRE_FULLGRP_BITPOS, &ret, FLARE32_G0_LPRE_FULLGRP_VALUE);
-  flare32_set_insn_field_p (FLARE32_G3_G0_LPRE_S23_MASK,
-    FLARE32_G3_G0_LPRE_S23_BITPOS, &ret, simm23);
+  flare32_set_insn_field_p (FLARE32_G0_LPRE_S23_MASK,
+    FLARE32_G0_LPRE_S23_BITPOS, &ret, simm23);
   return ret;
 }
 /* -------- */
@@ -1160,6 +1215,21 @@ flare32_enc_temp_insn_g7_sprldst (flare32_temp_t op,
     &ret, rb_ind);
   return ret;
 }
+static inline flare32_temp_t
+flare32_enc_temp_insn_g7_icreload (flare32_temp_t ra_ind,
+                                  flare32_temp_t simm5)
+{
+  flare32_temp_t ret = 0;
+  flare32_set_insn_field_p (FLARE32_G7_ICRELOAD_FULLGRP_MASK,
+    FLARE32_G7_ICRELOAD_FULLGRP_BITPOS, &ret,
+    FLARE32_G7_ICRELOAD_FULLGRP_VALUE);
+  flare32_set_insn_field_p (FLARE32_G7_ICRELOAD_S5_MASK,
+    FLARE32_G7_ICRELOAD_S5_BITPOS, &ret,
+    simm5);
+  flare32_set_insn_field_p (FLARE32_RA_IND_MASK, FLARE32_RA_IND_BITPOS,
+    &ret, ra_ind);
+  return ret;
+}
 /* -------- */
 static inline flare32_temp_t
 flare32_sign_extend (flare32_temp_t value,
@@ -1241,8 +1311,8 @@ flare32_get_g1g5g6_s32 (flare32_temp_t prefix_insn,
                         flare32_temp_t insn)
 {
   return flare32_get_ext_imm
-    (FLARE32_G1G5G6_G0_LPRE_S27_MASK,
-    FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
+    (FLARE32_G0_LPRE_S27_MASK,
+    FLARE32_G0_LPRE_S27_BITPOS,
     prefix_insn,
     FLARE32_G1G5G6_I5_MASK,
     FLARE32_G1G5G6_I5_BITSIZE,
@@ -1268,8 +1338,8 @@ flare32_get_g3_s32 (flare32_temp_t prefix_insn,
                     flare32_temp_t insn)
 {
   return flare32_get_ext_imm
-    (FLARE32_G1G5G6_G0_LPRE_S27_MASK,
-    FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
+    (FLARE32_G0_LPRE_S27_MASK,
+    FLARE32_G0_LPRE_S27_BITPOS,
     prefix_insn,
     FLARE32_G3_S9_MASK,
     FLARE32_G3_S9_BITSIZE,
@@ -1286,6 +1356,33 @@ flare32_get_g5g6_s32_index (flare32_temp_t index_insn,
     (index_insn << FLARE32_INDEX_LPRE_EXT_BITPOS)
     | flare32_get_g1g5g6_s32 (prefix_insn, insn)
   );
+}
+
+static inline flare32_temp_t
+flare32_get_g7_icreload_s17 (flare32_temp_t prefix_insn,
+                        flare32_temp_t insn)
+{
+  return flare32_get_ext_imm 
+    (FLARE32_G0_PRE_S12_MASK,
+    FLARE32_G0_PRE_S12_BITPOS,
+    prefix_insn,
+    FLARE32_G7_ICRELOAD_S5_MASK,
+    FLARE32_G7_ICRELOAD_S5_BITSIZE,
+    FLARE32_G7_ICRELOAD_S5_BITPOS,
+    insn);
+}
+static inline flare32_temp_t
+flare32_get_g7_icreload_s32 (flare32_temp_t prefix_insn,
+                        flare32_temp_t insn)
+{
+  return flare32_get_ext_imm
+    (FLARE32_G7_ICRELOAD_G0_LPRE_S27_MASK,
+    FLARE32_G7_ICRELOAD_G0_LPRE_S27_BITPOS,
+    prefix_insn,
+    FLARE32_G7_ICRELOAD_S5_MASK,
+    FLARE32_G7_ICRELOAD_S5_BITSIZE,
+    FLARE32_G7_ICRELOAD_S5_BITPOS,
+    insn);
 }
 
 static inline void
@@ -1331,13 +1428,6 @@ flare32_put_g1g5g6_s17 (flare32_temp_t *prefix_insn,
                         flare32_temp_t *insn,
                         flare32_temp_t combined)
 {
-  //flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G1G5G6_I5_MASK,
-  //                    FLARE32_G1G5G6_I5_BITSIZE,
-  //                    FLARE32_G1G5G6_I5_BITPOS,
-  //                    insn,
-  //                    combined);
   flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,
                       FLARE32_G0_PRE_S12_BITPOS,
                       prefix_insn,
@@ -1352,15 +1442,8 @@ flare32_put_g1g5g6_s32 (flare32_temp_t *prefix_insn,
                         flare32_temp_t *insn,
                         flare32_temp_t combined)
 {
-  //flare32_put_ext_imm (FLARE32_G1G5G6_LPRE_S27_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G1G5G6_I5_MASK,
-  //                    FLARE32_G1G5G6_I5_BITSIZE,
-  //                    FLARE32_G1G5G6_I5_BITPOS,
-  //                    insn,
-  //                    combined);
-  flare32_put_ext_imm (FLARE32_G1G5G6_G0_LPRE_S27_MASK,
-                      FLARE32_G1G5G6_G0_LPRE_S27_BITPOS,
+  flare32_put_ext_imm (FLARE32_G0_LPRE_S27_MASK,
+                      FLARE32_G0_LPRE_S27_BITPOS,
                       prefix_insn,
                       FLARE32_G1G5G6_I5_MASK,
                       FLARE32_G1G5G6_I5_BITSIZE,
@@ -1374,14 +1457,6 @@ flare32_put_g3_s21 (flare32_temp_t *prefix_insn,
                     flare32_temp_t *insn,
                     flare32_temp_t combined)
 {
-  /* flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,*/ /* prefix_mask */
-  /*                     prefix_insn,*/  /* prefix_insn */
-  /*                     FLARE32_G3_S9_MASK,*/ /* insn_mask */
-  /*                     FLARE32_G3_S9_BITSIZE,*/ /* insn_bitsize */
-  /*                     FLARE32_G3_S9_BITPOS,*/ /* insn_bitpos */
-  /*                     insn,*/ /* insn */
-  /*                     combined);*/ /* combined */
-
   flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,
                       FLARE32_G0_PRE_S12_BITPOS,
                       prefix_insn,
@@ -1396,19 +1471,40 @@ flare32_put_g3_s32 (flare32_temp_t *prefix_insn,
                     flare32_temp_t *insn,
                     flare32_temp_t combined)
 {
-  //flare32_put_ext_imm (FLARE32_G3_LPRE_S23_MASK,
-  //                    prefix_insn,
-  //                    FLARE32_G3_S9_MASK,
-  //                    FLARE32_G3_S9_BITSIZE,
-  //                    FLARE32_G3_S9_BITPOS,
-  //                    insn,
-  //                    combined);
-  flare32_put_ext_imm (FLARE32_G3_G0_LPRE_S23_MASK,
-                      FLARE32_G3_G0_LPRE_S23_BITPOS,
+  flare32_put_ext_imm (FLARE32_G0_LPRE_S23_MASK,
+                      FLARE32_G0_LPRE_S23_BITPOS,
                       prefix_insn,
                       FLARE32_G3_S9_MASK,
                       FLARE32_G3_S9_BITSIZE,
                       FLARE32_G3_S9_BITPOS,
+                      insn,
+                      combined);
+}
+static inline void
+flare32_put_g7_icreload_s17 (flare32_temp_t *prefix_insn,
+                        flare32_temp_t *insn,
+                        flare32_temp_t combined)
+{
+  flare32_put_ext_imm (FLARE32_G0_PRE_S12_MASK,
+                      FLARE32_G0_PRE_S12_BITPOS,
+                      prefix_insn,
+                      FLARE32_G7_ICRELOAD_S5_MASK,
+                      FLARE32_G7_ICRELOAD_S5_BITSIZE,
+                      FLARE32_G7_ICRELOAD_S5_BITPOS,
+                      insn,
+                      combined);
+}
+static inline void
+flare32_put_g7_icreload_s32 (flare32_temp_t *prefix_insn,
+                        flare32_temp_t *insn,
+                        flare32_temp_t combined)
+{
+  flare32_put_ext_imm (FLARE32_G7_ICRELOAD_G0_LPRE_S27_MASK,
+                      FLARE32_G7_ICRELOAD_G0_LPRE_S27_BITPOS,
+                      prefix_insn,
+                      FLARE32_G7_ICRELOAD_S5_MASK,
+                      FLARE32_G7_ICRELOAD_S5_BITSIZE,
+                      FLARE32_G7_ICRELOAD_S5_BITPOS,
                       insn,
                       combined);
 }

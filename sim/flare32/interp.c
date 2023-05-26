@@ -582,13 +582,13 @@ sim_engine_run (SIM_DESC sd,
         case FLARE32_G5_GRP_VALUE:
         case FLARE32_G6_GRP_VALUE:
           simm = flare32_sign_extend (flare32_get_insn_field_ei
-            (&flare32_enc_info_g1g5g6_g0_lpre_s27, prefix_insn),
-            flare32_enc_info_g1g5g6_g0_lpre_s27.bitsize);
+            (&flare32_enc_info_g0_lpre_s27, prefix_insn),
+            flare32_enc_info_g0_lpre_s27.bitsize);
           break;
         case FLARE32_G3_GRP_VALUE:
           simm = flare32_sign_extend (flare32_get_insn_field_ei
-            (&flare32_enc_info_g3_g0_lpre_s23, prefix_insn),
-            flare32_enc_info_g3_g0_lpre_s23.bitsize);
+            (&flare32_enc_info_g0_lpre_s23, prefix_insn),
+            flare32_enc_info_g0_lpre_s23.bitsize);
           break;
         default:
           simm = 0x0;
@@ -2201,6 +2201,36 @@ sim_engine_run (SIM_DESC sd,
             }
               break;
           }
+        }
+        else if ((subgrp = flare32_get_insn_field_ei
+          (&flare32_enc_info_g7_icreload_subgrp, insn))
+          == FLARE32_G7_ICRELOAD_SUBGRP_VALUE)
+        {
+          //int32_t
+          //  ra = cpu.gprs[ra_ind],
+          //  //rb = cpu.gprs[rb_ind],
+          //  rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+          //uint32_t
+          //  addr = 0;
+
+          opc_info = &flare32_opc_info_g7_icreload[0];
+
+          //if (have_pre_insn || have_lpre_insn)
+          //{
+          //  simm = (simm << flare32_enc_info_g7_icreload_s5.bitsize)
+          //    | flare32_get_insn_field_ei
+          //      (&flare32_enc_info_g7_icreload_s5, insn);
+          //}
+          //else
+          //{
+          //  simm = flare32_sign_extend 
+          //    (flare32_get_insn_field_ei
+          //      (&flare32_enc_info_g7_icreload_s5, insn),
+          //    flare32_enc_info_g7_icreload_s5.bitsize);
+          //}
+
+          //addr = ra + rc + simm;
+          FLARE32_TRACE_INSN (opc_info->names[fw]);
         }
         else
         {

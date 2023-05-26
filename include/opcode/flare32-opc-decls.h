@@ -624,25 +624,25 @@ static const flare32_opc_info_t
     FLARE32_G4_OP_ENUM_LSMUL_RA_RB, FLARE32_OA_RA_RB,
     {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
 
-  /* ludiv rA, rB */
+  /* udiv64 rA, rB */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LUDIV_RA_RB, FLARE32_OA_RA_RB,
-    {"ludiv", "ludiv"}, {"ludiv.nr", "ludiv.nr"}},
+    FLARE32_G4_OP_ENUM_UDIV64_RA_RB, FLARE32_OA_RA_RB,
+    {"udiv64", "udiv64"}, {"udiv64.nr", "udiv64.nr"}},
 
-  /* lsdiv rA, rB */
+  /* sdiv64 rA, rB */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LSDIV_RA_RB, FLARE32_OA_RA_RB,
-    {"lsdiv", "lsdiv"}, {"lsdiv.nr", "lsdiv.nr"}},
+    FLARE32_G4_OP_ENUM_SDIV64_RA_RB, FLARE32_OA_RA_RB,
+    {"sdiv64", "sdiv64"}, {"sdiv64.nr", "sdiv64.nr"}},
   /* -------- */
-  /* lumod rA, rB */
+  /* umod64 rA, rB */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LUMOD_RA_RB, FLARE32_OA_RA_RB,
-    {"lumod", "lumod"}, {"lumod.nr", "lumod.nr"}},
+    FLARE32_G4_OP_ENUM_UMOD64_RA_RB, FLARE32_OA_RA_RB,
+    {"umod64", "umod64"}, {"umod64.nr", "umod64.nr"}},
 
-  /* lsmod rA, rB */
+  /* smod64 rA, rB */
   {&flare32_grp_info_g4,
-    FLARE32_G4_OP_ENUM_LSMOD_RA_RB, FLARE32_OA_RA_RB,
-    {"lsmod", "lsmod"}, {"lsmod.nr", "lsmod.nr"}},
+    FLARE32_G4_OP_ENUM_SMOD64_RA_RB, FLARE32_OA_RA_RB,
+    {"smod64", "smod64"}, {"smod64.nr", "smod64.nr"}},
 
   /* ldub rA, [rB] */
   {&flare32_grp_info_g4,

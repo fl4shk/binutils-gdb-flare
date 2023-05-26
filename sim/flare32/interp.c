@@ -1646,7 +1646,7 @@ sim_engine_run (SIM_DESC sd,
             *r1 = (int32_t) lhs;
           }
             break;
-          case FLARE32_G4_OP_ENUM_LUDIV_RA_RB:
+          case FLARE32_G4_OP_ENUM_UDIV64_RA_RB:
           {
             int32_t
               //ra = cpu.gprs[ra_ind],
@@ -1675,7 +1675,7 @@ sim_engine_run (SIM_DESC sd,
             *ra_p_1 = (int32_t) lhs;
           }
             break;
-          case FLARE32_G4_OP_ENUM_LSDIV_RA_RB:
+          case FLARE32_G4_OP_ENUM_SDIV64_RA_RB:
           {
             int32_t
               //ra = cpu.gprs[ra_ind],
@@ -1704,7 +1704,7 @@ sim_engine_run (SIM_DESC sd,
             *ra_p_1 = (int32_t) lhs;
           }
             break;
-          case FLARE32_G4_OP_ENUM_LUMOD_RA_RB:
+          case FLARE32_G4_OP_ENUM_UMOD64_RA_RB:
           {
             //int32_t
             //  ra = cpu.gprs[ra_ind],
@@ -1750,7 +1750,7 @@ sim_engine_run (SIM_DESC sd,
             *ra_p_1 = (int32_t) lhs;
           }
             break;
-          case FLARE32_G4_OP_ENUM_LSMOD_RA_RB:
+          case FLARE32_G4_OP_ENUM_SMOD64_RA_RB:
           {
             int32_t
               *ra = &cpu.gprs[ra_ind & (~0x1)],

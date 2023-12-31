@@ -707,7 +707,7 @@ extern const flare32_reg_t sprs[FLARE32_NUM_SPRS];
   (((flare32_temp_t) 0x1ull) << FLARE32_FLAGS_N_BITPOS) 
 
 #define FLARE32_SIM_FLAGS_VN_MASK(bits) \
-  ((uint64_t) 0x1ull << (uint64_t) bits)
+  ((uint64_t) 0x1ull << (uint64_t) (bits - 1))
 #define FLARE32_SIM_FLAGS_Z_MASK(bits) \
   (FLARE32_SIM_FLAGS_VN_MASK (bits) - (int64_t) 0x1ll)
 #define FLARE32_SIM_FLAGS_C_MASK(bits) \

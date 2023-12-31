@@ -708,7 +708,8 @@ sim_engine_run (SIM_DESC sd,
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = flare32_sim_add_sub 
+            //*ra = 
+            (void)flare32_sim_add_sub 
               (32u, /* bits */
               *ra, /* operand_a */
               (int32_t) simm, /* operand_b */
@@ -1022,7 +1023,8 @@ sim_engine_run (SIM_DESC sd,
           {
             FLARE32_TRACE_INSN (opc_info->names[fw]);
 
-            *ra = flare32_sim_add_sub
+            //*ra = 
+            (void)flare32_sim_add_sub
               (32u, /* bits */
               *ra, /* operand_a */
               rb, /* operand_b */

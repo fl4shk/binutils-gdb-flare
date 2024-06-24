@@ -28,6 +28,15 @@
 /* -------- */
 #define USE_RELA
 
+#define flare_get_insn_32(abfd, where) \
+  ( \
+    (bfd_get_16 (abfd, where) << 16) \
+    | bfd_get_16 (abfd, where + 2) \
+  )
+#define flare_put_insn_32(abfd, prefix_insn, where) \
+  bfd_put_16 (abfd, (prefix_insn >> 16) & 0xffffu, where); \
+  bfd_put_16 (abfd, prefix_insn & 0xffffu, where + 2) \
+
 /* Forward declarations. */
 /* Special function for
   non-add32, non-sub32 relocations
@@ -303,7 +312,7 @@ static reloc_howto_type flare_elf_howto_table [] =
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1G5G6_I5_BITPOS,	/* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_add_sub_reloc,  /* special_function */
       "R_FLARE_G1G5G6_S32_SUB32",   /* name */
@@ -1040,11 +1049,11 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       const unsigned
         insn_dist = flare_have_plp_distance
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-      prefix_insn = bfd_get_32 (input_bfd, contents + address);
+      prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
       flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
-      bfd_put_32 (input_bfd, prefix_insn, contents + address);
+      flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
     else if (howto->type == R_FLARE_G7_ICRELOAD_S5)
@@ -1079,11 +1088,11 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       const unsigned
         insn_dist = flare_have_plp_distance
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-      prefix_insn = bfd_get_32 (input_bfd, contents + address);
+      prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       relocation += flare_get_g7_icreload_s32 (prefix_insn, insn);
       flare_put_g7_icreload_s32 (&prefix_insn, &insn, relocation);
-      bfd_put_32 (input_bfd, prefix_insn, contents + address);
+      flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
   }
@@ -1158,7 +1167,7 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
           (FLARE_HAVE_PLP_LPRE),
         insn_dist = flare_have_plp_distance
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-      prefix_insn = bfd_get_32 (input_bfd, contents + address);
+      prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       //relocation += 
       //  flare_sign_extend (flare_get_g3_s32 (prefix_insn, insn),
@@ -1168,7 +1177,7 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       //  ;
       relocation -= temp_length;
       flare_put_g3_s32 (&prefix_insn, &insn, relocation);
-      bfd_put_32 (input_bfd, prefix_insn, contents + address);
+      flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
   }
@@ -1260,8 +1269,21 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
       //bfd_vma old_relocation = relocation;
       flare_temp_t prefix_insn, insn, simm = 0;
 
-      prefix_insn = bfd_get_32 (input_bfd, contents + address);
+      prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
+      //const unsigned
+      //  prefix_insn_hi = bfd_get_16 (input_bfd, contents + address),
+      //  prefix_insn_lo = bfd_get_16 (input_bfd, contents + address + 2);
+      //prefix_insn = (
+      //  (prefix_insn_hi << 16)
+      //  | prefix_insn_lo
+      //);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
+      //printf(
+      //  "do_add_sub_reloc: prefix_insn: %x_%x; %x %x; %x\n",
+      //  (unsigned)(prefix_insn >> 32), (unsigned)prefix_insn,
+      //  prefix_insn_hi, prefix_insn_lo,
+      //  (unsigned)insn
+      //);
 
       //relocation = (howto->type == R_FLARE_G1G5G6_S32_ADD32)
       //  ? (relocation + flare_get_g1g5g6_s32 (prefix_insn, insn))
@@ -1329,7 +1351,7 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
       //  (unsigned) prefix_insn, (unsigned) insn,
       //  howto->name);
 
-      bfd_put_32 (input_bfd, prefix_insn, contents + address);
+      flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
       break;

@@ -107,6 +107,29 @@ have_plp_distance (flare_have_plp_t from, flare_have_plp_t to)
   return flare_have_plp_distance (from, to);
 }
 
+#include <stdio.h>
+static void
+flare_insn_number_to_chars (char *p, flare_temp_t val, int n)
+{
+  //for (int i = (int)(n / 2) - 1; i >= 0; --i)
+  //{
+  //  flare_number_to_chars (p, (val >> (i * 16)) & 0xffffu, 2);
+  //}
+  //printf(
+  //  "flare_insn_number_to_chars: %lx; %x\n", 
+  //  val,
+  //  n
+  //);
+  //for (int i = 0; i < n / 2; ++i)
+  for (int i = (int)(n / 2) - 1; i >= 0; --i)
+  {
+    const unsigned to_print = (val >> (i * 16)) & 0xffffu;
+    //printf ("%x; ", to_print);
+    flare_number_to_chars (p + (n / 2) - (i * 2) + 1, to_print, 2);
+  }
+  //printf("\n");
+}
+
 typedef struct flare_relax_insn_t
 {
   //flare_cl_insn_t
@@ -531,7 +554,18 @@ move_cl_insn (
   //}
   //install_cl_insn (cl_insn);
   char *p = fragP->fr_literal + where;
-  flare_number_to_chars (p, cl_insn->data,
+  //flare_number_to_chars (p, cl_insn->data,
+  //  have_plp_insn_length (cl_insn->have_plp));
+
+  //// Implement little endian encoding for each 16-bit chunks of an 
+  //// instruction, though 16-bit chunks arranged in big-endian way.
+  //// hopefully this is correct
+  //const unsigned length = have_plp_insn_length (cl_insn->have_plp) / 2;
+  //for (unsigned i = 0; i < length / 2; ++i)
+  //{
+  //  flare_number_to_chars (p, (cl_insn->data >> (i * 16)) & 0xffffu, 2);
+  //}
+  flare_insn_number_to_chars(p, cl_insn->data,
     have_plp_insn_length (cl_insn->have_plp));
 }
 
@@ -577,7 +611,7 @@ add_fne_cl_insn (const flare_cl_insn_t *cl_insn,
   // `dwarf2_emit_insn ()`, so maybe that's what I need too?
   //dwarf2_emit_insn (nbytes);
   dwarf2_emit_insn (0);
-  flare_number_to_chars (p, cl_insn->data, nbytes);
+  flare_insn_number_to_chars (p, cl_insn->data, nbytes);
 
   /* Per RISC-V: */
   /* We need to start a new frag after any instruction that can be
@@ -1379,12 +1413,12 @@ md_apply_fix (fixS *fixP,
     case BFD_RELOC_FLARE_G1G5G6_U5:
     case BFD_RELOC_FLARE_G1G5G6_S5:
     case BFD_RELOC_FLARE_G7_ICRELOAD_S5:
-      ////tmp.buf = bfd_putb16 (bfd_getb16 (tmp.buf));
+      ////tmp.buf = bfd_putl16 (bfd_getl16 (tmp.buf));
       if (fixP->fx_addsy == NULL
         //|| flare_relaxable_symbol (fixP->fx_addsy)
         )
       {
-        tmp.insn = bfd_getb16 (tmp.buf);
+        tmp.insn = bfd_getl16 (tmp.buf);
         if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_U5
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S5)
         {
@@ -1402,7 +1436,7 @@ md_apply_fix (fixS *fixP,
           fixP->fx_addnumber = *valP = flare_get_insn_field_ei
             (&flare_enc_info_g7_icreload_s5, tmp.insn);
         }
-        bfd_putb16 (tmp.insn, tmp.buf);
+        bfd_putl16 (tmp.insn, tmp.buf);
         //if (
         //  //!linkrelax
         //  //&& 
@@ -1426,8 +1460,8 @@ md_apply_fix (fixS *fixP,
         tmp.insn_offs = tmp.pre_offs
           + flare_have_plp_distance
             (FLARE_HAVE_PLP_PRE, FLARE_HAVE_PLP_NEITHER);
-        tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
-        tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+        tmp.prefix_insn = bfd_getl16 (tmp.buf + tmp.pre_offs);
+        tmp.insn = bfd_getl16 (tmp.buf + tmp.insn_offs);
         if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S17_FOR_U5
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S17)
         {
@@ -1445,8 +1479,8 @@ md_apply_fix (fixS *fixP,
           fixP->fx_addnumber = *valP = flare_get_g7_icreload_s17
             (tmp.prefix_insn, tmp.insn);
         }
-        bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
-        bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+        bfd_putl16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
+        bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (
         //  //!linkrelax
         //  //&&
@@ -1466,7 +1500,7 @@ md_apply_fix (fixS *fixP,
       //if (fixP->fx_addsy == NULL
       //  || flare_relaxable_symbol (fixP->fx_addsy))
       //{
-      //  tmp.insn = bfd_getb16 (tmp.buf);
+      //  tmp.insn = bfd_getl16 (tmp.buf);
       //  if (fixP->fx_addsy == NULL)
       //  {
       //    tmp.target = 0;
@@ -1480,7 +1514,7 @@ md_apply_fix (fixS *fixP,
       //    (flare_temp_t)(tmp.target
       //      - have_plp_insn_length (FLARE_HAVE_PLP_NEITHER))
       //    );
-      //  bfd_putb16 (tmp.insn, tmp.buf);
+      //  bfd_putl16 (tmp.insn, tmp.buf);
       //  //if (fixP->fx_addsy == NULL)
       //  //{
       //  //  fixP->fx_done = true;
@@ -1500,8 +1534,8 @@ md_apply_fix (fixS *fixP,
       //  tmp.insn_offs = tmp.pre_offs
       //    + flare_have_plp_distance
       //      (FLARE_HAVE_PLP_PRE, FLARE_HAVE_PLP_NEITHER);
-      //  tmp.prefix_insn = bfd_getb16 (tmp.buf + tmp.pre_offs);
-      //  tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+      //  tmp.prefix_insn = bfd_getl16 (tmp.buf + tmp.pre_offs);
+      //  tmp.insn = bfd_getl16 (tmp.buf + tmp.insn_offs);
       //  if (fixP->fx_addsy == NULL)
       //  {
       //    tmp.target = 0;
@@ -1514,8 +1548,8 @@ md_apply_fix (fixS *fixP,
       //  flare_put_g3_s21 (&tmp.prefix_insn, &tmp.insn,
       //    (flare_temp_t)(tmp.target
       //      - have_plp_insn_length (FLARE_HAVE_PLP_PRE)));
-      //  bfd_putb16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
-      //  bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+      //  bfd_putl16 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
+      //  bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
       //  //if (fixP->fx_addsy == NULL)
       //  //{
       //  //  fixP->fx_done = true;
@@ -1537,7 +1571,7 @@ md_apply_fix (fixS *fixP,
       //    + flare_have_plp_distance
       //      (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
       //  tmp.prefix_insn = bfd_getb32 (tmp.buf + tmp.lpre_offs);
-      //  tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+      //  tmp.insn = bfd_getl16 (tmp.buf + tmp.insn_offs);
       //  if (fixP->fx_addsy == NULL)
       //  {
       //    //flare_put_g3_s21 (&tmp.prefix_insn, &tmp.insn,
@@ -1553,7 +1587,7 @@ md_apply_fix (fixS *fixP,
       //    (flare_temp_t)(tmp.target
       //      - have_plp_insn_length (FLARE_HAVE_PLP_LPRE)));
       //  bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
-      //  bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+      //  bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
       //  //if (fixP->fx_addsy == NULL)
       //  //{
       //  //  fixP->fx_done = true;
@@ -1742,8 +1776,12 @@ md_apply_fix (fixS *fixP,
         tmp.insn_offs = tmp.lpre_offs
           + flare_have_plp_distance
             (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-        tmp.prefix_insn = bfd_getb32 (tmp.buf + tmp.lpre_offs);
-        tmp.insn = bfd_getb16 (tmp.buf + tmp.insn_offs);
+        tmp.prefix_insn = (
+	  //bfd_getb32 (tmp.buf + tmp.lpre_offs)
+	  (bfd_getl16 (tmp.buf + tmp.lpre_offs) << 16)
+	  | bfd_getl16 (tmp.buf + tmp.lpre_offs + 2)
+	);
+        tmp.insn = bfd_getl16 (tmp.buf + tmp.insn_offs);
         if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5
           || fixP->fx_r_type
             == BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX
@@ -1765,8 +1803,13 @@ md_apply_fix (fixS *fixP,
           fixP->fx_addnumber = *valP = flare_get_g7_icreload_s32
             (tmp.prefix_insn, tmp.insn);
         }
-        bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
-        bfd_putb16 (tmp.insn, tmp.buf + tmp.insn_offs);
+        //bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
+        bfd_putl16 (
+	  (tmp.prefix_insn >> 16) & 0xffffu,
+	  tmp.buf + tmp.lpre_offs
+	);
+        bfd_putl16 (tmp.prefix_insn & 0xffffu, tmp.buf + tmp.lpre_offs);
+        bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (fixP->fx_addsy == NULL)
         {
           fixP->fx_done = true;
@@ -1926,6 +1969,7 @@ flare_number_to_chars (char *buf, valueT val, int n)
 {
   //gas_assert (n == 1 || n == 2 || n == 4 || n == 8);
   number_to_chars_littleendian (buf, val, n);
+  //number_to_chars_bigendian (buf, val, n);
 }
 
 /* Turn a string in input_line_pointer into a floating point constant
@@ -2796,8 +2840,8 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
           n_insn_dist = 0;
 
         const flare_temp_t
-          insn = bfd_getb16 (buf + old_insn_dist);
-        bfd_putb16 (insn, buf + n_insn_dist);
+          insn = bfd_getl16 (buf + old_insn_dist);
+        bfd_putl16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
         *reloc
@@ -2844,8 +2888,8 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
           n_insn_dist = 0;
 
         const flare_temp_t
-          insn = bfd_getb16 (buf + old_insn_dist);
-        bfd_putb16 (insn, buf + n_insn_dist);
+          insn = bfd_getl16 (buf + old_insn_dist);
+        bfd_putl16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
         *reloc
@@ -2881,7 +2925,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
           n_insn_dist = have_plp_distance
             (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_PRE) + n_pre_dist;
         const flare_temp_t
-          insn = bfd_getb16 (buf + old_insn_dist),
+          insn = bfd_getl16 (buf + old_insn_dist),
           //old_lpre_insn = bfd_getb32 (buf),
           //simm = !relax_insn->is_pcrel
           //  ? flare_get_g1g5g6_s32 (old_lpre_insn, insn)
@@ -2900,8 +2944,8 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         //  flare_put_g3_s21 (&prefix_insn, &insn, simm - old_pre_dist);
         //}
 
-        bfd_putb16 (prefix_insn, buf + n_pre_dist);
-        bfd_putb16 (insn, buf + n_insn_dist);
+        bfd_putl16 (prefix_insn, buf + n_pre_dist);
+        bfd_putl16 (insn, buf + n_insn_dist);
 
         whole_insn_length = fragP->fr_var;
         *reloc

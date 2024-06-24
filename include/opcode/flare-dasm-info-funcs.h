@@ -57,7 +57,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
   {
     return;
   }
-  self->iword = bfd_getb16 (self->buffer);
+  self->iword = bfd_getl16 (self->buffer);
 
   if (flare_get_insn_field_ei
     (&flare_enc_info_g0_pre_fullgrp, self->iword)
@@ -71,7 +71,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       return;
     }
     self->iword = (self->iword << FLARE_ONE_EXT_BITPOS)
-      | bfd_getb16 (self->buffer);
+      | bfd_getl16 (self->buffer);
   }
   else if (flare_get_insn_field_ei
     (&flare_enc_info_g0_lpre_fullgrp_16, self->iword)
@@ -84,7 +84,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       return;
     }
     self->iword = (self->iword << FLARE_ONE_EXT_BITPOS)
-      | bfd_getb16 (self->buffer);
+      | bfd_getl16 (self->buffer);
 
     self->length += 2;
 
@@ -93,7 +93,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       return;
     }
     self->iword = (self->iword << FLARE_ONE_EXT_BITPOS)
-      | bfd_getb16 (self->buffer);
+      | bfd_getl16 (self->buffer);
   }
 
   self->length += 2;

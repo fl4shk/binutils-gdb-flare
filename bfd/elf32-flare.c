@@ -1051,6 +1051,10 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
       prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
+      //printf (
+      //  "debug: prefix_insn insn: %x %x\n",
+      //  (unsigned)prefix_insn, (unsigned)insn
+      //);
       relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
       flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
       flare_put_insn_32 (input_bfd, prefix_insn, contents + address);

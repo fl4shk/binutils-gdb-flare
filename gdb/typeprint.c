@@ -1,6 +1,6 @@
 /* Language independent support for printing types for GDB, the GNU debugger.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,16 +17,15 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "gdbsupport/gdb_obstack.h"
-#include "bfd.h"		/* Binary File Description */
+#include "bfd.h"
 #include "symtab.h"
 #include "gdbtypes.h"
 #include "expression.h"
 #include "value.h"
 #include "gdbcore.h"
 #include "command.h"
-#include "gdbcmd.h"
+#include "cli/cli-cmds.h"
 #include "target.h"
 #include "language.h"
 #include "cp-abi.h"
@@ -149,11 +148,11 @@ print_offset_data::update (struct type *type, unsigned int field_idx,
 
   maybe_print_hole (stream, bitpos, "hole");
 
-  if (TYPE_FIELD_PACKED (type, field_idx)
+  if (type->field (field_idx).is_packed ()
       || offset_bitpos % TARGET_CHAR_BIT != 0)
     {
       /* We're dealing with a bitfield.  Print the bit offset.  */
-      fieldsize_bit = TYPE_FIELD_BITSIZE (type, field_idx);
+      fieldsize_bit = type->field (field_idx).bitsize ();
 
       unsigned real_bitpos = bitpos + offset_bitpos;
 
@@ -844,7 +843,7 @@ Available FLAGS are:\n\
   /x    use hexadecimal notation when displaying sizes and offsets\n\
 	of struct members\n\
   /d    use decimal notation when displaying sizes and offsets\n\
-	of struct members "));
+	of struct members"));
   set_cmd_completer (c, expression_completer);
 
   c = add_com ("whatis", class_vars, whatis_command,

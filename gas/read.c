@@ -1,5 +1,5 @@
 /* read.c - read a source file -
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -38,9 +38,11 @@
 #include "obstack.h"
 #include "ecoff.h"
 #include "dw2gencfi.h"
+#include "scfidw2gen.h"
 #include "codeview.h"
 #include "wchar.h"
 #include "filenames.h"
+#include "ginsn.h"
 
 #include <limits.h>
 
@@ -322,6 +324,8 @@ read_end (void)
   stabs_end ();
   poend ();
   _obstack_free (&cond_obstack, NULL);
+  free (current_name);
+  free (current_label);
 }
 
 #ifndef TC_ADDRESS_BYTES
@@ -478,7 +482,7 @@ static const pseudo_typeS potable[] = {
   {"quad", cons, 8},
   {"reloc", s_reloc, 0},
   {"rep", s_rept, 0},
-  {"rept", s_rept, 0},
+  {"rept", s_rept, 1},
   {"rva", s_rva, 4},
   {"sbttl", listing_title, 1},	/* Subtitle of listing.  */
 /* scl  */
@@ -585,6 +589,10 @@ pop_insert (const pseudo_typeS *table)
 #define cfi_pop_insert()	pop_insert(cfi_pseudo_table)
 #endif
 
+#ifndef scfi_pop_insert
+#define scfi_pop_insert()	pop_insert(scfi_pseudo_table)
+#endif
+
 static void
 pobegin (void)
 {
@@ -605,8 +613,18 @@ pobegin (void)
   pop_insert (potable);
 
   /* Now CFI ones.  */
-  pop_table_name = "cfi";
-  cfi_pop_insert ();
+#if defined (TARGET_USE_SCFI) && defined (TARGET_USE_GINSN)
+  if (flag_synth_cfi)
+    {
+      pop_table_name = "scfi";
+      scfi_pop_insert ();
+    }
+  else
+#endif
+    {
+      pop_table_name = "cfi";
+      cfi_pop_insert ();
+    }
 }
 
 static void
@@ -1244,13 +1262,14 @@ read_a_source_file (const char *name)
 
 	      temp = next_char - '0';
 
-	      if (nul_char == '"')
-		++ input_line_pointer;
-
 	      /* Read the whole number.  */
 	      while (ISDIGIT (*input_line_pointer))
 		{
 		  const long digit = *input_line_pointer - '0';
+
+		  /* Don't accept labels which look like octal numbers.  */
+		  if (temp == 0)
+		    break;
 		  if (temp > (INT_MAX - digit) / 10)
 		    {
 		      as_bad (_("local label too large near %s"), backup);
@@ -1366,6 +1385,9 @@ read_a_source_file (const char *name)
       bundle_lock_depth = 0;
     }
 #endif
+
+  if (flag_synth_cfi)
+    ginsn_data_end (symbol_temp_new_now ());
 
 #ifdef md_cleanup
   md_cleanup ();
@@ -1749,7 +1771,7 @@ s_comm_internal (int param,
       ignore_rest_of_line ();
       goto out;
     }
-  else if (temp != size || !exp.X_unsigned)
+  else if (temp != size || (!exp.X_unsigned && exp.X_add_number < 0))
     {
       as_warn (_("size (%ld) out of range, ignored"), (long) temp);
       ignore_rest_of_line ();
@@ -2539,7 +2561,7 @@ parse_align (int align_bytes)
   if (exp.X_op == O_absent)
     goto no_align;
 
-  if (!exp.X_unsigned)
+  if (!exp.X_unsigned && exp.X_add_number < 0)
     {
       as_warn (_("alignment negative; 0 assumed"));
       align = 0;
@@ -3044,19 +3066,21 @@ s_bad_end (int endr)
 /* Handle the .rept pseudo-op.  */
 
 void
-s_rept (int ignore ATTRIBUTE_UNUSED)
+s_rept (int expand_count)
 {
   size_t count;
 
   count = (size_t) get_absolute_expression ();
 
-  do_repeat (count, "REPT", "ENDR", NULL);
+  do_repeat (count, "REPT", "ENDR", expand_count ? "" : NULL);
 }
 
 /* This function provides a generic repeat block implementation.   It allows
    different directives to be used as the start/end keys.  Any text matching
    the optional EXPANDER in the block is replaced by the remaining iteration
-   count.  */
+   count.  Except when EXPANDER is the empty string, in which case \+ will
+   be looked for (as also recognized in macros as well as .irp and .irpc),
+   where the replacement will be the number of iterations done so far.  */
 
 void
 do_repeat (size_t count, const char *start, const char *end,
@@ -3079,7 +3103,59 @@ do_repeat (size_t count, const char *start, const char *end,
       return;
     }
 
-  if (expander == NULL || strstr (one.ptr, expander) == NULL)
+  sb_terminate (&one);
+
+  if (expander != NULL && !*expander && strstr (one.ptr, "\\+") != NULL)
+    {
+      /* The 3 here and below are arbitrary, added in an attempt to limit
+	 re-allocation needs in sb_add_...() for moderate repeat counts.  */
+      sb_build (&many, count * (one.len + 3));
+
+      for (size_t done = 0; count-- > 0; ++done)
+	{
+	  const char *ptr, *bs;
+	  sb processed;
+
+	  sb_build (&processed, one.len + 3);
+
+	  for (ptr = one.ptr; (bs = strchr (ptr, '\\')) != NULL; )
+	    {
+	      sb_add_buffer (&processed, ptr, bs - ptr);
+	      switch (bs[1])
+		{
+		  char scratch[24];
+
+		default:
+		  sb_add_char (&processed, '\\');
+		  sb_add_char (&processed, bs[1]);
+		  ptr = bs + 2;
+		  break;
+
+		case '\0':
+		  as_warn (_("`\\' at end of line/statement; ignored"));
+		  ptr = bs + 1;
+		  break;
+
+		case '\\':
+		  sb_add_char (&processed, '\\');
+		  ptr = bs + 2;
+		  break;
+
+		case '+':
+		  snprintf (scratch, ARRAY_SIZE (scratch), "%zu", done);
+		  sb_add_string (&processed, scratch);
+		  ptr = bs + 2;
+		  break;
+		}
+	    }
+
+	  sb_add_string (&processed, ptr);
+
+	  sb_add_sb (&many, &processed);
+	  sb_kill (&processed);
+	}
+    }
+  else if (expander == NULL || !*expander || strstr (one.ptr, expander) == NULL)
     {
       sb_build (&many, count * one.len);
       while (count-- > 0)
@@ -3464,10 +3540,6 @@ s_nop (int ignore ATTRIBUTE_UNUSED)
   md_flush_pending_output ();
 #endif
 
-#ifdef md_cons_align
-  md_cons_align (1);
-#endif
-
   SKIP_WHITESPACE ();
   expression (&exp);
   demand_empty_rest_of_line ();
@@ -3515,10 +3587,6 @@ s_nops (int ignore ATTRIBUTE_UNUSED)
 
 #ifdef md_flush_pending_output
   md_flush_pending_output ();
-#endif
-
-#ifdef md_cons_align
-  md_cons_align (1);
 #endif
 
   SKIP_WHITESPACE ();
@@ -4000,6 +4068,10 @@ pseudo_set (symbolS *symbolP)
 	  return;
 	}
 #endif
+      /* Make sure symbol_equated_p() recognizes the symbol as an equate.  */
+      exp.X_add_symbol = make_expr_symbol (&exp);
+      exp.X_add_number = 0;
+      exp.X_op = O_symbol;
       symbol_set_value_expression (symbolP, &exp);
       S_SET_SEGMENT (symbolP, reg_section);
       set_zero_frag (symbolP);
@@ -4185,6 +4257,12 @@ cons_worker (int nbytes,	/* 1=.byte, 2=.word, 4=.long.  */
 
   if (flag_mri)
     mri_comment_end (stop, stopc);
+
+  /* Disallow hand-crafting instructions using .byte.  FIXME - what about
+     .word, .long etc ?  */
+  if (flag_synth_cfi && frchain_now && frchain_now->frch_ginsn_data
+      && nbytes == 1)
+    as_bad (_("SCFI: hand-crafting instructions not supported"));
 }
 
 void
@@ -6044,6 +6122,8 @@ do_s_func (int end_p, const char *default_prefix)
       if (debug_type == DEBUG_STABS)
 	stabs_generate_asm_endfunc (current_name, current_label);
 
+      free (current_name);
+      free (current_label);
       current_name = current_label = NULL;
     }
   else /* ! end_p */
@@ -6080,7 +6160,7 @@ do_s_func (int end_p, const char *default_prefix)
 		    as_fatal ("%s", xstrerror (errno));
 		}
 	      else
-		label = name;
+		label = xstrdup (name);
 	    }
 	}
       else

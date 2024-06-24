@@ -1,6 +1,6 @@
 /* Routines for name->symbol lookups in GDB.
    
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    Contributed by David Carlton <carlton@bactrian.org> and by Kealia,
    Inc.
@@ -159,8 +159,7 @@ extern struct symbol *
 extern struct symbol *mdict_iter_match_next (const lookup_name_info &name,
 					     struct mdict_iterator *miterator);
 
-/* Return some notion of the size of the multidictionary: the number of
-   symbols if we have that, the number of hash buckets otherwise.  */
+/* Return the number of symbols in multidictionary MDICT.  */
 
 extern int mdict_size (const struct multidictionary *mdict);
 

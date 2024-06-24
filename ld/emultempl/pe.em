@@ -18,7 +18,7 @@ esac
 rm -f e${EMULATION_NAME}.c
 (echo;echo;echo;echo;echo)>e${EMULATION_NAME}.c # there, now line numbers match ;-)
 fragment <<EOF
-/* Copyright (C) 1995-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU Binutils.
 
@@ -234,84 +234,6 @@ fragment <<EOF
 #define MERGE_RDATA_V2 ${default_merge_rdata}
 
 /* PE format extra command line options.  */
-
-/* Used for setting flags in the PE header.  */
-enum options
-{
-  OPTION_BASE_FILE = 300 + 1,
-  OPTION_DLL,
-  OPTION_FILE_ALIGNMENT,
-  OPTION_IMAGE_BASE,
-  OPTION_MAJOR_IMAGE_VERSION,
-  OPTION_MAJOR_OS_VERSION,
-  OPTION_MAJOR_SUBSYSTEM_VERSION,
-  OPTION_MINOR_IMAGE_VERSION,
-  OPTION_MINOR_OS_VERSION,
-  OPTION_MINOR_SUBSYSTEM_VERSION,
-  OPTION_SECTION_ALIGNMENT,
-  OPTION_STACK,
-  OPTION_SUBSYSTEM,
-  OPTION_HEAP,
-  OPTION_SUPPORT_OLD_CODE,
-  OPTION_OUT_DEF,
-  OPTION_EXPORT_ALL,
-  OPTION_EXCLUDE_SYMBOLS,
-  OPTION_EXCLUDE_ALL_SYMBOLS,
-  OPTION_KILL_ATS,
-  OPTION_STDCALL_ALIASES,
-  OPTION_ENABLE_STDCALL_FIXUP,
-  OPTION_DISABLE_STDCALL_FIXUP,
-  OPTION_THUMB_ENTRY,
-  OPTION_WARN_DUPLICATE_EXPORTS,
-  OPTION_IMP_COMPAT,
-  OPTION_ENABLE_AUTO_IMAGE_BASE,
-  OPTION_DISABLE_AUTO_IMAGE_BASE,
-  OPTION_DLL_SEARCH_PREFIX,
-  OPTION_NO_DEFAULT_EXCLUDES,
-  OPTION_DLL_ENABLE_AUTO_IMPORT,
-  OPTION_DLL_DISABLE_AUTO_IMPORT,
-  OPTION_ENABLE_EXTRA_PE_DEBUG,
-  OPTION_EXCLUDE_LIBS,
-  OPTION_DLL_ENABLE_RUNTIME_PSEUDO_RELOC,
-  OPTION_DLL_DISABLE_RUNTIME_PSEUDO_RELOC,
-  OPTION_LARGE_ADDRESS_AWARE,
-  OPTION_DISABLE_LARGE_ADDRESS_AWARE,
-  OPTION_DLL_ENABLE_RUNTIME_PSEUDO_RELOC_V1,
-  OPTION_DLL_ENABLE_RUNTIME_PSEUDO_RELOC_V2,
-  OPTION_EXCLUDE_MODULES_FOR_IMPLIB,
-  OPTION_USE_NUL_PREFIXED_IMPORT_TABLES,
-  OPTION_NO_LEADING_UNDERSCORE,
-  OPTION_LEADING_UNDERSCORE,
-  OPTION_ENABLE_LONG_SECTION_NAMES,
-  OPTION_DISABLE_LONG_SECTION_NAMES,
-/* DLLCharacteristics flags.  */
-  OPTION_DYNAMIC_BASE,
-  OPTION_FORCE_INTEGRITY,
-  OPTION_NX_COMPAT,
-  OPTION_NO_ISOLATION,
-  OPTION_NO_SEH,
-  OPTION_NO_BIND,
-  OPTION_WDM_DRIVER,
-  OPTION_TERMINAL_SERVER_AWARE,
-/* Determinism.  */
-  OPTION_INSERT_TIMESTAMP,
-  OPTION_NO_INSERT_TIMESTAMP,
-  OPTION_BUILD_ID,
-#ifdef PDB_H
-  OPTION_PDB,
-#endif
-  OPTION_ENABLE_RELOC_SECTION,
-  OPTION_DISABLE_RELOC_SECTION,
-/* DLL Characteristics flags.  */
-  OPTION_DISABLE_DYNAMIC_BASE,
-  OPTION_DISABLE_FORCE_INTEGRITY,
-  OPTION_DISABLE_NX_COMPAT,
-  OPTION_DISABLE_NO_ISOLATION,
-  OPTION_DISABLE_NO_SEH,
-  OPTION_DISABLE_NO_BIND,
-  OPTION_DISABLE_WDM_DRIVER,
-  OPTION_DISABLE_TERMINAL_SERVER_AWARE
-};
 
 static void
 gld${EMULATION_NAME}_add_options
@@ -1189,6 +1111,30 @@ change_undef (struct bfd_link_hash_entry * undef,
 }
 
 static void
+set_decoration (const char *undecorated_name,
+		struct bfd_link_hash_entry * decoration)
+{
+  static bool  gave_warning_message = false;
+  struct decoration_hash_entry *entry;
+
+  if (is_underscoring () && undecorated_name[0] == '_')
+    undecorated_name++;
+
+  entry = (struct decoration_hash_entry *)
+	  bfd_hash_lookup (&(coff_hash_table (&link_info)->decoration_hash),
+			   undecorated_name, true /* create */, false /* copy */);
+
+  if (entry->decorated_link != NULL && !gave_warning_message)
+    {
+      einfo (_("%P: warning: overwriting decorated name %s with %s\n"),
+	     entry->decorated_link->root.string, undecorated_name);
+      gave_warning_message = true;
+    }
+
+  entry->decorated_link = decoration;
+}
+
+static void
 pe_fixup_stdcalls (void)
 {
   struct bfd_link_hash_entry *undef, *sym;
@@ -1231,28 +1177,72 @@ pe_fixup_stdcalls (void)
 	    bfd_link_hash_traverse (link_info.hash, pe_undef_cdecl_match,
 				    (char *) name);
 	    if (pe_undef_found_sym)
-	      change_undef (undef, pe_undef_found_sym);
+	      {
+		change_undef (undef, pe_undef_found_sym);
+		set_decoration (undef->root.string, pe_undef_found_sym);
+	      }
 	  }
       }
+}
+
+static bfd_vma
+read_addend (arelent *rel, asection *s)
+{
+  char buf[4];
+  bfd_vma addend = 0;
+
+  if (!bfd_get_section_contents (s->owner, s, buf, rel->address, sizeof (buf)))
+    einfo (_("%P: %H: cannot get section contents - auto-import exception\n"),
+	   s->owner, s, rel->address);
+  else
+    addend = bfd_get_32 (s->owner, buf);
+  return addend;
 }
 
 static void
 make_import_fixup (arelent *rel, asection *s, char *name, const char *symname)
 {
   struct bfd_symbol *sym = *rel->sym_ptr_ptr;
-  char addend[4];
-  bfd_vma _addend;
+  bfd_vma addend;
 
   if (pe_dll_extra_pe_debug)
     printf ("arelent: %s@%#lx: add=%li\n", sym->name,
 	    (unsigned long) rel->address, (long) rel->addend);
 
-  if (! bfd_get_section_contents (s->owner, s, addend, rel->address, sizeof (addend)))
-    einfo (_("%P: %C: cannot get section contents - auto-import exception\n"),
-	   s->owner, s, rel->address);
+  addend = read_addend (rel, s);
 
-  _addend = bfd_get_32 (s->owner, addend);
-  pe_create_import_fixup (rel, s, _addend, name, symname);
+  if (pe_dll_extra_pe_debug)
+    {
+      printf ("import of 0x%lx(0x%lx) sec_addr=0x%lx",
+	      (long) addend, (long) rel->addend, (long) rel->address);
+      if (rel->howto->pc_relative)
+	printf (" pcrel");
+      printf (" %d bit rel.\n", (int) rel->howto->bitsize);
+    }
+
+  pe_create_import_fixup (rel, s, addend, name, symname);
+}
+
+static void
+make_runtime_ref (void)
+{
+  const char *rr = U ("_pei386_runtime_relocator");
+  struct bfd_link_hash_entry *h
+    = bfd_wrapped_link_hash_lookup (link_info.output_bfd, &link_info,
+				    rr, true, false, true);
+  if (!h)
+    einfo (_("%F%P: bfd_link_hash_lookup failed: %E\n"));
+  else
+    {
+      if (h->type == bfd_link_hash_new)
+	{
+	  h->type = bfd_link_hash_undefined;
+	  h->u.undef.abfd = NULL;
+	  if (h->u.undef.next == NULL && h != link_info.hash->undefs_tail)
+	    bfd_link_add_undef (link_info.hash, h);
+	}
+      h->non_ir_ref_regular = true;
+    }
 }
 
 static bool
@@ -1287,7 +1277,7 @@ pecoff_checksum_contents (bfd *abfd,
       if (bfd_seek (abfd, filepos, SEEK_SET) != 0)
 	return 0;
 
-      status = bfd_bread (&b, (bfd_size_type) 1, abfd);
+      status = bfd_read (&b, 1, abfd);
       if (status < 1)
 	{
 	  break;
@@ -1378,7 +1368,7 @@ write_build_id (bfd *abfd)
   if (bfd_seek (abfd, asec->filepos + link_order->offset, SEEK_SET) != 0)
     return 0;
 
-  if (bfd_bwrite (contents, sizeof (*ext), abfd) != sizeof (*ext))
+  if (bfd_write (contents, sizeof (*ext), abfd) != sizeof (*ext))
     return 0;
 
 #ifdef PDB_H
@@ -1457,6 +1447,16 @@ setup_build_id (bfd *ibfd)
   einfo (_("%P: warning: cannot create .buildid section,"
 	   " --build-id ignored\n"));
   return false;
+}
+
+static void
+gld${EMULATION_NAME}_before_plugin_all_symbols_read (void)
+{
+#ifdef DLL_SUPPORT
+  if (link_info.lto_plugin_active
+      && link_info.pei386_auto_import)
+    make_runtime_ref ();
+#endif
 }
 
 static void
@@ -2386,8 +2386,8 @@ gld${EMULATION_NAME}_open_dynamic_archive
 			    search->name and the start of the format string.  */
 			 + 2);
 
-  sprintf (full_string, "%s/", search->name);
-  base_string = full_string + strlen (full_string);
+  base_string = stpcpy (full_string, search->name);
+  *base_string++ = '/';
 
   for (i = 0; libname_fmt[i].format; i++)
     {
@@ -2433,7 +2433,7 @@ then
 # Scripts compiled in.
 
 # sed commands to quote an ld script as a C string.
-sc="-f stringify.sed"
+sc="-f ${srcdir}/emultempl/stringify.sed"
 
 fragment <<EOF
 {
@@ -2488,6 +2488,7 @@ EOF
 fi
 
 LDEMUL_AFTER_PARSE=gld${EMULATION_NAME}_after_parse
+LDEMUL_BEFORE_PLUGIN_ALL_SYMBOLS_READ=gld${EMULATION_NAME}_before_plugin_all_symbols_read
 LDEMUL_AFTER_OPEN=gld${EMULATION_NAME}_after_open
 LDEMUL_BEFORE_ALLOCATION=gld${EMULATION_NAME}_before_allocation
 LDEMUL_FINISH=gld${EMULATION_NAME}_finish

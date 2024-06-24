@@ -1,5 +1,5 @@
 /* a.out object file format
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -144,7 +144,7 @@ obj_aout_frob_file_before_fix (void)
 	  file_ptr pos = sec->filepos + *sizep;
 
 	  gas_assert (bfd_seek (stdoutput, pos - 1, SEEK_SET) == 0
-		      && bfd_bwrite (&b, 1, stdoutput) == 1);
+		      && bfd_write (&b, 1, stdoutput) == 1);
 	}
     }
 }
@@ -248,8 +248,7 @@ obj_aout_sec_sym_ok_for_reloc (asection *sec ATTRIBUTE_UNUSED)
 }
 
 static void
-obj_aout_process_stab (segT seg ATTRIBUTE_UNUSED,
-		       int w,
+obj_aout_process_stab (int w,
 		       const char *s,
 		       int t,
 		       int o,

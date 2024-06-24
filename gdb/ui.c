@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 Free Software Foundation, Inc.
+/* Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -15,7 +15,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "ui.h"
 
 #include "cli/cli-cmds.h"
@@ -225,9 +224,9 @@ new_ui_command (const char *args, int from_tty)
 
     current_ui = ui.get ();
 
-    set_top_level_interpreter (interpreter_name);
+    set_top_level_interpreter (interpreter_name, true);
 
-    interp_pre_command_loop (top_level_interpreter ());
+    top_level_interpreter ()->pre_command_loop ();
 
     /* Make sure the file is not closed.  */
     stream.release ();

@@ -1,6 +1,6 @@
 /* GDB CLI commands.
 
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,21 +17,20 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "arch-utils.h"
+#include "exceptions.h"
 #include "readline/tilde.h"
 #include "completer.h"
-#include "target.h"	/* For baud_rate, remote_debug and remote_timeout.  */
-#include "gdbsupport/gdb_wait.h"	/* For shell escape implementation.  */
-#include "gdbcmd.h"
-#include "gdbsupport/gdb_regex.h"	/* Used by apropos_command.  */
+#include "target.h"
+#include "gdbsupport/gdb_wait.h"
+#include "gdbsupport/gdb_regex.h"
 #include "gdb_vfork.h"
 #include "linespec.h"
 #include "expression.h"
 #include "frame.h"
 #include "value.h"
 #include "language.h"
-#include "filenames.h"	/* For DOSish file names.  */
+#include "filenames.h"
 #include "objfiles.h"
 #include "source.h"
 #include "disasm.h"
@@ -59,7 +58,7 @@
 #include "gdbsupport/gdb_tilde_expand.h"
 
 #ifdef TUI
-#include "tui/tui.h"	/* For tui_active et.al.  */
+#include "tui/tui.h"
 #endif
 
 #include <fcntl.h>
@@ -655,12 +654,12 @@ show_script_ext_mode (struct ui_file *file, int from_tty,
    If SEARCH_PATH is non-zero, and the file isn't found in cwd,
    search for it in the source search path.  */
 
-gdb::optional<open_script>
+std::optional<open_script>
 find_and_open_script (const char *script_file, int search_path)
 {
   int fd;
   openp_flags search_flags = OPF_TRY_CWD_FIRST | OPF_RETURN_REALPATH;
-  gdb::optional<open_script> opened;
+  std::optional<open_script> opened;
 
   gdb::unique_xmalloc_ptr<char> file (tilde_expand (script_file));
 
@@ -742,7 +741,7 @@ source_script_with_search (const char *file, int from_tty, int search_path)
   if (file == NULL || *file == 0)
     error (_("source command requires file name of file to source."));
 
-  gdb::optional<open_script> opened = find_and_open_script (file, search_path);
+  std::optional<open_script> opened = find_and_open_script (file, search_path);
   if (!opened)
     {
       /* The script wasn't found, or was otherwise inaccessible.
@@ -1200,6 +1199,28 @@ pipe_command_completer (struct cmd_list_element *ignore,
      we don't know how to complete.  */
 }
 
+/* Helper for the list_command function.  Prints the lines around (and
+   including) line stored in CURSAL.  ARG contains the arguments used in
+   the command invocation, and is used to determine a special case when
+   printing backwards.  */
+static void
+list_around_line (const char *arg, symtab_and_line cursal)
+{
+  int first;
+
+  first = std::max (cursal.line - get_lines_to_list () / 2, 1);
+
+  /* A small special case --- if listing backwards, and we
+     should list only one line, list the preceding line,
+     instead of the exact line we've just shown after e.g.,
+     stopping for a breakpoint.  */
+  if (arg != NULL && arg[0] == '-'
+      && get_lines_to_list () == 1 && first > 1)
+    first -= 1;
+
+  print_source_lines (cursal.symtab, source_lines_range (first), 0);
+}
+
 static void
 list_command (const char *arg, int from_tty)
 {
@@ -1212,45 +1233,89 @@ list_command (const char *arg, int from_tty)
   const char *p;
 
   /* Pull in the current default source line if necessary.  */
-  if (arg == NULL || ((arg[0] == '+' || arg[0] == '-') && arg[1] == '\0'))
+  if (arg == NULL || ((arg[0] == '+' || arg[0] == '-' || arg[0] == '.') && arg[1] == '\0'))
     {
-      set_default_source_symtab_and_line ();
-      symtab_and_line cursal = get_current_source_symtab_and_line ();
-
       /* If this is the first "list" since we've set the current
 	 source line, center the listing around that line.  */
-      if (get_first_line_listed () == 0)
+      if (get_first_line_listed () == 0 && (arg == nullptr || arg[0] != '.'))
 	{
-	  int first;
-
-	  first = std::max (cursal.line - get_lines_to_list () / 2, 1);
-
-	  /* A small special case --- if listing backwards, and we
-	     should list only one line, list the preceding line,
-	     instead of the exact line we've just shown after e.g.,
-	     stopping for a breakpoint.  */
-	  if (arg != NULL && arg[0] == '-'
-	      && get_lines_to_list () == 1 && first > 1)
-	    first -= 1;
-
-	  print_source_lines (cursal.symtab, source_lines_range (first), 0);
+	  set_default_source_symtab_and_line ();
+	  list_around_line (arg, get_current_source_symtab_and_line ());
 	}
 
-      /* "l" or "l +" lists next ten lines.  */
-      else if (arg == NULL || arg[0] == '+')
-	print_source_lines (cursal.symtab,
-			    source_lines_range (cursal.line), 0);
+      /* "l" and "l +" lists the next few lines, unless we're listing past
+	 the end of the file.  */
+      else if (arg == nullptr || arg[0] == '+')
+	{
+	  set_default_source_symtab_and_line ();
+	  const symtab_and_line cursal = get_current_source_symtab_and_line ();
+	  if (last_symtab_line (cursal.symtab) >= cursal.line)
+	    print_source_lines (cursal.symtab,
+				source_lines_range (cursal.line), 0);
+	  else
+	    error (_("End of the file was already reached, use \"list .\" to"
+		     " list the current location again"));
+	}
 
       /* "l -" lists previous ten lines, the ones before the ten just
 	 listed.  */
       else if (arg[0] == '-')
 	{
+	  set_default_source_symtab_and_line ();
+	  const symtab_and_line cursal = get_current_source_symtab_and_line ();
+
 	  if (get_first_line_listed () == 1)
 	    error (_("Already at the start of %s."),
 		   symtab_to_filename_for_display (cursal.symtab));
+
 	  source_lines_range range (get_first_line_listed (),
 				    source_lines_range::BACKWARD);
 	  print_source_lines (cursal.symtab, range, 0);
+	}
+
+      /* "list ." lists the default location again.  */
+      else if (arg[0] == '.')
+	{
+	  symtab_and_line cursal;
+	  if (target_has_stack ())
+	    {
+	      /* Find the current line by getting the PC of the currently
+		 selected frame, and finding the line associated to it.  */
+	      frame_info_ptr frame = get_selected_frame (nullptr);
+	      CORE_ADDR curr_pc = get_frame_pc (frame);
+	      cursal = find_pc_line (curr_pc, 0);
+
+	      if (cursal.symtab == nullptr)
+		error
+		  (_("Insufficient debug info for showing source lines at "
+		     "current PC (%s)."), paddress (get_frame_arch (frame),
+						    curr_pc));
+	    }
+	  else
+	    {
+	      /* The inferior is not running, so reset the current source
+		 location to the default (usually the main function).  */
+	      clear_current_source_symtab_and_line ();
+	      try
+		{
+		  set_default_source_symtab_and_line ();
+		}
+	      catch (const gdb_exception &e)
+		{
+		  error (_("Insufficient debug info for showing source "
+			   "lines at default location"));
+		}
+	      cursal = get_current_source_symtab_and_line ();
+
+	      gdb_assert (cursal.symtab != nullptr);
+	    }
+
+	  list_around_line (arg, cursal);
+
+	  /* Set the repeat args so just pressing "enter" after using "list ."
+	     will print the following lines instead of the same lines again. */
+	  if (from_tty)
+	    set_repeat_arguments ("");
 	}
 
       return;
@@ -1599,6 +1664,10 @@ disassemble_command (const char *arg, int from_tty)
       == (DISASSEMBLY_SOURCE_DEPRECATED | DISASSEMBLY_SOURCE))
     error (_("Cannot specify both /m and /s."));
 
+  if ((flags & (DISASSEMBLY_RAW_INSN | DISASSEMBLY_RAW_BYTES))
+      == (DISASSEMBLY_RAW_INSN | DISASSEMBLY_RAW_BYTES))
+    error (_("Cannot specify both /r and /b."));
+
   if (! p || ! *p)
     {
       flags |= DISASSEMBLY_OMIT_FNAME;
@@ -1647,6 +1716,20 @@ disassemble_command (const char *arg, int from_tty)
     }
 
   print_disassembly (gdbarch, name, low, high, block, flags);
+}
+
+/* Command completion for the disassemble command.  */
+
+static void
+disassemble_command_completer (struct cmd_list_element *ignore,
+			       completion_tracker &tracker,
+			       const char *text, const char * /* word */)
+{
+  if (skip_over_slash_fmt (tracker, &text))
+    return;
+
+  const char *word = advance_to_expression_complete_word_point (tracker, text);
+  expression_completer (ignore, tracker, text, word);
 }
 
 static void
@@ -2215,12 +2298,26 @@ setting_cmd (const char *fnname, struct cmd_list_element *showlist,
       && type0->code () != TYPE_CODE_STRING)
     error (_("First argument of %s must be a string."), fnname);
 
-  const char *a0 = (const char *) argv[0]->contents ().data ();
+  /* Not all languages null-terminate their strings, by moving the string
+     content into a std::string we ensure that a null-terminator is added.
+     For languages that do add a null-terminator the std::string might end
+     up with two null characters at the end, but that's harmless.  */
+  const std::string setting ((const char *) argv[0]->contents ().data (),
+			     type0->length ());
+  const char *a0 = setting.c_str ();
   cmd_list_element *cmd = lookup_cmd (&a0, showlist, "", NULL, -1, 0);
 
   if (cmd == nullptr || cmd->type != show_cmd)
-    error (_("First argument of %s must be a "
-	     "valid setting of the 'show' command."), fnname);
+    {
+      gdb_assert (showlist->prefix != nullptr);
+      std::vector<std::string> components
+	= showlist->prefix->command_components ();
+      std::string full_name = components[0];
+      for (int i = 1; i < components.size (); ++i)
+	full_name += " " + components[i];
+      error (_("First argument of %s must be a valid setting of the "
+	       "'%s' command."), fnname, full_name.c_str ());
+    }
 
   return cmd;
 }
@@ -2307,12 +2404,7 @@ value_from_setting (const setting &var, struct gdbarch *gdbarch)
 	    len = st.length ();
 	  }
 
-	if (len > 0)
-	  return value_cstring (value, len,
-				builtin_type (gdbarch)->builtin_char);
-	else
-	  return value_cstring ("", 1,
-				builtin_type (gdbarch)->builtin_char);
+	return current_language->value_string (gdbarch, value, len);
       }
     default:
       gdb_assert_not_reached ("bad var_type");
@@ -2364,8 +2456,8 @@ str_value_from_setting (const setting &var, struct gdbarch *gdbarch)
       {
 	std::string cmd_val = get_setshow_command_value_string (var);
 
-	return value_cstring (cmd_val.c_str (), cmd_val.size (),
-			      builtin_type (gdbarch)->builtin_char);
+	return current_language->value_string (gdbarch, cmd_val.c_str (),
+					       cmd_val.size ());
       }
 
     case var_string:
@@ -2392,12 +2484,7 @@ str_value_from_setting (const setting &var, struct gdbarch *gdbarch)
 	    len = st.length ();
 	  }
 
-	if (len > 0)
-	  return value_cstring (value, len,
-				builtin_type (gdbarch)->builtin_char);
-	else
-	  return value_cstring ("", 1,
-				builtin_type (gdbarch)->builtin_char);
+	return current_language->value_string (gdbarch, value, len);
       }
     default:
       gdb_assert_not_reached ("bad var_type");
@@ -2756,7 +2843,9 @@ and send its output to SHELL_COMMAND."));
     = add_com ("list", class_files, list_command, _("\
 List specified function or line.\n\
 With no argument, lists ten more lines after or around previous listing.\n\
+\"list +\" lists the ten lines following a previous ten-line listing.\n\
 \"list -\" lists the ten lines before a previous ten-line listing.\n\
+\"list .\" lists ten lines around the point of execution in the current frame.\n\
 One argument specifies a line, and ten lines are listed around that line.\n\
 Two arguments with comma between specify starting and ending lines to list.\n\
 Lines can be specified in these ways:\n\
@@ -2800,7 +2889,7 @@ Note that the address is interpreted as an expression, not as a location\n\
 like in the \"break\" command.\n\
 So, for example, if you want to disassemble function bar in file foo.c\n\
 you must type \"disassemble 'foo.c'::bar\" and not \"disassemble foo.c:bar\"."));
-  set_cmd_completer (c, location_completer);
+  set_cmd_completer_handle_brkchars (c, disassemble_command_completer);
 
   c = add_com ("make", class_support, make_command, _("\
 Run the ``make'' program using the rest of the line as arguments."));

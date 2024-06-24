@@ -1,5 +1,5 @@
 /* nm.c -- Describe symbol table of a rel file.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
 
    This file is part of GNU Binutils.
 
@@ -169,7 +169,7 @@ static const struct output_fns formats[FORMAT_MAX] =
 /* The output format to use.  */
 static const struct output_fns *format = &formats[FORMAT_DEFAULT];
 static unsigned int print_format = FORMAT_DEFAULT;
-static const char *print_format_string = NULL;
+static char print_format_string[10];
 
 /* Command options.  */
 
@@ -365,7 +365,7 @@ usage (FILE *stream, int status)
   fprintf (stream, _("\
   -W, --no-weak          Ignore weak symbols\n"));
   fprintf (stream, _("\
-      --with-symbol-versions  Display version strings after symbol names\n"));
+      --without-symbol-versions  Do not display version strings after symbol names\n"));
   fprintf (stream, _("\
   -X 32_64               (ignored)\n"));
   fprintf (stream, _("\
@@ -541,13 +541,14 @@ display_utf8 (const unsigned char * in, char * out, unsigned int * consumed)
 
     case unicode_invalid:
     case unicode_hex:
-      out += sprintf (out, "%c", unicode_display == unicode_hex ? '<' : '{');
-      out += sprintf (out, "0x");
+      *out++ = unicode_display == unicode_hex ? '<' : '{';
+      *out++ = '0';
+      *out++ = 'x';
       for (j = 0; j < nchars; j++)
 	out += sprintf (out, "%02x", in [j]);
-      out += sprintf (out, "%c", unicode_display == unicode_hex ? '>' : '}');
+      *out++ = unicode_display == unicode_hex ? '>' : '}';
       break;
-      
+
     case unicode_highlight:
       if (isatty (1))
 	out += sprintf (out, "\x1B[31;47m"); /* Red.  */
@@ -557,7 +558,7 @@ display_utf8 (const unsigned char * in, char * out, unsigned int * consumed)
 	{
 	case 2:
 	  out += sprintf (out, "\\u%02x%02x",
-		  ((in[0] & 0x1c) >> 2), 
+		  ((in[0] & 0x1c) >> 2),
 		  ((in[0] & 0x03) << 6) | (in[1] & 0x3f));
 	  break;
 
@@ -579,7 +580,7 @@ display_utf8 (const unsigned char * in, char * out, unsigned int * consumed)
 	}
 
       if (unicode_display == unicode_highlight && isatty (1))
-	out += sprintf (out, "\033[0m"); /* Default colour.  */
+	out += sprintf (out, "\x1B[0m"); /* Default colour.  */
       break;
 
     default:
@@ -633,11 +634,15 @@ convert_utf8 (const char * in)
 
   /* Copy the input, translating as needed.  */
   in = original;
-  if (buffer_len < (strlen (in) * 9))
+  /* For 2 char unicode, max out is 12 (colour escapes) + 6, ie. 9 per in
+     For hex, max out is 8 for 2 char unicode, ie. 4 per in.
+     3 and 4 char unicode produce less output for input.  */
+  size_t max_needed = strlen (in) * 9 + 1;
+  if (buffer_len < max_needed)
     {
-      free ((void *) buffer);
-      buffer_len = strlen (in) * 9;
-      buffer = xmalloc (buffer_len + 1);
+      buffer_len = max_needed;
+      free (buffer);
+      buffer = xmalloc (buffer_len);
     }
 
   out = buffer;
@@ -657,8 +662,8 @@ convert_utf8 (const char * in)
 	{
 	  unsigned int num_consumed;
 
-	  out += display_utf8 ((const unsigned char *)(in - 1), out, & num_consumed);
-	  in += num_consumed - 1;
+	  out += display_utf8 ((const unsigned char *) --in, out, &num_consumed);
+	  in += num_consumed;
 	}
       else
 	*out++ = c;
@@ -1461,9 +1466,9 @@ display_rel_file (bfd *abfd, bfd *archive_bfd)
 	free (dyn_syms);
     }
 
-  /* lto_slim_object is set to false when a bfd is loaded with a compiler
-     LTO plugin.  */
-  if (abfd->lto_slim_object)
+  /* lto_type is set to lto_non_ir_object when a bfd is loaded with a
+     compiler LTO plugin.  */
+  if (bfd_get_lto_type (abfd) == lto_slim_ir_object)
     {
       report_plugin_err = false;
       non_fatal (_("%s: plugin needed to handle lto object"),
@@ -1507,37 +1512,8 @@ display_rel_file (bfd *abfd, bfd *archive_bfd)
 
 /* Construct a formatting string for printing symbol values.  */
 
-static const char *
-get_print_format (void)
-{
-  const char * padding;
-  if (print_format == FORMAT_POSIX || print_format == FORMAT_JUST_SYMBOLS)
-    {
-      /* POSIX compatible output does not have any padding.  */
-      padding = "";
-    }
-  else if (print_width == 32)
-    {
-      padding ="08";
-    }
-  else /* print_width == 64 */
-    {
-      padding = "016";
-    }
-
-  const char * radix = NULL;
-  switch (print_radix)
-    {
-    case 8:  radix = PRIo64; break;
-    case 10: radix = PRId64; break;
-    case 16: radix = PRIx64; break;
-    }
-
-  return concat ("%", padding, radix, NULL);
-}
-
 static void
-set_print_width (bfd *file)
+set_print_format (bfd *file)
 {
   print_width = bfd_get_arch_size (file);
 
@@ -1554,8 +1530,43 @@ set_print_width (bfd *file)
       else
 	print_width = 32;
     }
-  free ((char *) print_format_string);
-  print_format_string = get_print_format ();
+
+  char *p = print_format_string;
+  *p++ = '%';
+  if (print_format == FORMAT_POSIX || print_format == FORMAT_JUST_SYMBOLS)
+    {
+      /* POSIX compatible output does not have any padding.  */
+    }
+  else if (print_width == 32)
+    {
+      *p++ = '0';
+      *p++ = '8';
+    }
+  else /* print_width == 64.  */
+    {
+      *p++ = '0';
+      *p++ = '1';
+      *p++ = '6';
+    }
+
+  if (print_width == 32)
+    {
+      switch (print_radix)
+	{
+	case 8:  strcpy (p, PRIo32); break;
+	case 10: strcpy (p, PRId32); break;
+	case 16: strcpy (p, PRIx32); break;
+	}
+    }
+  else
+    {
+      switch (print_radix)
+	{
+	case 8:  strcpy (p, PRIo64); break;
+	case 10: strcpy (p, PRId64); break;
+	case 16: strcpy (p, PRIx64); break;
+	}
+    }
 }
 
 static void
@@ -1583,7 +1594,7 @@ display_archive (bfd *file)
 
       if (bfd_check_format_matches (arfile, bfd_object, &matching))
 	{
-	  set_print_width (arfile);
+	  set_print_format (arfile);
 	  format->print_archive_member (bfd_get_filename (file),
 					bfd_get_filename (arfile));
 	  display_rel_file (arfile, file);
@@ -1639,7 +1650,7 @@ display_file (char *filename)
     }
   else if (bfd_check_format_matches (file, bfd_object, &matching))
     {
-      set_print_width (file);
+      set_print_format (file);
       format->print_object_filename (filename);
       display_rel_file (file, NULL);
     }
@@ -1816,6 +1827,9 @@ print_value (bfd *abfd ATTRIBUTE_UNUSED, bfd_vma val)
   switch (print_width)
     {
     case 32:
+      printf (print_format_string, (uint32_t) val);
+      break;
+
     case 64:
       printf (print_format_string, (uint64_t) val);
       break;
@@ -1973,7 +1987,7 @@ main (int argc, char **argv)
     fatal (_("fatal error: libbfd ABI mismatch"));
   set_default_bfd_target ();
 
-  while ((c = getopt_long (argc, argv, "aABCDef:gHhjJlnopPrSst:uU:vVvWX:",
+  while ((c = getopt_long (argc, argv, "aABCDef:gHhjJlnopPrSst:uUvVvWX:",
 			   long_options, (int *) 0)) != EOF)
     {
       switch (c)

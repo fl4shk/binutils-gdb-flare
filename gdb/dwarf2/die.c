@@ -1,6 +1,6 @@
 /* DWARF DIEs
 
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,7 +17,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "dwarf2/die.h"
 #include "dwarf2/stringify.h"
 
@@ -91,7 +90,7 @@ dump_die_shallow (struct ui_file *f, int indent, struct die_info *die)
 	case DW_FORM_addrx:
 	case DW_FORM_GNU_addr_index:
 	  gdb_printf (f, "address: ");
-	  gdb_puts (hex_string (die->attrs[i].as_address ()), f);
+	  gdb_puts (hex_string ((CORE_ADDR) die->attrs[i].as_address ()), f);
 	  break;
 	case DW_FORM_block2:
 	case DW_FORM_block4:

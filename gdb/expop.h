@@ -1,6 +1,6 @@
 /* Definitions for expressions in GDB
 
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -64,11 +64,6 @@ extern struct value *eval_op_func_static_var (struct type *expect_type,
 extern struct value *eval_op_register (struct type *expect_type,
 				       struct expression *exp,
 				       enum noside noside, const char *name);
-extern struct value *eval_op_ternop (struct type *expect_type,
-				     struct expression *exp,
-				     enum noside noside,
-				     struct value *array, struct value *low,
-				     struct value *upper);
 extern struct value *eval_op_structop_struct (struct type *expect_type,
 					      struct expression *exp,
 					      enum noside noside,
@@ -314,7 +309,10 @@ static inline void
 dump_for_expression (struct ui_file *stream, int depth,
 		     const operation_up &op)
 {
-  op->dump (stream, depth);
+  if (op == nullptr)
+    gdb_printf (stream, _("%*snullptr\n"), depth, "");
+  else
+    op->dump (stream, depth);
 }
 
 extern void dump_for_expression (struct ui_file *stream, int depth,
@@ -936,16 +934,7 @@ public:
 
   value *evaluate (struct type *expect_type,
 		   struct expression *exp,
-		   enum noside noside) override
-  {
-    struct value *array
-      = std::get<0> (m_storage)->evaluate (nullptr, exp, noside);
-    struct value *low
-      = std::get<1> (m_storage)->evaluate (nullptr, exp, noside);
-    struct value *upper
-      = std::get<2> (m_storage)->evaluate (nullptr, exp, noside);
-    return eval_op_ternop (expect_type, exp, noside, array, low, upper);
-  }
+		   enum noside noside) override;
 
   enum exp_opcode opcode () const override
   { return TERNOP_SLICE; }
@@ -1524,9 +1513,8 @@ public:
 		   struct expression *exp,
 		   enum noside noside) override
   {
-    if (expect_type != nullptr && expect_type->code () == TYPE_CODE_PTR)
-      expect_type = check_typedef (expect_type)->target_type ();
-    value *val = std::get<0> (m_storage)->evaluate (expect_type, exp, noside);
+    value *val
+      = std::get<0> (m_storage)->evaluate (nullptr, exp, noside);
     return eval_op_ind (expect_type, exp, noside, val);
   }
 

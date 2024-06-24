@@ -1,5 +1,5 @@
 /* Generic symbol-table support for the BFD library.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Written by Cygnus Support.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -1106,7 +1106,7 @@ _bfd_stab_section_find_nearest_line (bfd *abfd,
 		  || r->howto->pc_relative
 		  || r->howto->bitpos != 0
 		  || r->howto->dst_mask != 0xffffffff
-		  || octets + 4 > stabsize)
+		  || octets > stabsize - 4)
 		{
 		  _bfd_error_handler
 		    (_("unsupported .stab relocation"));

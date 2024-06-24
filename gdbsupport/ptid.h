@@ -1,6 +1,6 @@
 /* The ptid_t type and common functions operating on it.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -157,9 +157,10 @@ private:
   tid_type m_tid;
 };
 
-/* Functor to hash a ptid.  */
-
-struct hash_ptid
+namespace std
+{
+template<>
+struct hash<ptid_t>
 {
   size_t operator() (const ptid_t &ptid) const
   {
@@ -170,6 +171,7 @@ struct hash_ptid
 	    + long_hash (ptid.tid ()));
   }
 };
+}
 
 /* The null or zero ptid, often used to indicate no process. */
 

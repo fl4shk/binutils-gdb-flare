@@ -1,6 +1,6 @@
 /* Scheme interface to values.
 
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -20,14 +20,13 @@
 /* See README file in this directory for implementation notes, coding
    conventions, et.al.  */
 
-#include "defs.h"
-#include "top.h"		/* For quit_force().  */
+#include "top.h"
 #include "arch-utils.h"
 #include "charset.h"
 #include "cp-abi.h"
 #include "target-float.h"
 #include "infcall.h"
-#include "symtab.h" /* Needed by language.h.  */
+#include "symtab.h"
 #include "language.h"
 #include "valprint.h"
 #include "value.h"
@@ -1358,7 +1357,7 @@ Typically this is used to convert numbers and strings to\n\
   { "value-optimized-out?", 1, 0, 0,
     as_a_scm_t_subr (gdbscm_value_optimized_out_p),
     "\
-Return #t if the value has been optimizd out." },
+Return #t if the value has been optimized out." },
 
   { "value-address", 1, 0, 0, as_a_scm_t_subr (gdbscm_value_address),
     "\

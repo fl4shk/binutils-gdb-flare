@@ -1,5 +1,5 @@
 /* tc-mmix.c -- Assembler for Don Knuth's MMIX.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -623,6 +623,8 @@ get_putget_operands (struct mmix_opcode *insn, char *operands,
 
   regno = get_spec_regno (sregp);
   *sregend = c;
+
+  resolve_register (expp_reg);
 
   /* Let the caller issue errors; we've made sure the operands are
      invalid.  */

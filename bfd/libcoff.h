@@ -3,7 +3,7 @@
    Run "make headers" in your build bfd/ to regenerate.  */
 
 /* BFD COFF object file private structure.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Written by Cygnus Support.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -28,6 +28,7 @@
 
 #include "bfdlink.h"
 #include "coff-bfd.h"
+#include "hashtab.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,6 +134,13 @@ typedef struct coff_tdata
      COFF object into memory.  */
   char * stub;
   bfd_size_type stub_size;
+
+  /* Hash table containing sections by target index.  */
+  htab_t section_by_target_index;
+
+  /* Hash table containing sections by index.  */
+  htab_t section_by_index;
+
 } coff_data_type;
 
 /* Tdata for pe image files.  */
@@ -143,7 +151,7 @@ typedef struct pe_tdata
   int dll;
   int has_reloc_section;
   int dont_strip_reloc;
-  int dos_message[16];
+  char dos_message[64];
   /* The timestamp to insert into the output file.
      If the timestamp is -1 then the current time is used.  */
   int timestamp;
@@ -157,9 +165,21 @@ typedef struct pe_tdata
     const char *style;
     asection *sec;
   } build_id;
+
+  htab_t comdat_hash;
 } pe_data_type;
 
 #define pe_data(bfd)		((bfd)->tdata.pe_obj_data)
+
+struct comdat_hash_entry
+{
+  int target_index;
+  struct internal_syment isym;
+  char *symname;
+  flagword sec_flags;
+  char *comdat_name;
+  long comdat_symbol;
+};
 
 /* Tdata for XCOFF files.  */
 
@@ -286,6 +306,9 @@ struct coff_link_hash_table
   struct bfd_link_hash_table root;
   /* A pointer to information used to link stabs in sections.  */
   struct stab_info stab_info;
+  /* Hash table that maps undecorated names to their respective
+   * decorated coff_link_hash_entry as found in fixup_stdcalls  */
+  struct bfd_hash_table decoration_hash;
 };
 
 struct coff_reloc_cookie
@@ -317,7 +340,17 @@ struct coff_reloc_cookie
 
 #define coff_hash_table(p) ((struct coff_link_hash_table *) ((p)->hash))
 
+struct decoration_hash_entry
+{
+  struct bfd_hash_entry root;
+  struct bfd_link_hash_entry *decorated_link;
+};
+
 /* Functions in coffgen.c.  */
+extern void coff_object_cleanup
+  (bfd *);
+extern bfd_cleanup coff_real_object_p
+  (bfd *, unsigned, struct internal_filehdr *, struct internal_aouthdr *);
 extern bfd_cleanup coff_object_p
   (bfd *);
 extern struct bfd_section *coff_section_from_bfd_index
@@ -388,7 +421,7 @@ extern bfd_vma bfd_coff_reloc16_get_value
   (arelent *, struct bfd_link_info *, asection *);
 extern void bfd_perform_slip
   (bfd *, unsigned int, asection *, bfd_vma);
-extern bool _bfd_coff_close_and_cleanup
+extern bool _bfd_coff_free_cached_info
   (bfd *);
 
 /* Functions and types in cofflink.c.  */
@@ -564,6 +597,8 @@ struct coff_section_alignment_entry
   unsigned int alignment_power;
 };
 
+extern struct bfd_hash_entry *_decoration_hash_newfunc
+  (struct bfd_hash_entry *, struct bfd_hash_table *, const char *);
 extern struct bfd_hash_entry *_bfd_coff_link_hash_newfunc
   (struct bfd_hash_entry *, struct bfd_hash_table *, const char *);
 extern bool _bfd_coff_link_hash_table_init
@@ -603,9 +638,6 @@ extern bool bfd_coff_gc_sections
   (bfd *, struct bfd_link_info *);
 extern const char *bfd_coff_group_name
   (bfd *, const asection *);
-
-#define coff_get_section_contents_in_window \
-  _bfd_generic_get_section_contents_in_window
 
 /* Functions in xcofflink.c.  */
 

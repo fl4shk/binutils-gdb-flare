@@ -1,5 +1,5 @@
 /* Object file "section" support for the BFD library.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Written by Cygnus Support.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -359,6 +359,9 @@ CODE_FRAGMENT
 .     TMS320C54X only.  *}
 .#define SEC_TIC54X_BLOCK           0x10000000
 .
+.  {* This section has the SHF_X86_64_LARGE flag.  This is ELF x86-64 only.  *}
+.#define SEC_ELF_LARGE              0x10000000
+.
 .  {* Conditionally link this section; do not link if there are no
 .     references found to any symbol in the section.  This is for TI
 .     TMS320C54X only.  *}
@@ -418,6 +421,9 @@ CODE_FRAGMENT
 .
 .  {* Nonzero if this section uses RELA relocations, rather than REL.  *}
 .  unsigned int use_rela_p:1;
+.
+.  {* Nonzero if this section contents are mmapped, rather than malloced.  *}
+.  unsigned int mmapped_p:1;
 .
 .  {* Bits used by various backends.  The generic code doesn't touch
 .     these fields.  *}
@@ -708,8 +714,8 @@ EXTERNAL
 .  {* linker_mark, linker_has_input, gc_mark, decompress_status,     *}	\
 .     0,           0,                1,       0,			\
 .									\
-.  {* segment_mark, sec_info_type, use_rela_p,                       *}	\
-.     0,            0,             0,					\
+.  {* segment_mark, sec_info_type, use_rela_p, mmapped_p,           *}	\
+.     0,            0,             0,	       0,			\
 .									\
 .  {* sec_flg0, sec_flg1, sec_flg2, sec_flg3, sec_flg4, sec_flg5,    *}	\
 .     0,        0,        0,        0,        0,        0,		\
@@ -1559,11 +1565,45 @@ bfd_get_section_contents (bfd *abfd,
 {
   bfd_size_type sz;
 
+  if (count == 0)
+    /* Don't bother.  */
+    return true;
+
+  if (section == NULL)
+    {
+      bfd_set_error (bfd_error_bad_value);
+      return false;
+    }
+
+  if (location == NULL)
+    {
+      if (section->mmapped_p)
+	{
+	  /* Pass this request straight on to the target's function.
+	     All of the code below assumes that location != NULL.
+	     FIXME: Should we still check that count is sane ?  */
+	  return BFD_SEND (abfd, _bfd_get_section_contents,
+			   (abfd, section, location, offset, count));
+	}
+
+      bfd_set_error (bfd_error_bad_value);
+      return false;
+    }
+
   if (section->flags & SEC_CONSTRUCTOR)
     {
       memset (location, 0, (size_t) count);
       return true;
     }
+
+  if ((section->flags & SEC_HAS_CONTENTS) == 0)
+    {
+      memset (location, 0, (size_t) count);
+      return true;
+    }
+
+  if (abfd == NULL)
+    return false;
 
   sz = bfd_get_section_limit_octets (abfd, section);
   if ((bfd_size_type) offset > sz
@@ -1572,16 +1612,6 @@ bfd_get_section_contents (bfd *abfd,
     {
       bfd_set_error (bfd_error_bad_value);
       return false;
-    }
-
-  if (count == 0)
-    /* Don't bother.  */
-    return true;
-
-  if ((section->flags & SEC_HAS_CONTENTS) == 0)
-    {
-      memset (location, 0, (size_t) count);
-      return true;
     }
 
   if ((section->flags & SEC_IN_MEMORY) != 0)
@@ -1622,6 +1652,8 @@ DESCRIPTION
 bool
 bfd_malloc_and_get_section (bfd *abfd, sec_ptr sec, bfd_byte **buf)
 {
+  if (sec->mmapped_p)
+    abort ();
   *buf = NULL;
   return bfd_get_full_section_contents (abfd, sec, buf);
 }
@@ -1712,11 +1744,11 @@ _bfd_nowrite_set_section_contents (bfd *abfd,
 }
 
 /*
-INTERNAL_FUNCTION
-	_bfd_section_size_insane
+FUNCTION
+	bfd_section_size_insane
 
 SYNOPSIS
-	bool _bfd_section_size_insane (bfd *abfd, asection *sec);
+	bool bfd_section_size_insane (bfd *abfd, asection *sec);
 
 DESCRIPTION
 	Returns true if the given section has a size that indicates
@@ -1726,7 +1758,7 @@ DESCRIPTION
 */
 
 bool
-_bfd_section_size_insane (bfd *abfd, asection *sec)
+bfd_section_size_insane (bfd *abfd, asection *sec)
 {
   bfd_size_type size = bfd_get_section_limit_octets (abfd, sec);
   if (size == 0)

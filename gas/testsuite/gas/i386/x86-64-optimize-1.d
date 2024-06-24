@@ -71,4 +71,52 @@ Disassembly of section .text:
  +[a-f0-9]+:	48 0f ba f0 1f       	btr    \$0x1f,%rax
  +[a-f0-9]+:	66 0f ba e8 0f       	bts    \$0xf,%ax
  +[a-f0-9]+:	48 0f ba e8 1f       	bts    \$0x1f,%rax
+ +[a-f0-9]+:	31 c9                	xor    %ecx,%ecx
+ +[a-f0-9]+:	48 31 d1             	xor    %rdx,%rcx
+ +[a-f0-9]+:	31 c9                	xor    %ecx,%ecx
+ +[a-f0-9]+:	29 c9                	sub    %ecx,%ecx
+ +[a-f0-9]+:	48 29 d1             	sub    %rdx,%rcx
+ +[a-f0-9]+:	29 c9                	sub    %ecx,%ecx
+ +[a-f0-9]+:	d5 50 31 c9          	xor    %r17d,%r17d
+ +[a-f0-9]+:	d5 58 31 d1          	xor    %r18,%r17
+ +[a-f0-9]+:	d5 50 31 c9          	xor    %r17d,%r17d
+ +[a-f0-9]+:	d5 50 29 c9          	sub    %r17d,%r17d
+ +[a-f0-9]+:	d5 58 29 d1          	sub    %r18,%r17
+ +[a-f0-9]+:	d5 50 29 c9          	sub    %r17d,%r17d
+ +[a-f0-9]+:	31 c9                	xor    %ecx,%ecx
+ +[a-f0-9]+:	62 f4 75 18 31 d1    	xor    %dx,%cx,%cx
+ +[a-f0-9]+:	31 c9                	xor    %ecx,%ecx
+ +[a-f0-9]+:	29 c9                	sub    %ecx,%ecx
+ +[a-f0-9]+:	62 f4 75 18 29 d1    	sub    %dx,%cx,%cx
+ +[a-f0-9]+:	29 c9                	sub    %ecx,%ecx
+ +[a-f0-9]+:	d5 50 31 c9          	xor    %r17d,%r17d
+ +[a-f0-9]+:	62 ec 74 10 30 d1    	xor    %r18b,%r17b,%r17b
+ +[a-f0-9]+:	d5 50 31 c9          	xor    %r17d,%r17d
+ +[a-f0-9]+:	d5 50 29 c9          	sub    %r17d,%r17d
+ +[a-f0-9]+:	62 ec 74 10 28 d1    	sub    %r18b,%r17b,%r17b
+ +[a-f0-9]+:	d5 50 29 c9          	sub    %r17d,%r17d
+ +[a-f0-9]+:	00 d2                	add    %dl,%dl
+ +[a-f0-9]+:	66 01 d2             	add    %dx,%dx
+ +[a-f0-9]+:	01 d2                	add    %edx,%edx
+ +[a-f0-9]+:	48 01 d2             	add    %rdx,%rdx
+ +[a-f0-9]+:	00 d2                	add    %dl,%dl
+ +[a-f0-9]+:	66 01 d2             	add    %dx,%dx
+ +[a-f0-9]+:	01 d2                	add    %edx,%edx
+ +[a-f0-9]+:	48 01 d2             	add    %rdx,%rdx
+ +[a-f0-9]+:	62 f4 7c 18 00 d2    	add    %dl,%dl,%al
+ +[a-f0-9]+:	62 f4 7d 18 01 d2    	add    %dx,%dx,%ax
+ +[a-f0-9]+:	62 f4 7c 18 01 d2    	add    %edx,%edx,%eax
+ +[a-f0-9]+:	62 f4 fc 18 01 d2    	add    %rdx,%rdx,%rax
+ +[a-f0-9]+:	00 d2                	add    %dl,%dl
+ +[a-f0-9]+:	66 01 d2             	add    %dx,%dx
+ +[a-f0-9]+:	01 d2                	add    %edx,%edx
+ +[a-f0-9]+:	48 01 d2             	add    %rdx,%rdx
+ +[a-f0-9]+:	00 d2                	add    %dl,%dl
+ +[a-f0-9]+:	66 01 d2             	add    %dx,%dx
+ +[a-f0-9]+:	01 d2                	add    %edx,%edx
+ +[a-f0-9]+:	48 01 d2             	add    %rdx,%rdx
+ +[a-f0-9]+:	62 f4 7c 18 00 d2    	add    %dl,%dl,%al
+ +[a-f0-9]+:	62 f4 7d 18 01 d2    	add    %dx,%dx,%ax
+ +[a-f0-9]+:	62 f4 7c 18 01 d2    	add    %edx,%edx,%eax
+ +[a-f0-9]+:	62 f4 fc 18 01 d2    	add    %rdx,%rdx,%rax
 #pass

@@ -1,6 +1,6 @@
 /* Declarations for common types.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -27,6 +27,12 @@ typedef unsigned char gdb_byte;
 
 /* * An address in the program being debugged.  Host byte order.  */
 typedef uint64_t CORE_ADDR;
+
+/* Like a CORE_ADDR, but not directly convertible.  This is used to
+   represent an unrelocated CORE_ADDR.  DEFINE_OFFSET_TYPE is not used
+   here because there's no need to add or subtract values of this
+   type.  */
+enum class unrelocated_addr : CORE_ADDR { };
 
 /* LONGEST must be at least as big as CORE_ADDR.  */
 

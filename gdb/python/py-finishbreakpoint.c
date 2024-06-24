@@ -1,6 +1,6 @@
 /* Python interface to finish breakpoints
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -19,8 +19,7 @@
 
 
 
-#include "defs.h"
-#include "top.h"		/* For quit_force().  */
+#include "top.h"
 #include "python-internal.h"
 #include "breakpoint.h"
 #include "frame.h"
@@ -212,7 +211,8 @@ bpfinishpy_init (PyObject *self, PyObject *args, PyObject *kwargs)
 				 "be set on a dummy frame."));
 	    }
 	  else
-	    frame_id = get_frame_id (prev_frame);
+	    /* Get the real calling frame ID, ignoring inline frames.  */
+	    frame_id = frame_unwind_caller_id (frame);
 	}
     }
   catch (const gdb_exception &except)
@@ -307,7 +307,7 @@ bpfinishpy_init (PyObject *self, PyObject *args, PyObject *kwargs)
       location_spec_up locspec
 	= new_address_location_spec (get_frame_pc (prev_frame), NULL, 0);
       create_breakpoint (gdbpy_enter::get_gdbarch (),
-			 locspec.get (), NULL, thread, NULL, false,
+			 locspec.get (), NULL, thread, -1, NULL, false,
 			 0,
 			 1 /*temp_flag*/,
 			 bp_breakpoint,
@@ -344,8 +344,7 @@ bpfinishpy_out_of_scope (struct finish_breakpoint_object *bpfinish_obj)
   if (bpfinish_obj->py_bp.bp->enable_state == bp_enabled
       && PyObject_HasAttrString (py_obj, outofscope_func))
     {
-      gdbpy_ref<> meth_result (PyObject_CallMethod (py_obj, outofscope_func,
-						    NULL));
+      gdbpy_ref<> meth_result = gdbpy_call_method (py_obj, outofscope_func);
       if (meth_result == NULL)
 	gdbpy_print_stack ();
     }
@@ -416,9 +415,9 @@ bpfinishpy_handle_stop (struct bpstat *bs, int print_frame)
 {
   gdbpy_enter enter_py;
 
-  for (breakpoint *bp : all_breakpoints_safe ())
+  for (breakpoint &bp : all_breakpoints_safe ())
     bpfinishpy_detect_out_scope_cb
-      (bp, bs == NULL ? NULL : bs->breakpoint_at, true);
+      (&bp, bs == NULL ? NULL : bs->breakpoint_at, true);
 }
 
 /* Attached to `exit' notifications, triggers all the necessary out of
@@ -427,10 +426,10 @@ bpfinishpy_handle_stop (struct bpstat *bs, int print_frame)
 static void
 bpfinishpy_handle_exit (struct inferior *inf)
 {
-  gdbpy_enter enter_py (target_gdbarch ());
+  gdbpy_enter enter_py (current_inferior ()->arch ());
 
-  for (breakpoint *bp : all_breakpoints_safe ())
-    bpfinishpy_detect_out_scope_cb (bp, nullptr, true);
+  for (breakpoint &bp : all_breakpoints_safe ())
+    bpfinishpy_detect_out_scope_cb (&bp, nullptr, true);
 }
 
 /* Initialize the Python finish breakpoint code.  */

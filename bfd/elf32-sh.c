@@ -1,5 +1,5 @@
 /* Renesas / SuperH SH specific support for 32-bit ELF
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor, Cygnus Support.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -2927,7 +2927,7 @@ allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
    It's a convenient place to determine the PLT style.  */
 
 static bool
-sh_elf_always_size_sections (bfd *output_bfd, struct bfd_link_info *info)
+sh_elf_early_size_sections (bfd *output_bfd, struct bfd_link_info *info)
 {
   sh_elf_hash_table (info)->plt_info = get_plt_info (output_bfd,
 						     bfd_link_pic (info));
@@ -2942,8 +2942,8 @@ sh_elf_always_size_sections (bfd *output_bfd, struct bfd_link_info *info)
 /* Set the sizes of the dynamic sections.  */
 
 static bool
-sh_elf_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
-			      struct bfd_link_info *info)
+sh_elf_late_size_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
+			   struct bfd_link_info *info)
 {
   struct elf_sh_link_hash_table *htab;
   bfd *dynobj;
@@ -2956,7 +2956,8 @@ sh_elf_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
     return false;
 
   dynobj = htab->root.dynobj;
-  BFD_ASSERT (dynobj != NULL);
+  if (dynobj == NULL)
+    return true;
 
   if (htab->root.dynamic_sections_created)
     {
@@ -5010,14 +5011,14 @@ sh_elf_relocate_section (bfd *output_bfd, struct bfd_link_info *info,
 		{
 		  info->callbacks->einfo
 		    /* xgettext:c-format */
-		    (_("%X%C: relocation to \"%s\" references a different segment\n"),
+		    (_("%X%H: relocation to \"%s\" references a different segment\n"),
 		     input_bfd, input_section, rel->r_offset, symname);
 		  return false;
 		}
 	      else
 		info->callbacks->einfo
 		  /* xgettext:c-format */
-		  (_("%C: warning: relocation to \"%s\" references a different segment\n"),
+		  (_("%H: warning: relocation to \"%s\" references a different segment\n"),
 		   input_bfd, input_section, rel->r_offset, symname);
 	    }
 
@@ -5945,8 +5946,6 @@ sh_elf_finish_dynamic_symbol (bfd *output_bfd, struct bfd_link_info *info,
   struct elf_sh_link_hash_table *htab;
 
   htab = sh_elf_hash_table (info);
-  if (htab == NULL)
-    return false;
 
   if (h->plt.offset != (bfd_vma) -1)
     {
@@ -6291,15 +6290,13 @@ sh_elf_finish_dynamic_sections (bfd *output_bfd, struct bfd_link_info *info)
 	      break;
 
 	    case DT_JMPREL:
-	      s = htab->root.srelplt->output_section;
-	      BFD_ASSERT (s != NULL);
-	      dyn.d_un.d_ptr = s->vma;
+	      s = htab->root.srelplt;
+	      dyn.d_un.d_ptr = s->output_section->vma + s->output_offset;
 	      bfd_elf32_swap_dyn_out (output_bfd, &dyn, dyncon);
 	      break;
 
 	    case DT_PLTRELSZ:
-	      s = htab->root.srelplt->output_section;
-	      BFD_ASSERT (s != NULL);
+	      s = htab->root.srelplt;
 	      dyn.d_un.d_val = s->size;
 	      bfd_elf32_swap_dyn_out (output_bfd, &dyn, dyncon);
 	      break;
@@ -6602,10 +6599,8 @@ sh_elf_encode_eh_address (bfd *abfd,
 					sh_elf_link_hash_table_create
 #define elf_backend_adjust_dynamic_symbol \
 					sh_elf_adjust_dynamic_symbol
-#define elf_backend_always_size_sections \
-					sh_elf_always_size_sections
-#define elf_backend_size_dynamic_sections \
-					sh_elf_size_dynamic_sections
+#define elf_backend_early_size_sections	sh_elf_early_size_sections
+#define elf_backend_late_size_sections	sh_elf_late_size_sections
 #define elf_backend_omit_section_dynsym	sh_elf_omit_section_dynsym
 #define elf_backend_finish_dynamic_symbol \
 					sh_elf_finish_dynamic_symbol

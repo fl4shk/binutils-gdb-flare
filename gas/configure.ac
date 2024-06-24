@@ -3,7 +3,7 @@ dnl
 dnl And be careful when changing it!  If you must add tests with square
 dnl brackets, be sure changequote invocations surround it.
 dnl
-dnl   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+dnl   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 dnl
 dnl This file is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ dnl <http://www.gnu.org/licenses/>.
 dnl
 dnl v2.5 needed for --bindir et al
 m4_include([../bfd/version.m4])
-AC_INIT([gas], BFD_VERSION)
+AC_INIT([gas], [BFD_VERSION])
 AC_CONFIG_SRCDIR(as.h)
 
 dnl Autoconf 2.57 will find the aux dir without this.  However, unless
@@ -34,7 +34,6 @@ AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
 
 AC_PROG_CC
-AC_GNU_SOURCE
 AC_USE_SYSTEM_EXTENSIONS
 
 LT_INIT
@@ -272,6 +271,8 @@ for this_target in $target $canon_targets ; do
         ;;
 
 changequote(,)dnl
+      ppc-*-aix5.[01]*)
+	;;
       ppc-*-aix[5-9].*)
 changequote([,])dnl
 	AC_DEFINE(AIX_WEAK_SUPPORT, 1,
@@ -370,14 +371,20 @@ changequote([,])dnl
 	    AC_MSG_ERROR($target_cpu isn't a supported MIPS CPU name)
 	    ;;
 	esac
-	# See whether it's appropriate to set E_MIPS_ABI_O32 for o32
+	# See whether it's appropriate to set EF_MIPS_ABI_O32 for o32
 	# binaries.  It's a GNU extension that some OSes don't understand.
 	case ${target} in
 	  *-*-irix*)
-	    use_e_mips_abi_o32=0
+	    use_ef_mips_abi_o32=0
 	    ;;
 	  *)
-	    use_e_mips_abi_o32=1
+	    use_ef_mips_abi_o32=1
+	    ;;
+	esac
+	# If Vendor is IMG, then MIPSr6 is used
+	case ${target} in
+	  mips*-img-*)
+	    mips_cpu=mips32r6
 	    ;;
 	esac
 	# Decide whether to generate 32-bit or 64-bit code by default.
@@ -392,18 +399,15 @@ changequote([,])dnl
 	esac
 	# Decide which ABI to target by default.
 	case ${target} in
-	  mips*64*-linux-gnuabi64)
+	  mips64*-openbsd* | mips64*-linux-gnuabi64)
 	    mips_default_abi=N64_ABI
 	    ;;
-	  mips*64*-linux* | mips-sgi-irix6* | mips64*-freebsd* \
+	  mips64*-linux* | mips-sgi-irix6* | mips64*-freebsd* \
 	  | mips64*-kfreebsd*-gnu | mips64*-ps2-elf*)
 	    mips_default_abi=N32_ABI
 	    ;;
 	  mips*-linux* | mips*-freebsd* | mips*-kfreebsd*-gnu)
 	    mips_default_abi=O32_ABI
-	    ;;
-	  mips64*-openbsd*)
-	    mips_default_abi=N64_ABI
 	    ;;
 	  *)
 	    mips_default_abi=NO_ABI
@@ -411,8 +415,8 @@ changequote([,])dnl
 	esac
 	AC_DEFINE_UNQUOTED(MIPS_CPU_STRING_DEFAULT, "$mips_cpu",
 			   [Default CPU for MIPS targets. ])
-	AC_DEFINE_UNQUOTED(USE_E_MIPS_ABI_O32, $use_e_mips_abi_o32,
-			   [Allow use of E_MIPS_ABI_O32 on MIPS targets. ])
+	AC_DEFINE_UNQUOTED(USE_EF_MIPS_ABI_O32, $use_ef_mips_abi_o32,
+			   [Allow use of EF_MIPS_ABI_O32 on MIPS targets. ])
 	AC_DEFINE_UNQUOTED(MIPS_DEFAULT_64BIT, $mips_default_64bit,
 			   [Generate 64-bit code by default on MIPS targets. ])
 	AC_DEFINE_UNQUOTED(MIPS_DEFAULT_ABI, $mips_default_abi,
@@ -452,7 +456,6 @@ changequote([,])dnl
       	if test $this_target = $target ; then
 	  AC_DEFINE_UNQUOTED(DEFAULT_ARCH, "${arch}", [Default architecture.])
 	fi
-        using_cgen=yes
         ;;
       epiphany | fr30 | ip2k | iq2000 | lm32 | m32r | or1k)
 	using_cgen=yes
@@ -476,6 +479,14 @@ changequote([,])dnl
 	;;
       frv)
 	using_cgen=yes
+	;;
+      kvx)
+	for f in config/kvx-parse.o; do
+	  case " $extra_objects " in
+	    *" $f "*) ;;
+	    *) extra_objects="$extra_objects $f" ;;
+	  esac
+	done
 	;;
       m68k)
 	f=config/m68k-parse.o

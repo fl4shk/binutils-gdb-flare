@@ -1,6 +1,6 @@
 /* Disassembly display.
 
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 
    Contributed by Hewlett-Packard Company.
 
@@ -19,7 +19,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "arch-utils.h"
 #include "symtab.h"
 #include "breakpoint.h"
@@ -30,19 +29,15 @@
 #include "tui/tui.h"
 #include "tui/tui-command.h"
 #include "tui/tui-data.h"
-#include "tui/tui-win.h"
-#include "tui/tui-layout.h"
 #include "tui/tui-winsource.h"
-#include "tui/tui-stack.h"
-#include "tui/tui-file.h"
+#include "tui/tui-status.h"
 #include "tui/tui-disasm.h"
-#include "tui/tui-source.h"
 #include "progspace.h"
 #include "objfiles.h"
 #include "cli/cli-style.h"
 #include "tui/tui-location.h"
-
-#include "gdb_curses.h"
+#include "gdbsupport/selftest.h"
+#include "inferior.h"
 
 struct tui_asm_line
 {
@@ -203,6 +198,8 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
 	 instruction fails to disassemble we will take the address of the
 	 previous instruction that did disassemble as the result.  */
       tui_disassemble (gdbarch, asm_lines, pc, max_lines + 1);
+      if (asm_lines.empty ())
+	return pc;
       new_low = asm_lines.back ().addr;
     }
   else
@@ -230,7 +227,7 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
 	 promising starting point then we record it in this structure.  If
 	 the next address we try is not a suitable starting point then we
 	 will fall back to the address held here.  */
-      gdb::optional<CORE_ADDR> possible_new_low;
+      std::optional<CORE_ADDR> possible_new_low;
 
       /* The previous value of NEW_LOW so we know if the new value is
 	 different or not.  */
@@ -244,6 +241,8 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
 
 	  /* Disassemble forward.  */
 	  next_addr = tui_disassemble (gdbarch, asm_lines, new_low, max_lines);
+	  if (asm_lines.empty ())
+	    break;
 	  last_addr = asm_lines.back ().addr;
 
 	  /* If disassembling from the current value of NEW_LOW reached PC
@@ -262,11 +261,8 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
 	      || (last_addr == pc && asm_lines.size () < max_lines))
 	     && new_low != prev_low);
 
-      /* If we failed to disassemble the required number of lines then the
-	 following walk forward is not going to work, it assumes that
-	 ASM_LINES contains exactly MAX_LINES entries.  Instead we should
-	 consider falling back to a previous possible start address in
-	 POSSIBLE_NEW_LOW.  */
+      /* If we failed to disassemble the required number of lines, try to fall
+	 back to a previous possible start address in POSSIBLE_NEW_LOW.  */
       if (asm_lines.size () < max_lines)
 	{
 	  if (!possible_new_low.has_value ())
@@ -275,15 +271,18 @@ tui_find_disassembly_address (struct gdbarch *gdbarch, CORE_ADDR pc, int from)
 	  /* Take the best possible match we have.  */
 	  new_low = *possible_new_low;
 	  next_addr = tui_disassemble (gdbarch, asm_lines, new_low, max_lines);
-	  last_addr = asm_lines.back ().addr;
-	  gdb_assert (asm_lines.size () >= max_lines);
 	}
+
+      /* The following walk forward assumes that ASM_LINES contains exactly
+	 MAX_LINES entries.  */
+      gdb_assert (asm_lines.size () == max_lines);
 
       /* Scan forward disassembling one instruction at a time until
 	 the last visible instruction of the window matches the pc.
 	 We keep the disassembled instructions in the 'lines' window
 	 and shift it downward (increasing its addresses).  */
       int pos = max_lines - 1;
+      last_addr = asm_lines.back ().addr;
       if (last_addr < pc)
 	do
 	  {
@@ -335,7 +334,7 @@ tui_disasm_window::set_contents (struct gdbarch *arch,
   cur_pc = tui_location.addr ();
 
   /* Window size, excluding highlight box.  */
-  max_lines = height - 2;
+  max_lines = height - box_size ();
 
   /* Get temporary table that will hold all strings (addr & insn).  */
   std::vector<tui_asm_line> asm_lines;
@@ -428,12 +427,12 @@ tui_get_low_disassembly_address (struct gdbarch *gdbarch,
 
   /* Determine where to start the disassembly so that the pc is about
      in the middle of the viewport.  */
-  if (TUI_DISASM_WIN != NULL)
-    pos = TUI_DISASM_WIN->height;
-  else if (TUI_CMD_WIN == NULL)
+  if (tui_disasm_win () != nullptr)
+    pos = tui_disasm_win ()->height;
+  else if (tui_cmd_win () == nullptr)
     pos = tui_term_height () / 2 - 2;
   else
-    pos = tui_term_height () - TUI_CMD_WIN->height - 2;
+    pos = tui_term_height () - tui_cmd_win ()->height - 2;
   pos = (pos - 2) / 2;
 
   pc = tui_find_disassembly_address (gdbarch, pc, -pos);
@@ -484,7 +483,7 @@ tui_disasm_window::addr_is_displayed (CORE_ADDR addr) const
 }
 
 void
-tui_disasm_window::maybe_update (frame_info_ptr fi, symtab_and_line sal)
+tui_disasm_window::maybe_update (const frame_info_ptr &fi, symtab_and_line sal)
 {
   CORE_ADDR low;
 
@@ -521,4 +520,37 @@ tui_disasm_window::display_start_addr (struct gdbarch **gdbarch_p,
 {
   *gdbarch_p = m_gdbarch;
   *addr_p = m_start_line_or_addr.u.addr;
+}
+
+#if GDB_SELF_TEST
+namespace selftests {
+namespace tui {
+namespace disasm {
+
+static void
+run_tests ()
+{
+  if (current_inferior () != nullptr)
+    {
+      gdbarch *gdbarch = current_inferior ()->arch ();
+
+      /* Check that tui_find_disassembly_address robustly handles the case of
+	 being passed a PC for which gdb_print_insn throws a MEMORY_ERROR.  */
+      SELF_CHECK (tui_find_disassembly_address (gdbarch, 0, 1) == 0);
+      SELF_CHECK (tui_find_disassembly_address (gdbarch, 0, -1) == 0);
+    }
+}
+
+} /* namespace disasm */
+} /* namespace tui */
+} /* namespace selftests */
+#endif /* GDB_SELF_TEST */
+
+void _initialize_tui_disasm ();
+void
+_initialize_tui_disasm ()
+{
+#if GDB_SELF_TEST
+  selftests::register_test ("tui-disasm", selftests::tui::disasm::run_tests);
+#endif
 }

@@ -1,5 +1,5 @@
 /* ar.c - Archive modify and extract.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
 
    This file is part of GNU Binutils.
 
@@ -807,7 +807,7 @@ main (int argc, char **argv)
 	fatal (_("`u' is only meaningful with the `r' option."));
 
       if (newer_only && deterministic > 0)
-        fatal (_("`u' is not meaningful with the `D' option."));
+        non_fatal (_("`u' is not meaningful with the `D' option - replacement will always happen."));
 
       if (newer_only && deterministic < 0 && DEFAULT_AR_DETERMINISTIC)
         non_fatal (_("\
@@ -855,7 +855,7 @@ main (int argc, char **argv)
 
 	  /* Create a bfd to contain the dependencies.
 	     It inherits its type from arch, but we must set the type to
-	     "binary" otherwise bfd_bwrite() will fail.  After writing, we
+	     "binary" otherwise bfd_write() will fail.  After writing, we
 	     must set the type back to default otherwise adding it to the
 	     archive will fail.  */
 	  libdeps_bfd = bfd_create (LIBDEPS, arch);
@@ -871,7 +871,7 @@ main (int argc, char **argv)
 	  if (! bfd_make_writable (libdeps_bfd))
 	    fatal (_("Cannot make libdeps object writable."));
 
-	  if (bfd_bwrite (libdeps, reclen, libdeps_bfd) != reclen)
+	  if (bfd_write (libdeps, reclen, libdeps_bfd) != reclen)
 	    fatal (_("Cannot write libdeps record."));
 
 	  if (! bfd_make_readable (libdeps_bfd))
@@ -1078,7 +1078,8 @@ print_contents (bfd *abfd)
   if (verbose)
     printf ("\n<%s>\n\n", bfd_get_filename (abfd));
 
-  bfd_seek (abfd, (file_ptr) 0, SEEK_SET);
+  if (bfd_seek (abfd, 0, SEEK_SET) != 0)
+    bfd_fatal (bfd_get_filename (abfd));
 
   size = buf.st_size;
   while (ncopied < size)
@@ -1089,7 +1090,7 @@ print_contents (bfd *abfd)
       if (tocopy > BUFSIZE)
 	tocopy = BUFSIZE;
 
-      nread = bfd_bread (cbuf, tocopy, abfd);
+      nread = bfd_read (cbuf, tocopy, abfd);
       if (nread != tocopy)
 	/* xgettext:c-format */
 	fatal (_("%s is not a valid archive"),
@@ -1176,7 +1177,8 @@ extract_file (bfd *abfd)
     fatal (_("internal stat error on %s"), bfd_get_filename (abfd));
   size = buf.st_size;
 
-  bfd_seek (abfd, (file_ptr) 0, SEEK_SET);
+  if (bfd_seek (abfd, 0, SEEK_SET) != 0)
+    bfd_fatal (bfd_get_filename (abfd));
 
   output_file = NULL;
   if (size == 0)
@@ -1196,7 +1198,7 @@ extract_file (bfd *abfd)
 	  if (tocopy > BUFSIZE)
 	    tocopy = BUFSIZE;
 
-	  nread = bfd_bread (cbuf, tocopy, abfd);
+	  nread = bfd_read (cbuf, tocopy, abfd);
 	  if (nread != tocopy)
 	    /* xgettext:c-format */
 	    fatal (_("%s is not a valid archive"),
@@ -1480,6 +1482,7 @@ replace_members (bfd *arch, char **files_to_move, bool quick)
 		  && current->arelt_data != NULL)
 		{
 		  bool replaced;
+
 		  if (newer_only)
 		    {
 		      struct stat fsbuf, asbuf;
@@ -1490,12 +1493,33 @@ replace_members (bfd *arch, char **files_to_move, bool quick)
 			    bfd_fatal (*files_to_move);
 			  goto next_file;
 			}
+
 		      if (bfd_stat_arch_elt (current, &asbuf) != 0)
 			/* xgettext:c-format */
 			fatal (_("internal stat error on %s"),
 			       bfd_get_filename (current));
 
 		      if (fsbuf.st_mtime <= asbuf.st_mtime)
+			/* A note about deterministic timestamps:  In an
+			   archive created in a determistic manner the
+			   individual elements will either have a timestamp
+			   of 0 or SOURCE_DATE_EPOCH, depending upon the
+			   method used.  This will be the value retrieved
+			   by bfd_stat_arch_elt().
+
+			   The timestamp in fsbuf.st_mtime however will
+			   definitely be greater than 0, and it is unlikely
+			   to be less than SOURCE_DATE_EPOCH.  (FIXME:
+			   should we test for this case case and issue an
+			   error message ?)
+
+			   So in either case fsbuf.st_mtime > asbuf.st_time
+			   and hence the incoming file will replace the
+			   current file.  Which is what should be expected to
+			   happen.  Deterministic archives have no real sense
+			   of the time/date when their elements were created,
+			   and so any updates to the archive should always
+			   result in replaced files.  */
 			goto next_file;
 		    }
 

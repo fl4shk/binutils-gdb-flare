@@ -1,5 +1,5 @@
 /* tc-alpha.c - Processor-specific code for the DEC Alpha AXP CPU.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by Carnegie Mellon University, 1993.
    Written by Alessandro Forin, based on earlier gas-1.38 target CPU files.
    Modified by Ken Raeburn for gas-2.x and ECOFF support.
@@ -987,6 +987,7 @@ tokenize_arguments (char *str,
 
 	    /* First try for parenthesized register ...  */
 	    expression (tok);
+	    resolve_register (tok);
 	    if (*input_line_pointer == ')' && tok->X_op == O_register)
 	      {
 		tok->X_op = (saw_comma ? O_cpregister : O_pregister);
@@ -1009,6 +1010,8 @@ tokenize_arguments (char *str,
 	  expression (tok);
 	  if (tok->X_op == O_illegal || tok->X_op == O_absent)
 	    goto err;
+
+	  resolve_register (tok);
 
 	  saw_comma = 0;
 	  saw_arg = 1;

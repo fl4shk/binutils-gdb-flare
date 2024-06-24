@@ -1,7 +1,7 @@
 /* Machine independent support for QNX Neutrino /proc (process file system)
    for GDB.  Written by Colin Burgess at QNX Software Systems Limited.
 
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    Contributed by QNX Software Systems Ltd.
 
@@ -20,7 +20,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 
 #include <fcntl.h>
 #include <spawn.h>
@@ -275,8 +274,9 @@ nto_procfs_target::open (const char *arg, int from_tty)
 	  else
 	    {
 	      if (sysinfo->type !=
-		  nto_map_arch_to_cputype (gdbarch_bfd_arch_info
-					   (target_gdbarch ())->arch_name))
+		  nto_map_arch_to_cputype
+		    (gdbarch_bfd_arch_info
+		     (current_inferior ()->arch ())->arch_name))
 		error (_("Invalid target CPU."));
 	    }
 	}
@@ -1179,6 +1179,9 @@ nto_procfs_target::create_inferior (const char *exec_file,
 				    const std::string &allargs,
 				    char **env, int from_tty)
 {
+  if (exec_file == nullptr)
+    no_executable_specified_error ();
+
   struct inheritance inherit;
   pid_t pid;
   int flags, errn;
@@ -1190,17 +1193,9 @@ nto_procfs_target::create_inferior (const char *exec_file,
 
   argv = xmalloc ((allargs.size () / (unsigned) 2 + 2) *
 		  sizeof (*argv));
-  argv[0] = const_cast<char *> (get_exec_file (1));
-  if (!argv[0])
-    {
-      if (exec_file)
-	argv[0] = exec_file;
-      else
-	return;
-    }
-
+  argv[0] = exec_file;
   args = xstrdup (allargs.c_str ());
-  breakup_args (args, (exec_file != NULL) ? &argv[1] : &argv[0]);
+  breakup_args (args, &argv[1]);
 
   argv = nto_parse_redirection (argv, &in, &out, &err);
 

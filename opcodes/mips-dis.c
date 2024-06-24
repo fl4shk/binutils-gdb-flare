@@ -1,5 +1,5 @@
 /* Print mips instructions for GDB, the GNU debugger, or for objdump.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by Nobuyuki Hikichi(hikichi@sra.co.jp).
 
    This file is part of the GNU opcodes library.
@@ -488,6 +488,9 @@ const struct mips_arch_choice mips_arch_choices[] =
     mips_hwr_names_numeric },
   { "r4010",	1, bfd_mach_mips4010, CPU_R4010, ISA_MIPS2, 0,
     mips_cp0_names_numeric, NULL, 0, mips_cp1_names_mips,
+    mips_hwr_names_numeric },
+  { "allegrex",	1, bfd_mach_mips_allegrex, CPU_ALLEGREX, ISA_MIPS2, 0,
+    mips_cp0_names_numeric, NULL, 0, mips_cp1_names_numeric,
     mips_hwr_names_numeric },
   { "vr4100",	1, bfd_mach_mips4100, CPU_VR4100, ISA_MIPS3, 0,
     mips_cp0_names_numeric, NULL, 0, mips_cp1_names_mips,

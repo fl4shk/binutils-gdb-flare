@@ -1,5 +1,5 @@
 /* List lines of source files for GDB, the GNU debugger.
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -16,14 +16,13 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "arch-utils.h"
 #include "symtab.h"
 #include "expression.h"
 #include "language.h"
 #include "command.h"
 #include "source.h"
-#include "gdbcmd.h"
+#include "cli/cli-cmds.h"
 #include "frame.h"
 #include "value.h"
 #include "gdbsupport/filestuff.h"
@@ -37,7 +36,7 @@
 #include "annotate.h"
 #include "gdbtypes.h"
 #include "linespec.h"
-#include "filenames.h"		/* for DOSish file names */
+#include "filenames.h"
 #include "completer.h"
 #include "ui-out.h"
 #include "readline/tilde.h"
@@ -51,6 +50,7 @@
 #include "build-id.h"
 #include "debuginfod-support.h"
 #include "gdbsupport/buildargv.h"
+#include "interps.h"
 
 #define OPEN_MODE (O_RDONLY | O_BINARY)
 #define FDOPEN_MODE FOPEN_RB
@@ -315,8 +315,9 @@ select_source_symtab ()
 
   /* Make the default place to list be the function `main'
      if one exists.  */
-  block_symbol bsym = lookup_symbol (main_name (), 0, VAR_DOMAIN, 0);
-  if (bsym.symbol != nullptr && bsym.symbol->aclass () == LOC_BLOCK)
+  block_symbol bsym = lookup_symbol (main_name (), nullptr,
+				     SEARCH_FUNCTION_DOMAIN, nullptr);
+  if (bsym.symbol != nullptr)
     {
       symtab_and_line sal = find_function_start_sal (bsym.symbol, true);
       if (sal.symtab == NULL)
@@ -454,8 +455,8 @@ directory_command (const char *dirname, int from_tty)
     }
   if (value_changed)
     {
-      gdb::observers::command_param_changed.notify ("directories",
-						    source_path.c_str ());
+      interps_notify_param_changed ("directories", source_path.c_str ());
+
       if (from_tty)
 	show_directories_1 (gdb_stdout, (char *) 0, from_tty);
     }
@@ -586,14 +587,10 @@ add_path (const char *dirname, char **which_path, int parse_separators)
 	     a directory/etc, then having them in the path should be
 	     harmless.  */
 	  if (stat (name, &st) < 0)
-	    {
-	      int save_errno = errno;
-
-	      gdb_printf (gdb_stderr, "Warning: ");
-	      print_sys_errmsg (name, save_errno);
-	    }
+	    warning_filename_and_errno (name, errno);
 	  else if ((st.st_mode & S_IFMT) != S_IFDIR)
-	    warning (_("%s is not a directory."), name);
+	    warning (_("%ps is not a directory."),
+		     styled_string (file_name_style.style (), name));
 	}
 
     append:
@@ -688,8 +685,8 @@ info_source_command (const char *ignore, int from_tty)
   gdb_printf (_("Current source file is %s\n"), s->filename);
   if (s->compunit ()->dirname () != NULL)
     gdb_printf (_("Compilation directory is %s\n"), s->compunit ()->dirname ());
-  if (s->fullname)
-    gdb_printf (_("Located in %s\n"), s->fullname);
+  if (s->fullname () != nullptr)
+    gdb_printf (_("Located in %s\n"), s->fullname ());
   const std::vector<off_t> *offsets;
   if (g_source_cache.get_line_charpos (s, &offsets))
     gdb_printf (_("Contains %d line%s.\n"), (int) offsets->size (),
@@ -1148,8 +1145,7 @@ open_source_file (struct symtab *s)
   if (!s)
     return scoped_fd (-EINVAL);
 
-  gdb::unique_xmalloc_ptr<char> fullname (s->fullname);
-  s->fullname = NULL;
+  gdb::unique_xmalloc_ptr<char> fullname = s->release_fullname ();
   scoped_fd fd = find_and_open_source (s->filename, s->compunit ()->dirname (),
 				       &fullname);
 
@@ -1185,14 +1181,14 @@ open_source_file (struct symtab *s)
 		 It handles the reporting of its own errors.  */
 	      if (query_fd.get () >= 0)
 		{
-		  s->fullname = fullname.release ();
+		  s->set_fullname (std::move (fullname));
 		  return query_fd;
 		}
 	    }
 	}
     }
 
-  s->fullname = fullname.release ();
+  s->set_fullname (std::move (fullname));
   return fd;
 }
 
@@ -1239,7 +1235,7 @@ symtab_to_fullname (struct symtab *s)
   /* Use cached copy if we have it.
      We rely on forget_cached_source_info being called appropriately
      to handle cases like the file being moved.  */
-  if (s->fullname == NULL)
+  if (s->fullname () == nullptr)
     {
       scoped_fd fd = open_source_file (s);
 
@@ -1257,13 +1253,13 @@ symtab_to_fullname (struct symtab *s)
 	    fullname.reset (concat (s->compunit ()->dirname (), SLASH_STRING,
 				    s->filename, (char *) NULL));
 
-	  s->fullname = rewrite_source_path (fullname.get ()).release ();
-	  if (s->fullname == NULL)
-	    s->fullname = fullname.release ();
+	  s->set_fullname (rewrite_source_path (fullname.get ()));
+	  if (s->fullname () == nullptr)
+	    s->set_fullname (std::move (fullname));
 	}
     } 
 
-  return s->fullname;
+  return s->fullname ();
 }
 
 /* See commentary in source.h.  */
@@ -1339,36 +1335,25 @@ print_source_lines_base (struct symtab *s, int line, int stopline,
       if (!(flags & PRINT_SOURCE_LINES_NOERROR))
 	{
 	  const char *filename = symtab_to_filename_for_display (s);
-	  int len = strlen (filename) + 100;
-	  char *name = (char *) alloca (len);
-
-	  xsnprintf (name, len, "%d\t%s", line, filename);
-	  print_sys_errmsg (name, errcode);
+	  warning (_("%d\t%ps: %s"), line,
+		   styled_string (file_name_style.style (), filename),
+		   safe_strerror (errcode));
 	}
-      else
+      else if (uiout->is_mi_like_p () || uiout->test_flags (ui_source_list))
 	{
+	  /* CLI expects only the "file" field.  MI expects both
+	     fields.  ui_source_list is set only for CLI, not for
+	     TUI.  */
+
 	  uiout->field_signed ("line", line);
 	  uiout->text ("\tin ");
 
-	  /* CLI expects only the "file" field.  TUI expects only the
-	     "fullname" field (and TUI does break if "file" is printed).
-	     MI expects both fields.  ui_source_list is set only for CLI,
-	     not for TUI.  */
-	  if (uiout->is_mi_like_p () || uiout->test_flags (ui_source_list))
-	    uiout->field_string ("file", symtab_to_filename_for_display (s),
-				 file_name_style.style ());
-	  if (uiout->is_mi_like_p () || !uiout->test_flags (ui_source_list))
+	  uiout->field_string ("file", symtab_to_filename_for_display (s),
+			       file_name_style.style ());
+	  if (uiout->is_mi_like_p ())
 	    {
 	      const char *s_fullname = symtab_to_fullname (s);
-	      char *local_fullname;
-
-	      /* ui_out_field_string may free S_FULLNAME by calling
-		 open_source_file for it again.  See e.g.,
-		 tui_field_string->tui_show_source.  */
-	      local_fullname = (char *) alloca (strlen (s_fullname) + 1);
-	      strcpy (local_fullname, s_fullname);
-
-	      uiout->field_string ("fullname", local_fullname);
+	      uiout->field_string ("fullname", s_fullname);
 	    }
 
 	  uiout->text ("\n");
@@ -1481,6 +1466,22 @@ print_source_lines (struct symtab *s, source_lines_range line_range,
 {
   print_source_lines_base (s, line_range.startline (),
 			   line_range.stopline (), flags);
+}
+
+/* See source.h.  */
+
+int
+last_symtab_line (struct symtab *s)
+{
+  const std::vector<off_t> *offsets;
+
+  /* Try to get the offsets for the start of each line.  */
+  if (!g_source_cache.get_line_charpos (s, &offsets))
+    return false;
+  if (offsets == nullptr)
+    return false;
+
+  return offsets->size ();
 }
 
 

@@ -1,5 +1,5 @@
 /* Support for the generic parts of PE/PEI, for BFD.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Written by Cygnus Solutions.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -233,7 +233,7 @@ coff_swap_scnhdr_in (bfd * abfd, void * ext, void * in)
     {
       scnhdr_int->s_vaddr += pe_data (abfd)->pe_opthdr.ImageBase;
       /* Do not cut upper 32-bits for 64-bit vma.  */
-#if !defined(COFF_WITH_pex64) && !defined(COFF_WITH_peAArch64) && !defined(COFF_WITH_peLoongArch64)
+#if !defined(COFF_WITH_pex64) && !defined(COFF_WITH_peAArch64) && !defined(COFF_WITH_peLoongArch64) && !defined(COFF_WITH_peRiscV64)
       scnhdr_int->s_vaddr &= 0xffffffff;
 #endif
     }
@@ -258,40 +258,28 @@ coff_swap_scnhdr_in (bfd * abfd, void * ext, void * in)
 static bool
 pe_mkobject (bfd * abfd)
 {
-  pe_data_type *pe;
-  size_t amt = sizeof (pe_data_type);
+  /* Some x86 code followed by an ascii string.  */
+  static const char default_dos_message[64] = {
+    0x0e, 0x1f, 0xba, 0x0e, 0x00, 0xb4, 0x09, 0xcd,
+    0x21, 0xb8, 0x01, 0x4c, 0xcd, 0x21, 0x54, 0x68,
+    0x69, 0x73, 0x20, 0x70, 0x72, 0x6f, 0x67, 0x72,
+    0x61, 0x6d, 0x20, 0x63, 0x61, 0x6e, 0x6e, 0x6f,
+    0x74, 0x20, 0x62, 0x65, 0x20, 0x72, 0x75, 0x6e,
+    0x20, 0x69, 0x6e, 0x20, 0x44, 0x4f, 0x53, 0x20,
+    0x6d, 0x6f, 0x64, 0x65, 0x2e, 0x0d, 0x0d, 0x0a,
+    0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-  abfd->tdata.pe_obj_data = (struct pe_tdata *) bfd_zalloc (abfd, amt);
-
-  if (abfd->tdata.pe_obj_data == 0)
+  pe_data_type *pe = bfd_zalloc (abfd, sizeof (*pe));
+  abfd->tdata.pe_obj_data = pe;
+  if (pe == NULL)
     return false;
-
-  pe = pe_data (abfd);
 
   pe->coff.pe = 1;
 
   /* in_reloc_p is architecture dependent.  */
   pe->in_reloc_p = in_reloc_p;
 
-  /* Default DOS message string.  */
-  pe->dos_message[0]  = 0x0eba1f0e;
-  pe->dos_message[1]  = 0xcd09b400;
-  pe->dos_message[2]  = 0x4c01b821;
-  pe->dos_message[3]  = 0x685421cd;
-  pe->dos_message[4]  = 0x70207369;
-  pe->dos_message[5]  = 0x72676f72;
-  pe->dos_message[6]  = 0x63206d61;
-  pe->dos_message[7]  = 0x6f6e6e61;
-  pe->dos_message[8]  = 0x65622074;
-  pe->dos_message[9]  = 0x6e757220;
-  pe->dos_message[10] = 0x206e6920;
-  pe->dos_message[11] = 0x20534f44;
-  pe->dos_message[12] = 0x65646f6d;
-  pe->dos_message[13] = 0x0a0d0d2e;
-  pe->dos_message[14] = 0x24;
-  pe->dos_message[15] = 0x0;
-
-  memset (& pe->pe_opthdr, 0, sizeof pe->pe_opthdr);
+  memcpy (pe->dos_message, default_dos_message, sizeof (pe->dos_message));
 
   bfd_coff_long_section_names (abfd)
     = coff_backend_info (abfd)->_bfd_coff_long_section_names;
@@ -779,6 +767,16 @@ static const jump_table jtab[] =
 
 #endif
 
+#ifdef RISCV64MAGIC
+  /* We don't currently support jumping to DLLs, so if
+     someone does try emit a runtime trap.  Through EBREAK.  */
+  { RISCV64MAGIC,
+    { 0x73, 0x00, 0x10, 0x00 },
+    4, 0
+  },
+
+#endif
+
   { 0, { 0 }, 0, 0 }
 };
 
@@ -936,7 +934,7 @@ pe_ILF_build_a_bfd (bfd *	    abfd,
 	/* See PR 20907 for a reproducer.  */
 	goto error_return;
 
-#if defined(COFF_WITH_pex64) || defined(COFF_WITH_peAArch64) || defined(COFF_WITH_peLoongArch64)
+#if defined(COFF_WITH_pex64) || defined(COFF_WITH_peAArch64) || defined(COFF_WITH_peLoongArch64) || defined (COFF_WITH_peRiscV64)
       ((unsigned int *) id4->contents)[0] = ordinal;
       ((unsigned int *) id4->contents)[1] = 0x80000000;
       ((unsigned int *) id5->contents)[0] = ordinal;
@@ -1163,6 +1161,8 @@ pe_ILF_build_a_bfd (bfd *	    abfd,
 static void
 pe_ILF_cleanup (bfd *abfd)
 {
+  coff_object_cleanup (abfd);
+
   struct bfd_in_memory *bim = abfd->iostream;
   free (bim->buffer);
   free (bim);
@@ -1187,7 +1187,7 @@ pe_ILF_object_p (bfd * abfd)
 
   /* Upon entry the first six bytes of the ILF header have
      already been read.  Now read the rest of the header.  */
-  if (bfd_bread (buffer, (bfd_size_type) 14, abfd) != 14)
+  if (bfd_read (buffer, 14, abfd) != 14)
     return NULL;
 
   ptr = buffer;
@@ -1252,6 +1252,12 @@ pe_ILF_object_p (bfd * abfd)
     case IMAGE_FILE_MACHINE_LOONGARCH64:
 #ifdef LOONGARCH64MAGIC
       magic = LOONGARCH64MAGIC;
+#endif
+      break;
+
+    case IMAGE_FILE_MACHINE_RISCV64:
+#ifdef RISCV64MAGIC
+      magic = RISCV64MAGIC;
 #endif
       break;
 
@@ -1449,8 +1455,8 @@ pe_bfd_object_p (bfd * abfd)
 
   /* Detect if this a Microsoft Import Library Format element.  */
   /* First read the beginning of the header.  */
-  if (bfd_seek (abfd, (file_ptr) 0, SEEK_SET) != 0
-      || bfd_bread (buffer, (bfd_size_type) 6, abfd) != 6)
+  if (bfd_seek (abfd, 0, SEEK_SET) != 0
+      || bfd_read (buffer, 6, abfd) != 6)
     {
       if (bfd_get_error () != bfd_error_system_call)
 	bfd_set_error (bfd_error_wrong_format);
@@ -1462,9 +1468,8 @@ pe_bfd_object_p (bfd * abfd)
       && H_GET_16 (abfd, buffer + 4) == 0)
     return pe_ILF_object_p (abfd);
 
-  if (bfd_seek (abfd, (file_ptr) 0, SEEK_SET) != 0
-      || bfd_bread (&dos_hdr, (bfd_size_type) sizeof (dos_hdr), abfd)
-	 != sizeof (dos_hdr))
+  if (bfd_seek (abfd, 0, SEEK_SET) != 0
+      || bfd_read (&dos_hdr, sizeof (dos_hdr), abfd) != sizeof (dos_hdr))
     {
       if (bfd_get_error () != bfd_error_system_call)
 	bfd_set_error (bfd_error_wrong_format);
@@ -1489,8 +1494,7 @@ pe_bfd_object_p (bfd * abfd)
 
   offset = H_GET_32 (abfd, dos_hdr.e_lfanew);
   if (bfd_seek (abfd, offset, SEEK_SET) != 0
-      || (bfd_bread (&image_hdr, (bfd_size_type) sizeof (image_hdr), abfd)
-	  != sizeof (image_hdr)))
+      || bfd_read (&image_hdr, sizeof (image_hdr), abfd) != sizeof (image_hdr))
     {
       if (bfd_get_error () != bfd_error_system_call)
 	bfd_set_error (bfd_error_wrong_format);

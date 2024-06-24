@@ -1,5 +1,5 @@
 /* Read dbx symbol tables and convert to internal format, for GDB.
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -30,15 +30,15 @@
    fledged symbol table by going back and reading the symbols
    for real.  dbx_psymtab_to_symtab() is the function that does this */
 
-#include "defs.h"
 
+#include "event-top.h"
 #include "gdbsupport/gdb_obstack.h"
 #include <sys/stat.h>
 #include "symtab.h"
 #include "breakpoint.h"
 #include "target.h"
-#include "gdbcore.h"		/* for bfd stuff */
-#include "libaout.h"		/* FIXME Secret internal BFD stuff for a.out */
+#include "gdbcore.h"
+#include "libaout.h"
 #include "filenames.h"
 #include "objfiles.h"
 #include "buildsym-legacy.h"
@@ -49,11 +49,10 @@
 #include "cp-abi.h"
 #include "cp-support.h"
 #include "c-lang.h"
-#include "psympriv.h"
+#include "psymtab.h"
 #include "block.h"
 #include "aout/aout64.h"
-#include "aout/stab_gnu.h"	/* We always use GNU stabs, not
-				   native, now.  */
+#include "aout/stab_gnu.h"
 
 
 /* Key for dbx-associated data.  */
@@ -479,14 +478,15 @@ record_minimal_symbol (minimal_symbol_reader &reader,
 	 Record it as global even if it's local, not global, so
 	 lookup_minimal_symbol can find it.  We don't check symbol_leading_char
 	 because for SunOS4 it always is '_'.  */
-      if (name[8] == 'C' && strcmp ("__DYNAMIC", name) == 0)
+      if (strcmp ("__DYNAMIC", name) == 0)
 	ms_type = mst_data;
 
       /* Same with virtual function tables, both global and static.  */
       {
 	const char *tempstring = name;
 
-	if (tempstring[0] == bfd_get_symbol_leading_char (objfile->obfd.get ()))
+	if (*tempstring != '\0'
+	    && *tempstring == bfd_get_symbol_leading_char (objfile->obfd.get ()))
 	  ++tempstring;
 	if (is_vtable_name (tempstring))
 	  ms_type = mst_data;
@@ -640,7 +640,7 @@ dbx_symfile_init (struct objfile *objfile)
 	perror_with_name (name);
 
       memset (size_temp, 0, sizeof (size_temp));
-      val = bfd_bread (size_temp, sizeof (size_temp), sym_bfd);
+      val = bfd_read (size_temp, sizeof (size_temp), sym_bfd);
       if (val < 0)
 	{
 	  perror_with_name (name);
@@ -679,9 +679,9 @@ dbx_symfile_init (struct objfile *objfile)
 	  val = bfd_seek (sym_bfd, STRING_TABLE_OFFSET, SEEK_SET);
 	  if (val < 0)
 	    perror_with_name (name);
-	  val = bfd_bread (DBX_STRINGTAB (objfile),
-			   DBX_STRINGTAB_SIZE (objfile),
-			   sym_bfd);
+	  val = bfd_read (DBX_STRINGTAB (objfile),
+			  DBX_STRINGTAB_SIZE (objfile),
+			  sym_bfd);
 	  if (val != DBX_STRINGTAB_SIZE (objfile))
 	    perror_with_name (name);
 	}
@@ -769,7 +769,7 @@ fill_symbuf (bfd *sym_bfd)
   else if (symbuf_sections == NULL)
     {
       count = sizeof (symbuf);
-      nbytes = bfd_bread (symbuf, count, sym_bfd);
+      nbytes = bfd_read (symbuf, count, sym_bfd);
     }
   else
     {
@@ -787,7 +787,7 @@ fill_symbuf (bfd *sym_bfd)
       count = symbuf_left;
       if (count > sizeof (symbuf))
 	count = sizeof (symbuf);
-      nbytes = bfd_bread (symbuf, count, sym_bfd);
+      nbytes = bfd_read (symbuf, count, sym_bfd);
     }
 
   if (nbytes < 0)
@@ -809,7 +809,8 @@ stabs_seek (int sym_offset)
       symbuf_left -= sym_offset;
     }
   else
-    bfd_seek (symfile_bfd, sym_offset, SEEK_CUR);
+    if (bfd_seek (symfile_bfd, sym_offset, SEEK_CUR) != 0)
+      perror_with_name (bfd_get_filename (symfile_bfd));
 }
 
 #define INTERNALIZE_SYMBOL(intern, extern, abfd)			\
@@ -1077,7 +1078,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 	 *) The call to strchr.
 	 *) The addition of a partial symbol the two partial
 	 symbol lists.  This last is a large section of code, so
-	 I've imbedded it in the following macro.  */
+	 I've embedded it in the following macro.  */
 
       switch (nlist.n_type)
 	{
@@ -1482,7 +1483,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 	    {
 	    case 'S':
 	      if (pst != nullptr)
-		pst->add_psymbol (gdb::string_view (sym_name, sym_len), true,
+		pst->add_psymbol (std::string_view (sym_name, sym_len), true,
 				  VAR_DOMAIN, LOC_STATIC,
 				  data_sect_index,
 				  psymbol_placement::STATIC,
@@ -1499,7 +1500,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 	      /* The addresses in these entries are reported to be
 		 wrong.  See the code that reads 'G's for symtabs.  */
 	      if (pst != nullptr)
-		pst->add_psymbol (gdb::string_view (sym_name, sym_len), true,
+		pst->add_psymbol (std::string_view (sym_name, sym_len), true,
 				  VAR_DOMAIN, LOC_STATIC,
 				  data_sect_index,
 				  psymbol_placement::GLOBAL,
@@ -1524,7 +1525,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 		      && namestring[0] != ' '))
 		{
 		  if (pst != nullptr)
-		    pst->add_psymbol (gdb::string_view (sym_name, sym_len),
+		    pst->add_psymbol (std::string_view (sym_name, sym_len),
 				      true, STRUCT_DOMAIN, LOC_TYPEDEF, -1,
 				      psymbol_placement::STATIC,
 				      unrelocated_addr (0),
@@ -1539,7 +1540,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 		    {
 		      /* Also a typedef with the same name.  */
 		      if (pst != nullptr)
-			pst->add_psymbol (gdb::string_view (sym_name, sym_len),
+			pst->add_psymbol (std::string_view (sym_name, sym_len),
 					  true, VAR_DOMAIN, LOC_TYPEDEF, -1,
 					  psymbol_placement::STATIC,
 					  unrelocated_addr (0),
@@ -1558,7 +1559,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 	      if (p != namestring)	/* a name is there, not just :T...  */
 		{
 		  if (pst != nullptr)
-		    pst->add_psymbol (gdb::string_view (sym_name, sym_len),
+		    pst->add_psymbol (std::string_view (sym_name, sym_len),
 				      true, VAR_DOMAIN, LOC_TYPEDEF, -1,
 				      psymbol_placement::STATIC,
 				      unrelocated_addr (0),
@@ -1626,7 +1627,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 		      /* Note that the value doesn't matter for
 			 enum constants in psymtabs, just in symtabs.  */
 		      if (pst != nullptr)
-			pst->add_psymbol (gdb::string_view (p, q - p), true,
+			pst->add_psymbol (std::string_view (p, q - p), true,
 					  VAR_DOMAIN, LOC_CONST, -1,
 					  psymbol_placement::STATIC,
 					  unrelocated_addr (0),
@@ -1651,7 +1652,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 	    case 'c':
 	      /* Constant, e.g. from "const" in Pascal.  */
 	      if (pst != nullptr)
-		pst->add_psymbol (gdb::string_view (sym_name, sym_len), true,
+		pst->add_psymbol (std::string_view (sym_name, sym_len), true,
 				  VAR_DOMAIN, LOC_CONST, -1,
 				  psymbol_placement::STATIC,
 				  unrelocated_addr (0),
@@ -1711,7 +1712,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 		  textlow_not_set = 0;
 		}
 	      if (pst != nullptr)
-		pst->add_psymbol (gdb::string_view (sym_name, sym_len), true,
+		pst->add_psymbol (std::string_view (sym_name, sym_len), true,
 				  VAR_DOMAIN, LOC_BLOCK,
 				  SECT_OFF_TEXT (objfile),
 				  psymbol_placement::STATIC,
@@ -1770,7 +1771,7 @@ read_dbx_symtab (minimal_symbol_reader &reader,
 		  textlow_not_set = 0;
 		}
 	      if (pst != nullptr)
-		pst->add_psymbol (gdb::string_view (sym_name, sym_len), true,
+		pst->add_psymbol (std::string_view (sym_name, sym_len), true,
 				  VAR_DOMAIN, LOC_BLOCK,
 				  SECT_OFF_TEXT (objfile),
 				  psymbol_placement::GLOBAL,
@@ -2155,8 +2156,8 @@ dbx_expand_psymtab (legacy_psymtab *pst, struct objfile *objfile)
       symbol_size = SYMBOL_SIZE (pst);
 
       /* Read in this file's symbols.  */
-      bfd_seek (objfile->obfd.get (), SYMBOL_OFFSET (pst), SEEK_SET);
-      read_ofile_symtab (objfile, pst);
+      if (bfd_seek (objfile->obfd.get (), SYMBOL_OFFSET (pst), SEEK_SET) == 0)
+	read_ofile_symtab (objfile, pst);
     }
 
   pst->readin = true;
@@ -2253,7 +2254,8 @@ read_ofile_symtab (struct objfile *objfile, legacy_psymtab *pst)
 	    processing_gcc_compilation = 1;
 	  else if (strcmp (namestring, GCC2_COMPILED_FLAG_SYMBOL) == 0)
 	    processing_gcc_compilation = 2;
-	  if (tempstring[0] == bfd_get_symbol_leading_char (symfile_bfd))
+	  if (*tempstring != '\0'
+	      && *tempstring == bfd_get_symbol_leading_char (symfile_bfd))
 	    ++tempstring;
 	  if (startswith (tempstring, "__gnu_compiled"))
 	    processing_gcc_compilation = 2;
@@ -2804,9 +2806,9 @@ process_one_symbol (int type, int desc, CORE_ADDR valu, const char *name,
     case N_NBSTS:
     case N_NBLCS:
       unknown_symtype_complaint (hex_string (type));
-      /* FALLTHROUGH */
 
     define_a_symbol:
+      [[fallthrough]];
       /* These symbol types don't need the address field relocated,
 	 since it is either unused, or is absolute.  */
     case N_GSYM:		/* Global variable.  */
@@ -3015,7 +3017,7 @@ coffstab_build_psymtabs (struct objfile *objfile,
   val = bfd_seek (sym_bfd, stabstroffset, SEEK_SET);
   if (val < 0)
     perror_with_name (name);
-  val = bfd_bread (DBX_STRINGTAB (objfile), stabstrsize, sym_bfd);
+  val = bfd_read (DBX_STRINGTAB (objfile), stabstrsize, sym_bfd);
   if (val != stabstrsize)
     perror_with_name (name);
 
@@ -3108,7 +3110,7 @@ elfstab_build_psymtabs (struct objfile *objfile, asection *stabsect,
   val = bfd_seek (sym_bfd, stabstroffset, SEEK_SET);
   if (val < 0)
     perror_with_name (name);
-  val = bfd_bread (DBX_STRINGTAB (objfile), stabstrsize, sym_bfd);
+  val = bfd_read (DBX_STRINGTAB (objfile), stabstrsize, sym_bfd);
   if (val != stabstrsize)
     perror_with_name (name);
 

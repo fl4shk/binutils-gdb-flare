@@ -1,6 +1,6 @@
 /* DWARF 2 debugging format support for GDB.
 
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
    Adapted by Gary Funck (gary@intrepid.com), Intrepid Technology,
    Inc.  with support from Florida State University (under contract
@@ -24,7 +24,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "dwarf2/comp-unit-head.h"
 #include "dwarf2/leb.h"
 #include "dwarf2/read.h"
@@ -193,11 +192,11 @@ read_and_check_comp_unit_head (dwarf2_per_objfile *per_objfile,
   return info_ptr;
 }
 
-CORE_ADDR
+unrelocated_addr
 comp_unit_head::read_address (bfd *abfd, const gdb_byte *buf,
 			      unsigned int *bytes_read) const
 {
-  CORE_ADDR retval = 0;
+  ULONGEST retval = 0;
 
   if (signed_addr_p)
     {
@@ -238,5 +237,5 @@ comp_unit_head::read_address (bfd *abfd, const gdb_byte *buf,
     }
 
   *bytes_read = addr_size;
-  return retval;
+  return (unrelocated_addr) retval;
 }

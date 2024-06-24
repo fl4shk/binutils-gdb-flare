@@ -1,5 +1,5 @@
 /* size.c -- report size of various sections of an executable file.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
 
    This file is part of GNU Binutils.
 
@@ -441,11 +441,9 @@ size_number (bfd_size_type num)
 {
   char buffer[40];
 
-  sprintf (buffer, (radix == decimal ? "%" PRIu64
-		    : radix == octal ? "0%" PRIo64 : "0x%" PRIx64),
-	   (uint64_t) num);
-
-  return strlen (buffer);
+  return sprintf (buffer, (radix == decimal ? "%" PRIu64
+			   : radix == octal ? "0%" PRIo64 : "0x%" PRIx64),
+		  (uint64_t) num);
 }
 
 static void

@@ -1,5 +1,5 @@
 /* MI Command Set - MI output generating routines for GDB.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions (a Red Hat company).
 
    This file is part of GDB.
@@ -20,6 +20,7 @@
 #ifndef MI_MI_OUT_H
 #define MI_MI_OUT_H
 
+#include "ui-out.h"
 #include <vector>
 
 struct ui_out;
@@ -44,6 +45,9 @@ public:
   {
     return false;
   }
+
+  ui_file *current_stream () const override
+  { return m_streams.back (); }
 
 protected:
 
@@ -143,7 +147,7 @@ private:
    to one of the INTERP_MI* constants (see interps.h).
 
    Return nullptr if an invalid version is provided.  */
-mi_ui_out *mi_out_new (const char *mi_version);
+std::unique_ptr<mi_ui_out> mi_out_new (const char *mi_version);
 
 void mi_out_put (ui_out *uiout, struct ui_file *stream);
 void mi_out_rewind (ui_out *uiout);

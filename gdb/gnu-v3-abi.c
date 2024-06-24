@@ -1,7 +1,7 @@
 /* Abstraction of GNU v3 abi.
    Contributed by Jim Blandy <jimb@redhat.com>
 
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -18,7 +18,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
+#include "extract-store-integer.h"
 #include "language.h"
 #include "value.h"
 #include "cp-abi.h"
@@ -113,7 +113,6 @@ static struct type *
 get_gdb_vtable_type (struct gdbarch *arch)
 {
   struct type *t;
-  struct field *field_list, *field;
   int offset;
 
   struct type *result = vtable_type_gdbarch_data.get (arch);
@@ -131,50 +130,56 @@ get_gdb_vtable_type (struct gdbarch *arch)
   struct type *ptrdiff_type
     = init_integer_type (alloc, gdbarch_ptr_bit (arch), 0, "ptrdiff_t");
 
+  t = alloc.new_type (TYPE_CODE_STRUCT, 0, nullptr);
+
   /* We assume no padding is necessary, since GDB doesn't know
      anything about alignment at the moment.  If this assumption bites
      us, we should add a gdbarch method which, given a type, returns
      the alignment that type requires, and then use that here.  */
 
   /* Build the field list.  */
-  field_list = XCNEWVEC (struct field, 4);
-  field = &field_list[0];
+  t->alloc_fields (4);
+
   offset = 0;
 
   /* ptrdiff_t vcall_and_vbase_offsets[0]; */
-  field->set_name ("vcall_and_vbase_offsets");
-  field->set_type (lookup_array_range_type (ptrdiff_type, 0, -1));
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field0 = t->field (0);
+    field0.set_name ("vcall_and_vbase_offsets");
+    field0.set_type (lookup_array_range_type (ptrdiff_type, 0, -1));
+    field0.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field0.type ()->length ();
+  }
 
   /* ptrdiff_t offset_to_top; */
-  field->set_name ("offset_to_top");
-  field->set_type (ptrdiff_type);
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field1 = t->field (1);
+    field1.set_name ("offset_to_top");
+    field1.set_type (ptrdiff_type);
+    field1.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field1.type ()->length ();
+  }
 
   /* void *type_info; */
-  field->set_name ("type_info");
-  field->set_type (void_ptr_type);
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field2 = t->field (2);
+    field2.set_name ("type_info");
+    field2.set_type (void_ptr_type);
+    field2.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field2.type ()->length ();
+  }
 
   /* void (*virtual_functions[0]) (); */
-  field->set_name ("virtual_functions");
-  field->set_type (lookup_array_range_type (ptr_to_void_fn_type, 0, -1));
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field3 = t->field (3);
+    field3.set_name ("virtual_functions");
+    field3.set_type (lookup_array_range_type (ptr_to_void_fn_type, 0, -1));
+    field3.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field3.type ()->length ();
+  }
 
-  /* We assumed in the allocation above that there were four fields.  */
-  gdb_assert (field == (field_list + 4));
+  t->set_length (offset);
 
-  t = alloc.new_type (TYPE_CODE_STRUCT, offset * TARGET_CHAR_BIT, NULL);
-  t->set_num_fields (field - field_list);
-  t->set_fields (field_list);
   t->set_name ("gdb_gnu_v3_abi_vtable");
   INIT_CPLUS_SPECIFIC (t);
 
@@ -1026,7 +1031,6 @@ static struct type *
 build_std_type_info_type (struct gdbarch *arch)
 {
   struct type *t;
-  struct field *field_list, *field;
   int offset;
   struct type *void_ptr_type
     = builtin_type (arch)->builtin_data_ptr;
@@ -1035,30 +1039,32 @@ build_std_type_info_type (struct gdbarch *arch)
   struct type *char_ptr_type
     = make_pointer_type (make_cv_type (1, 0, char_type, NULL), NULL);
 
-  field_list = XCNEWVEC (struct field, 2);
-  field = &field_list[0];
+  t = type_allocator (arch).new_type (TYPE_CODE_STRUCT, 0, nullptr);
+
+  t->alloc_fields (2);
+
   offset = 0;
 
   /* The vtable.  */
-  field->set_name ("_vptr.type_info");
-  field->set_type (void_ptr_type);
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field0 = t->field (0);
+    field0.set_name ("_vptr.type_info");
+    field0.set_type (void_ptr_type);
+    field0.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field0.type ()->length ();
+  }
 
   /* The name.  */
-  field->set_name ("__name");
-  field->set_type (char_ptr_type);
-  field->set_loc_bitpos (offset * TARGET_CHAR_BIT);
-  offset += field->type ()->length ();
-  field++;
+  {
+    struct field &field1 = t->field (1);
+    field1.set_name ("__name");
+    field1.set_type (char_ptr_type);
+    field1.set_loc_bitpos (offset * TARGET_CHAR_BIT);
+    offset += field1.type ()->length ();
+  }
 
-  gdb_assert (field == (field_list + 2));
+  t->set_length (offset);
 
-  t = type_allocator (arch).new_type (TYPE_CODE_STRUCT,
-				      offset * TARGET_CHAR_BIT, nullptr);
-  t->set_num_fields (field - field_list);
-  t->set_fields (field_list);
   t->set_name ("gdb_gnu_v3_type_info");
   INIT_CPLUS_SPECIFIC (t);
 
@@ -1073,7 +1079,7 @@ gnuv3_get_typeid_type (struct gdbarch *gdbarch)
   struct symbol *typeinfo;
   struct type *typeinfo_type;
 
-  typeinfo = lookup_symbol ("std::type_info", NULL, STRUCT_DOMAIN,
+  typeinfo = lookup_symbol ("std::type_info", NULL, SEARCH_STRUCT_DOMAIN,
 			    NULL).symbol;
   if (typeinfo == NULL)
     {
@@ -1219,7 +1225,7 @@ gnuv3_get_type_from_type_info (struct value *type_info_ptr)
    of the routine we are thunking to and continue to there instead.  */
 
 static CORE_ADDR 
-gnuv3_skip_trampoline (frame_info_ptr frame, CORE_ADDR stop_pc)
+gnuv3_skip_trampoline (const frame_info_ptr &frame, CORE_ADDR stop_pc)
 {
   CORE_ADDR real_stop_pc, method_stop_pc, func_addr;
   struct gdbarch *gdbarch = get_frame_arch (frame);

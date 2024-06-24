@@ -1,6 +1,6 @@
 /* Native-dependent code for GNU/Linux i386.
 
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,7 +17,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "inferior.h"
 #include "gdbcore.h"
 #include "regcache.h"
@@ -27,7 +26,7 @@
 #include "gregset.h"
 #include "gdb_proc_service.h"
 
-#include "i386-linux-nat.h"
+#include "nat/i386-linux.h"
 #include "i387-tdep.h"
 #include "i386-tdep.h"
 #include "i386-linux-tdep.h"
@@ -77,22 +76,6 @@ static i386_linux_nat_target the_i386_linux_nat_target;
 int have_ptrace_getregs =
 #ifdef HAVE_PTRACE_GETREGS
   1
-#else
-  0
-#endif
-;
-
-/* Does the current host support the GETFPXREGS request?  The header
-   file may or may not define it, and even if it is defined, the
-   kernel will return EIO if it's running on a pre-SSE processor.
-
-   My instinct is to attach this to some architecture- or
-   target-specific data structure, but really, a particular GDB
-   process can only run on top of one kernel at a time.  So it's okay
-   for this to be a simple variable.  */
-int have_ptrace_getfpxregs =
-#ifdef HAVE_PTRACE_GETFPXREGS
-  -1
 #else
   0
 #endif
@@ -330,7 +313,9 @@ store_fpregs (const struct regcache *regcache, int tid, int regno)
 static int
 fetch_xstateregs (struct regcache *regcache, int tid)
 {
-  char xstateregs[X86_XSTATE_MAX_SIZE];
+  struct gdbarch *gdbarch = regcache->arch ();
+  const i386_gdbarch_tdep *tdep = gdbarch_tdep<i386_gdbarch_tdep> (gdbarch);
+  char xstateregs[tdep->xsave_layout.sizeof_xsave];
   struct iovec iov;
 
   if (have_ptrace_getregset != TRIBOOL_TRUE)
@@ -353,7 +338,9 @@ fetch_xstateregs (struct regcache *regcache, int tid)
 static int
 store_xstateregs (const struct regcache *regcache, int tid, int regno)
 {
-  char xstateregs[X86_XSTATE_MAX_SIZE];
+  struct gdbarch *gdbarch = regcache->arch ();
+  const i386_gdbarch_tdep *tdep = gdbarch_tdep<i386_gdbarch_tdep> (gdbarch);
+  char xstateregs[tdep->xsave_layout.sizeof_xsave];
   struct iovec iov;
 
   if (have_ptrace_getregset != TRIBOOL_TRUE)
@@ -385,14 +372,14 @@ fetch_fpxregs (struct regcache *regcache, int tid)
 {
   elf_fpxregset_t fpxregs;
 
-  if (! have_ptrace_getfpxregs)
+  if (have_ptrace_getfpxregs == TRIBOOL_FALSE)
     return 0;
 
   if (ptrace (PTRACE_GETFPXREGS, tid, 0, (int) &fpxregs) < 0)
     {
       if (errno == EIO)
 	{
-	  have_ptrace_getfpxregs = 0;
+	  have_ptrace_getfpxregs = TRIBOOL_FALSE;
 	  return 0;
 	}
 
@@ -412,14 +399,14 @@ store_fpxregs (const struct regcache *regcache, int tid, int regno)
 {
   elf_fpxregset_t fpxregs;
 
-  if (! have_ptrace_getfpxregs)
+  if (have_ptrace_getfpxregs == TRIBOOL_FALSE)
     return 0;
   
   if (ptrace (PTRACE_GETFPXREGS, tid, 0, &fpxregs) == -1)
     {
       if (errno == EIO)
 	{
-	  have_ptrace_getfpxregs = 0;
+	  have_ptrace_getfpxregs = TRIBOOL_FALSE;
 	  return 0;
 	}
 
@@ -648,7 +635,7 @@ i386_linux_nat_target::low_resume (ptid_t ptid, int step, enum gdb_signal signal
   int pid = ptid.lwp ();
   int request;
 
-  if (catch_syscall_enabled () > 0)
+  if (catch_syscall_enabled ())
    request = PTRACE_SYSCALL;
   else
     request = PTRACE_CONT;

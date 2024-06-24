@@ -1,4 +1,4 @@
-/* Copyright (C) 2021-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Oracle.
 
    This file is part of GNU Binutils.
@@ -223,7 +223,7 @@ collect::Exec_status
 collect::check_executable (char *target_name)
 {
   char target_path[MAXPATHLEN];
-  struct stat64 statbuf;
+  dbe_stat_t statbuf;
   if (target_name == NULL) // not set, but assume caller knows what it's doing
     return EXEC_OK;
   if (getenv ("GPROFNG_SKIP_VALIDATION")) // don't check target
@@ -261,7 +261,7 @@ collect::check_executable (char *target_name)
     {
       // not found, look on path
       char *exe_name = get_realpath (target_name);
-      if (access (exe_name, X_OK) == 0)
+      if (access (exe_name, X_OK) != 0)
 	{
 	  // target can't be located
 	  // one last attempt: append .class to name, and see if we can find it
@@ -293,13 +293,8 @@ collect::check_executable (char *target_name)
     return EXEC_OK;
   // do not by pass checking architectural match
   collect::Exec_status exec_stat = check_executable_arch (elf);
-  if (exec_stat != EXEC_OK)
-    {
-      delete elf;
-      return exec_stat;
-    }
   delete elf;
-  return EXEC_OK;
+  return exec_stat;
 }
 
 collect::Exec_status

@@ -1,5 +1,5 @@
 /* tc-ppc.c -- Assemble for the PowerPC or POWER (RS/6000)
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Cygnus Support.
 
    This file is part of GAS, the GNU Assembler.
@@ -279,7 +279,7 @@ const pseudo_typeS md_pseudo_table[] =
 /* Structure to hold information about predefined registers.  */
 struct pd_reg
   {
-    const char *name;
+    char name[6];
     unsigned short value;
     unsigned short flags;
   };
@@ -945,9 +945,9 @@ ppc_optimize_expr (expressionS *left, operatorT op, expressionS *right)
     }
 
   /* Accept the above plus <cr bit>, and <cr bit> plus the above.  */
-  if (right->X_op == O_register
+  if (op == O_add
       && left->X_op == O_register
-      && op == O_add
+      && right->X_op == O_register
       && ((right->X_md == PPC_OPERAND_CR_BIT
 	   && left->X_md == (PPC_OPERAND_CR_REG | PPC_OPERAND_CR_BIT))
 	  || (right->X_md == (PPC_OPERAND_CR_REG | PPC_OPERAND_CR_BIT)
@@ -959,7 +959,7 @@ ppc_optimize_expr (expressionS *left, operatorT op, expressionS *right)
     }
 
   /* Accept reg +/- constant.  */
-  if (left->X_op == O_register
+  if (left && left->X_op == O_register
       && !((op == O_add || op == O_subtract) && right->X_op == O_constant))
     as_warn (_("invalid register expression"));
 
@@ -1391,6 +1391,8 @@ PowerPC options:\n"));
 -mpower9, -mpwr9        generate code for Power9 architecture\n"));
   fprintf (stream, _("\
 -mpower10, -mpwr10      generate code for Power10 architecture\n"));
+  fprintf (stream, _("\
+-mpower11, -mpwr11      generate code for Power11 architecture\n"));
   fprintf (stream, _("\
 -mlibresoc              generate code for Libre-SOC architecture\n"));
   fprintf (stream, _("\
@@ -3474,6 +3476,8 @@ md_assemble (char *str)
       cr_operand = false;
       str = input_line_pointer;
       input_line_pointer = hold;
+
+      resolve_register (&ex);
 
       if (ex.X_op == O_illegal)
 	as_bad (_("illegal operand"));

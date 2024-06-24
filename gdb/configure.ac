@@ -1,5 +1,5 @@
 dnl Autoconf configure script for GDB, the GNU debugger.
-dnl Copyright (C) 1995-2023 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2024 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GDB.
 dnl
@@ -53,9 +53,11 @@ LT_INIT
 # link tests in the configure script.
 LT_OUTPUT
 
-# We require a C++11 compiler.  Check if one is available, and if
+# We require a C++17 compiler.  Check if one is available, and if
 # necessary, set CXX_DIALECT to some -std=xxx switch.
-AX_CXX_COMPILE_STDCXX(11, , mandatory)
+AX_CXX_COMPILE_STDCXX(17, , mandatory)
+
+GDB_AC_COMMON
 
 # Dependency checking.
 ZW_CREATE_DEPDIR
@@ -118,6 +120,14 @@ AC_SUBST(MAKEINFO_EXTRA_FLAGS)
 GDB_AC_WITH_DIR(DEBUGDIR, separate-debug-dir,
     [look for global separate debug info in this path @<:@LIBDIR/debug@:>@],
     [${libdir}/debug])
+
+AC_ARG_WITH(additional-debug-dirs,
+	    AS_HELP_STRING([--with-additional-debug-dirs=PATHs],
+			   [colon-separated list of additional directories to
+			    search for separate debug info]),
+	    [AC_DEFINE_UNQUOTED(ADDITIONAL_DEBUG_DIRS, "${withval}",
+				Additional directories to look for separate
+				debug info.)])
 
 # We can't pass paths as command line arguments.
 # Mingw32 tries to be clever and will convert the paths for us.
@@ -502,9 +512,6 @@ AC_CHECK_LIB(m, main)
 
 # Some systems (e.g. Solaris) have `gethostbyname' in libnsl.
 AC_SEARCH_LIBS(gethostbyname, nsl)
-
-# Some systems (e.g. Solaris) have `socketpair' in libsocket.
-AC_SEARCH_LIBS(socketpair, socket)
 
 # Link in zlib/zstd if we can.  This allows us to read compressed debug
 # sections.
@@ -1341,14 +1348,13 @@ AC_C_BIGENDIAN
 # ------------------------------ #
 
 AC_CHECK_FUNCS([getuid getgid \
-		pipe pread pread64 pwrite resize_term \
+		pread pread64 pwrite resize_term \
 		getpgid setsid \
-		sigaction sigsetmask socketpair \
-		ttrace wborder wresize setlocale iconvlist libiconvlist btowc \
+		sigsetmask \
+		ttrace wresize setlocale iconvlist libiconvlist btowc \
 		setrlimit getrlimit posix_madvise waitpid \
 		use_default_colors])
 AM_LANGINFO_CODESET
-GDB_AC_COMMON
 
 # Check the return and argument types of ptrace.
 GDB_AC_PTRACE
@@ -2024,16 +2030,16 @@ AC_PATH_X
 # are when --disable-sim is specified, or if the simulator directory is
 # not part of the source tree.
 #
-AC_ARG_ENABLE(sim,
-AS_HELP_STRING([--enable-sim], [link gdb with simulator]),
-[echo "enable_sim = $enable_sim";
- echo "enableval = ${enableval}";
- case "${enableval}" in
-  yes) ignore_sim=false ;;
-  no)  ignore_sim=true ;;
-  *)   ignore_sim=false ;;
- esac],
-[ignore_sim=false])
+AC_ARG_ENABLE([sim],
+	      [AS_HELP_STRING([--enable-sim], [link gdb with simulator])],
+	      [AC_MSG_NOTICE([enable_sim = $enable_sim]);
+	       AC_MSG_NOTICE([enableval = ${enableval}]);
+	       case "${enableval}" in
+		 yes) ignore_sim=false ;;
+		 no)  ignore_sim=true ;;
+		 *)   ignore_sim=false ;;
+	       esac],
+	       [ignore_sim=false])
 
 if test ! -d "${srcdir}/../sim"; then
   ignore_sim=true
@@ -2130,7 +2136,7 @@ AC_MSG_CHECKING([whether to use babeltrace])
 AC_MSG_RESULT([$with_babeltrace])
 
 if test "x$with_babeltrace" = "xno"; then
-  AC_MSG_WARN([babletrace support disabled; GDB is unable to read CTF data.])
+  AC_MSG_WARN([babeltrace support disabled; GDB is unable to read CTF data.])
 else
   # Append -Werror to CFLAGS so that configure can catch the warning
   # "assignment from incompatible pointer type", which is related to

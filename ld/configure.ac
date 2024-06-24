@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script
 dnl
-dnl   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+dnl   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 dnl
 dnl This file is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ dnl <http://www.gnu.org/licenses/>.
 dnl
 
 m4_include([../bfd/version.m4])
-AC_INIT([ld], BFD_VERSION)
+AC_INIT([ld], [BFD_VERSION])
 AC_CONFIG_SRCDIR(ldmain.c)
 
 AC_CANONICAL_TARGET
@@ -31,7 +31,6 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_GREP
-AC_GNU_SOURCE
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_INSTALL
 PKG_PROG_PKG_CONFIG
@@ -197,7 +196,7 @@ esac])dnl
 # Decide if DT_TEXTREL check should be enabled in ELF linker.
 ac_default_ld_textrel_check=unset
 AC_ARG_ENABLE([textrel-check],
-	      AC_HELP_STRING([--enable-textrel-check=@<:@yes|no|warning|error@:>@],
+	      AS_HELP_STRING([--enable-textrel-check=@<:@yes|no|warning|error@:>@],
 			     [enable DT_TEXTREL check in ELF linker]),
 [case "${enableval}" in
   yes|no|warning|error) ac_default_ld_textrel_check=${enableval} ;;
@@ -213,6 +212,26 @@ AC_ARG_ENABLE(separate-code,
   no) ac_default_ld_z_separate_code=0 ;;
 esac])
 
+# Decide if --rosegment should be enabled in the ELF linker by default.
+ac_default_ld_rosegment=unset
+AC_ARG_ENABLE(rosegment,
+	      AS_HELP_STRING([--enable-rosegment],
+	      [enable --rosegment in the ELF linker by default]),
+[case "${enableval}" in
+  yes) ac_default_ld_rosegment=1 ;;
+  no)  ac_default_ld_rosegment=0 ;;
+esac])
+
+# Decide if -z mark-plt should be enabled in ELF x86-64 linker by default.
+ac_default_ld_z_mark_plt=unset
+AC_ARG_ENABLE(mark-plt,
+	      AS_HELP_STRING([--enable-mark-plt],
+	      [enable -z mark-plt in ELF x86-64 linker by default]),
+[case "${enableval}" in
+  yes) ac_default_ld_z_mark_plt=1 ;;
+  no) ac_default_ld_z_mark_plt=0 ;;
+esac])
+
 
 # By default warn when an executable stack is created due to object files
 # requesting such, not when the user specifies -z execstack.
@@ -225,13 +244,31 @@ AC_ARG_ENABLE(warn-execstack,
   no)  ac_default_ld_warn_execstack=0 ;;
 esac])
 
+ac_default_ld_error_execstack=0
+AC_ARG_ENABLE(error-execstack,
+	      AS_HELP_STRING([--enable-error-execstack],
+	      [turn executable stack warnings into errors]),
+[case "${enableval}" in
+  yes) ac_default_ld_error_execstack=1 ;;
+  no)  ac_default_ld_error_execstack=0 ;;
+esac])
+
 ac_default_ld_warn_rwx_segments=unset
 AC_ARG_ENABLE(warn-rwx-segments,
 	      AS_HELP_STRING([--enable-warn-rwx-segments],
-	      [enable warnings when creating segements with RWX permissions]),
+	      [enable warnings when creating segments with RWX permissions]),
 [case "${enableval}" in
   yes) ac_default_ld_warn_rwx_segments=1 ;;
   no)  ac_default_ld_warn_rwx_segments=0 ;;
+esac])
+
+ac_default_ld_error_rwx_segments=0
+AC_ARG_ENABLE(error-rwx-segments,
+	      AS_HELP_STRING([--enable-error-rwx-segments],
+	      [turn executable segment warnings into errors]),
+[case "${enableval}" in
+  yes) ac_default_ld_error_rwx_segments=1 ;;
+  no)  ac_default_ld_error_rwx_segments=0 ;;
 esac])
 
 ac_default_ld_default_execstack=unset
@@ -371,9 +408,9 @@ AC_CHECK_FUNCS(close glob lseek mkstemp open realpath waitpid)
 
 BFD_BINARY_FOPEN
 
-AC_CHECK_DECLS([asprintf, environ])
+AC_CHECK_DECLS([asprintf, environ, stpcpy])
 
-AC_FUNC_MMAP
+GCC_AC_FUNC_MMAP
 
 AC_SEARCH_LIBS([dlopen], [dl])
 
@@ -391,25 +428,6 @@ fi
 # compressed debug sections.
 AM_ZLIB
 AC_ZSTD
-
-# When converting linker scripts into strings for use in emulation
-# files, use astring.sed if the compiler supports ANSI string
-# concatenation, or ostring.sed otherwise.  This is to support the
-# broken Microsoft MSVC compiler, which limits the length of string
-# constants, while still supporting pre-ANSI compilers which do not
-# support string concatenation.
-AC_MSG_CHECKING([whether ANSI C string concatenation works])
-AC_CACHE_VAL(ld_cv_string_concatenation,
-[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [char *a = "a" "a";])],
-  ld_cv_string_concatenation=yes,
-  ld_cv_string_concatenation=no)])
-AC_MSG_RESULT($ld_cv_string_concatenation)
-if test "$ld_cv_string_concatenation" = "yes"; then
-  STRINGIFY=astring.sed
-else
-  STRINGIFY=ostring.sed
-fi
-AC_SUBST(STRINGIFY)
 
 # target-specific stuff:
 
@@ -563,10 +581,28 @@ AC_DEFINE_UNQUOTED(DEFAULT_LD_Z_SEPARATE_CODE,
   $ac_default_ld_z_separate_code,
   [Define to 1 if you want to enable -z separate-code in ELF linker by default.])
 
+if test "${ac_default_ld_rosegment}" = unset; then
+  ac_default_ld_rosegment=0
+fi
+AC_DEFINE_UNQUOTED(DEFAULT_LD_ROSEGMENT,
+  $ac_default_ld_rosegment,
+  [Define to 1 if you want to enable --rosegment in the ELF linker by default.])
+
+if test "${ac_default_ld_z_mark_plt}" = unset; then
+  ac_default_ld_z_mark_plt=0
+fi
+AC_DEFINE_UNQUOTED(DEFAULT_LD_Z_MARK_PLT,
+  $ac_default_ld_z_mark_plt,
+  [Define to 1 if you want to enable -z mark-plt in ELF x86-64 linker by default.])
+
 
 AC_DEFINE_UNQUOTED(DEFAULT_LD_WARN_EXECSTACK,
   $ac_default_ld_warn_execstack,
   [Define to 1 if you want to enable --warn-execstack in ELF linker by default.])
+
+AC_DEFINE_UNQUOTED(DEFAULT_LD_ERROR_EXECSTACK,
+  $ac_default_ld_error_execstack,
+  [Define to 1 if you want to turn executable stack warnings into errors by default.])
 
 if test "${ac_default_ld_warn_rwx_segments}" = unset; then
   ac_default_ld_warn_rwx_segments=1
@@ -574,6 +610,10 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_LD_WARN_RWX_SEGMENTS,
   $ac_default_ld_warn_rwx_segments,
   [Define to 0 if you want to disable --warn-rwx-segments in ELF linker by default.])
+
+AC_DEFINE_UNQUOTED(DEFAULT_LD_ERROR_RWX_SEGMENTS,
+  $ac_default_ld_error_rwx_segments,
+  [Define to 1 if you want to turn executable segment warnings into errors by default.])
 
 if test "${ac_default_ld_default_execstack}" = unset; then
   ac_default_ld_default_execstack=1

@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2023 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -78,6 +78,10 @@
 #	USER_LABEL_PREFIX - prefix to add to user-visible symbols.
 #	RODATA_NAME, SDATA_NAME, SBSS_NAME, BSS_NAME - base parts of names
 #		for standard sections, without initial "." or suffixes.
+#       SYMBOL_ABI_ALIGNMENT - minimum alignment in bytes which needs to be
+#               applied to every symbol definition
+#       ALL_TEXT_BEFORE_RO - put all code sections before read-only
+#               sections
 #
 # When adding sections, do note that the names of some sections are used
 # when specifying the start address of the next.
@@ -165,19 +169,29 @@ if test -z "$GOT"; then
     GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt)${RELOCATING+ *(.igot.plt)} }"
   fi
 fi
+
+def_symbol()
+{
+    if [ -z "${SYMBOL_ABI_ALIGNMENT}" ]; then
+	echo "${USER_LABEL_PREFIX}$1 = ."
+    else
+	echo "${USER_LABEL_PREFIX}$1 = ALIGN(${SYMBOL_ABI_ALIGNMENT})"
+    fi
+}
+
 REL_IFUNC=".rel.ifunc    ${RELOCATING-0} : { *(.rel.ifunc) }"
 RELA_IFUNC=".rela.ifunc   ${RELOCATING-0} : { *(.rela.ifunc) }"
 REL_IPLT=".rel.iplt     ${RELOCATING-0} :
     {
-      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_start = .);}}
+      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rel_iplt_start"));}}
       *(.rel.iplt)
-      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_end = .);}}
+      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rel_iplt_end"));}}
     }"
 RELA_IPLT=".rela.iplt    ${RELOCATING-0} :
     {
-      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_start = .);}}
+      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rela_iplt_start"));}}
       *(.rela.iplt)
-      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_end = .);}}
+      ${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rela_iplt_end"));}}
     }"
 DYNAMIC=".dynamic      ${RELOCATING-0} : { *(.dynamic) }"
 RODATA=".${RODATA_NAME}       ${RELOCATING-0} : { *(.${RODATA_NAME}${RELOCATING+ .${RODATA_NAME}.* .gnu.linkonce.r.*}) }"
@@ -267,23 +281,23 @@ else
 fi
 PREINIT_ARRAY=".preinit_array    :
   {
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__preinit_array_start = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__preinit_array_start"));}
     KEEP (*(.preinit_array))
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__preinit_array_end = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__preinit_array_end"));}
   }"
 INIT_ARRAY=".init_array    :
   {
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__init_array_start = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__init_array_start"));}
     ${SORT_INIT_ARRAY}
     KEEP (*(.init_array ${CTORS_IN_INIT_ARRAY}))
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__init_array_end = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__init_array_end"));}
   }"
 FINI_ARRAY=".fini_array    :
   {
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__fini_array_start = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__fini_array_start"));}
     ${SORT_FINI_ARRAY}
     KEEP (*(.fini_array ${DTORS_IN_FINI_ARRAY}))
-    ${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__fini_array_end = .);}
+    ${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__fini_array_end"));}
   }"
 CTOR=".ctors        ${CONSTRUCTING-0} :
   {
@@ -323,16 +337,15 @@ DTOR=".dtors        ${CONSTRUCTING-0} :
   }"
 STACK=".stack        ${RELOCATING-0}${RELOCATING+${STACK_ADDR}} :
   {
-    ${RELOCATING+${USER_LABEL_PREFIX}_stack = .;}
+    ${RELOCATING+$(def_symbol "_stack");}
     *(.stack)
     ${RELOCATING+${STACK_SENTINEL}}
   }"
 test "${HAVE_NOINIT}" = "yes" && NOINIT="
   /* This section contains data that is not initialized during load,
      or during the application's initialization sequence.  */
-  .noinit (NOLOAD) :
+  .noinit ${RELOCATING-0} (NOLOAD) : ${RELOCATING+ALIGN(${ALIGNMENT})}
   {
-    ${RELOCATING+. = ALIGN(${ALIGNMENT});}
     ${RELOCATING+PROVIDE (__noinit_start = .);}
     *(.noinit${RELOCATING+ .noinit.* .gnu.linkonce.n.*})
     ${RELOCATING+. = ALIGN(${ALIGNMENT});}
@@ -341,9 +354,8 @@ test "${HAVE_NOINIT}" = "yes" && NOINIT="
 test "${HAVE_PERSISTENT}" = "yes" && PERSISTENT="
   /* This section contains data that is initialized during load,
      but not during the application's initialization sequence.  */
-  .persistent :
+  .persistent ${RELOCATING-0} : ${RELOCATING+ALIGN(${ALIGNMENT})}
   {
-    ${RELOCATING+. = ALIGN(${ALIGNMENT});}
     ${RELOCATING+PROVIDE (__persistent_start = .);}
     *(.persistent${RELOCATING+ .persistent.* .gnu.linkonce.p.*})
     ${RELOCATING+. = ALIGN(${ALIGNMENT});}
@@ -357,6 +369,11 @@ SHLIB_TEXT_START_ADDR="SEGMENT_START(\"text-segment\", ${SHLIB_TEXT_START_ADDR:-
 # between .plt and .text.
 if test -z "$TINY_READONLY_SECTION"; then
   case "$LD_FLAG" in
+    *ro*textonly*)
+      ALL_TEXT_BEFORE_RO=" "
+      SEPARATE_TEXT=" "
+      TEXT_SEGMENT_ALIGN=". = ALIGN(${MAXPAGESIZE});"
+      ;;
     *textonly*)
       SEPARATE_TEXT=" "
       TEXT_SEGMENT_ALIGN=". = ALIGN(${MAXPAGESIZE});"
@@ -377,8 +394,13 @@ else
    test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR}"
 fi
 
+# ===========================================================================
+# Functions for generating parts of the linker script
+
+emit_header()
+{
 cat <<EOF
-/* Copyright (C) 2014-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    Copying and distribution of this script, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -396,14 +418,8 @@ ${RELOCATING- /* For some reason, the Solaris linker makes bad executables
   if gld -r is used and the intermediate file has sections starting
   at non-zero addresses.  Could be a Solaris ld bug, could be a GNU ld
   bug.  But for now assigning the zero vmas works.  */}
-
-SECTIONS
-{
-  ${RELOCATING+${SEPARATE_TEXT-/* Read-only sections, merged into text segment: */}}
-  ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+PROVIDE (__executable_start = ${TEXT_START_ADDR}); . = ${TEXT_BASE_ADDRESS};}}}
-  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR}${SIZEOF_HEADERS_CODE};}}
-  ${CREATE_PIE+${RELOCATING+PROVIDE (__executable_start = ${SHLIB_TEXT_START_ADDR}); . = ${SHLIB_TEXT_START_ADDR}${SIZEOF_HEADERS_CODE};}}
 EOF
+}
 
 emit_early_ro()
 {
@@ -413,10 +429,21 @@ emit_early_ro()
 EOF
 }
 
-test -n "${SEPARATE_CODE}" || emit_early_ro
+emit_executable_start()
+{
+cat <<EOF
+  ${RELOCATING+${SEPARATE_TEXT-/* Read-only sections, merged into text segment: */}}
+  ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+PROVIDE (__executable_start = ${TEXT_START_ADDR}); . = ${TEXT_BASE_ADDRESS};}}}
+  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR}${SIZEOF_HEADERS_CODE};}}
+  ${CREATE_PIE+${RELOCATING+PROVIDE (__executable_start = ${SHLIB_TEXT_START_ADDR}); . = ${SHLIB_TEXT_START_ADDR}${SIZEOF_HEADERS_CODE};}}
+EOF
+}
 
+emit_dyn()
+{
 test -n "${RELOCATING+0}" || unset NON_ALLOC_DYN
 test -z "${NON_ALLOC_DYN}" || TEXT_DYNAMIC=
+
 cat > ldscripts/dyntmp.$$ <<EOF
   ${TEXT_DYNAMIC+${DYNAMIC}}
   .hash         ${RELOCATING-0} : { *(.hash) }
@@ -433,6 +460,7 @@ if [ "x$COMBRELOC" = x ]; then
 else
   COMBRELOCCAT="cat > $COMBRELOC"
 fi
+
 eval $COMBRELOCCAT <<EOF
   ${INITIAL_RELOC_SECTIONS}
   .rel.init     ${RELOCATING-0} : { *(.rel.init) }
@@ -494,22 +522,20 @@ cat >> ldscripts/dyntmp.$$ <<EOF
   .rel.plt      ${RELOCATING-0} :
     {
       *(.rel.plt)
-      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_start = .);}}}
+      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rel_iplt_start"));}}}
       ${IREL_IN_PLT+${RELOCATING+*(.rel.iplt)}}
-      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_end = .);}}}
+      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rel_iplt_end"));}}}
     }
   .rela.plt     ${RELOCATING-0} :
     {
       *(.rela.plt)
-      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_start = .);}}}
+      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rela_iplt_start"));}}}
       ${IREL_IN_PLT+${RELOCATING+*(.rela.iplt)}}
-      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_end = .);}}}
+      ${IREL_IN_PLT+${RELOCATING+${CREATE_PIC-PROVIDE_HIDDEN ($(def_symbol "__rela_iplt_end"));}}}
     }
   ${OTHER_PLT_RELOC_SECTIONS}
 EOF
 
-emit_dyn()
-{
   if test -z "${NO_REL_RELOCS}${NO_RELA_RELOCS}"; then
     cat ldscripts/dyntmp.$$
   else
@@ -520,17 +546,24 @@ emit_dyn()
       sed -e '/^[	 ]*\.rel\.[^}]*$/,/}/d;/^[	 ]*\.rel\./d;/__rel_iplt_/d' ldscripts/dyntmp.$$
     fi
   fi
+  
   rm -f ldscripts/dyntmp.$$
+  
   if test -n "${HAVE_DT_RELR}"; then
     echo "  .relr.dyn : { *(.relr.dyn) }"
   fi
 }
 
-test -n "${NON_ALLOC_DYN}${SEPARATE_CODE}" || emit_dyn
-
+align_text()
+{
 cat <<EOF
   ${RELOCATING+${TEXT_SEGMENT_ALIGN}}
+EOF
+}
 
+emit_text()
+{
+cat <<EOF
   .init         ${RELOCATING-0}${RELOCATING+${INIT_ADDR}} :
   {
     ${RELOCATING+${INIT_START}}
@@ -539,7 +572,9 @@ cat <<EOF
   } ${FILL}
 
   ${TEXT_PLT+${PLT_NEXT_DATA-${PLT} ${OTHER_PLT_SECTIONS}}}
+  
   ${TINY_READONLY_SECTION}
+  
   .text         ${RELOCATING-0} :
   {
     ${RELOCATING+${TEXT_START_SYMBOLS}}
@@ -553,19 +588,25 @@ cat <<EOF
     *(.gnu.warning)
     ${RELOCATING+${OTHER_TEXT_SECTIONS}}
   } ${FILL}
+  
   .fini         ${RELOCATING-0}${RELOCATING+${FINI_ADDR}} :
   {
     ${RELOCATING+${FINI_START}}
     KEEP (*(SORT_NONE(.fini)))
     ${RELOCATING+${FINI_END}}
   } ${FILL}
+  
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT-PROVIDE (__${ETEXT_NAME} = .);}}
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT-PROVIDE (_${ETEXT_NAME} = .);}}
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT-PROVIDE (${ETEXT_NAME} = .);}}
   ${RELOCATING+${TEXT_SEGMENT_ALIGN}}
 EOF
+}
 
+align_rodata()
+{
 if test -n "${SEPARATE_CODE}${SEPARATE_TEXT}"; then
+
   if test -n "${RODATA_ADDR}"; then
     RODATA_ADDR="\
 SEGMENT_START(\"rodata-segment\", ${RODATA_ADDR}) + SIZEOF_HEADERS"
@@ -573,6 +614,7 @@ SEGMENT_START(\"rodata-segment\", ${RODATA_ADDR}) + SIZEOF_HEADERS"
     RODATA_ADDR="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
     RODATA_ADDR="SEGMENT_START(\"rodata-segment\", ${RODATA_ADDR})"
   fi
+  
   if test -n "${SHLIB_RODATA_ADDR}"; then
     SHLIB_RODATA_ADDR="\
 SEGMENT_START(\"rodata-segment\", ${SHLIB_RODATA_ADDR}) + SIZEOF_HEADERS"
@@ -580,6 +622,7 @@ SEGMENT_START(\"rodata-segment\", ${SHLIB_RODATA_ADDR}) + SIZEOF_HEADERS"
     SHLIB_RODATA_ADDR="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
     SHLIB_RODATA_ADDR="SEGMENT_START(\"rodata-segment\", ${SHLIB_RODATA_ADDR})"
   fi
+  
   cat <<EOF
   ${RELOCATING+/* Adjust the address for the rodata segment.  We want to adjust up to
      the same address within the page on the next page up.  */
@@ -587,12 +630,11 @@ SEGMENT_START(\"rodata-segment\", ${SHLIB_RODATA_ADDR}) + SIZEOF_HEADERS"
   ${CREATE_SHLIB+. = ${SHLIB_RODATA_ADDR};}
   ${CREATE_PIE+. = ${SHLIB_RODATA_ADDR};}}
 EOF
-  if test -n "${SEPARATE_CODE}"; then
-    emit_early_ro
-    emit_dyn
-  fi
 fi
+}
 
+emit_rodata()
+{
 cat <<EOF
   ${WRITABLE_RODATA-${RODATA}}
   .${RODATA_NAME}1      ${RELOCATING-0} : { *(.${RODATA_NAME}1) }
@@ -611,7 +653,12 @@ cat <<EOF
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT+PROVIDE (__${ETEXT_NAME} = .);}}
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT+PROVIDE (_${ETEXT_NAME} = .);}}
   ${RELOCATING+${ETEXT_LAST_IN_RODATA_SEGMENT+PROVIDE (${ETEXT_NAME} = .);}}
+EOF
+}
 
+emit_data()
+{
+cat <<EOF
   ${RELOCATING+/* Adjust the address for the data segment.  We want to adjust up to
      the same address within the page on the next page up.  */}
   ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+. = ${DATA_ADDR-${DATA_SEGMENT_ALIGN}};}}}
@@ -628,7 +675,7 @@ cat <<EOF
   /* Thread Local Storage sections  */
   .tdata	${RELOCATING-0} :
    {
-     ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__tdata_start = .);}}
+     ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN ($(def_symbol "__tdata_start"));}}
      *(.tdata${RELOCATING+ .tdata.* .gnu.linkonce.td.*})
    }
   .tbss		${RELOCATING-0} : { *(.tbss${RELOCATING+ .tbss.* .gnu.linkonce.tb.*})${RELOCATING+ *(.tcommon)} }
@@ -659,7 +706,7 @@ cat <<EOF
 
   ${DATA_PLT+${PLT_BEFORE_GOT-${PLT}}}
 
-  .data         ${RELOCATING-0} :
+  .data         ${RELOCATING-0}${RELOCATING+${DATA_SECTION_ALIGNMENT}} :
   {
     ${RELOCATING+${DATA_START_SYMBOLS}}
     *(.data${RELOCATING+ .data.* .gnu.linkonce.d.*})
@@ -676,10 +723,11 @@ cat <<EOF
   ${SDATA_GOT+${OTHER_GOT_SECTIONS}}
   ${DATA_SDATA-${SDATA}}
   ${DATA_SDATA-${OTHER_SDATA_SECTIONS}}
-  ${RELOCATING+${DATA_END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}${USER_LABEL_PREFIX}_edata = .${CREATE_SHLIB+)}; PROVIDE (${USER_LABEL_PREFIX}edata = .);}}
+  ${RELOCATING+${SYMBOL_ABI_ALIGNMENT+. = ALIGN(${SYMBOL_ABI_ALIGNMENT});}}
+  ${RELOCATING+${DATA_END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}$(def_symbol "_edata")${CREATE_SHLIB+)}; PROVIDE ($(def_symbol "edata"));}}
   ${PERSISTENT}
-  ${RELOCATING+. = .;}
-  ${RELOCATING+${CREATE_SHLIB+PROVIDE (}${USER_LABEL_PREFIX}__bss_start = .${CREATE_SHLIB+)};}
+  ${RELOCATING+. = ALIGN(ALIGNOF(NEXT_SECTION));}
+  ${RELOCATING+${CREATE_SHLIB+PROVIDE (}$(def_symbol "__bss_start")${CREATE_SHLIB+)};}
   ${RELOCATING+${OTHER_BSS_SYMBOLS}}
   ${DATA_SDATA-${SBSS}}
   ${BSS_PLT+${PLT}}
@@ -701,7 +749,10 @@ cat <<EOF
   ${NOINIT}
   ${RELOCATING+. = ALIGN(${ALIGNMENT});}
 EOF
+}
 
+emit_large_data()
+{
 LARGE_DATA_ADDR=". = SEGMENT_START(\"ldata-segment\", ${LARGE_DATA_ADDR-.});"
 SHLIB_LARGE_DATA_ADDR=". = SEGMENT_START(\"ldata-segment\", ${SHLIB_LARGE_DATA_ADDR-.});"
 
@@ -713,15 +764,16 @@ cat <<EOF
   ${LARGE_BSS_AFTER_BSS-${LARGE_BSS}}
   ${RELOCATING+. = ALIGN(${ALIGNMENT});}
   ${RELOCATING+${OTHER_END_SYMBOLS}}
-  ${RELOCATING+${END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}${USER_LABEL_PREFIX}_end = .${CREATE_SHLIB+)}; PROVIDE (${USER_LABEL_PREFIX}end = .);}}
+  ${RELOCATING+${END_SYMBOLS-${CREATE_SHLIB+PROVIDE (}$(def_symbol "_end")${CREATE_SHLIB+)}; PROVIDE ($(def_symbol "end"));}}
   ${RELOCATING+${DATA_SEGMENT_END}}
   ${TINY_DATA_SECTION}
   ${TINY_BSS_SECTION}
   ${STACK_ADDR+${STACK}}
 EOF
+}
 
-test -z "${NON_ALLOC_DYN}" || emit_dyn
-
+emit_misc()
+{
 source_sh $srcdir/scripttempl/misc-sections.sc
 source_sh $srcdir/scripttempl/DWARF.sc
 
@@ -730,5 +782,46 @@ cat <<EOF
   ${OTHER_SECTIONS}
   ${RELOCATING+${OTHER_SYMBOLS}}
   ${RELOCATING+${DISCARDED}}
+EOF
+}
+
+# ===========================================================================
+# The script:
+
+emit_header
+
+cat <<EOF
+SECTIONS
+{
+EOF
+
+  emit_executable_start
+
+  if test -z "${ALL_TEXT_BEFORE_RO}"; then
+    test -n "${SEPARATE_CODE}" || emit_early_ro
+    test -n "${NON_ALLOC_DYN}${SEPARATE_CODE}" || emit_dyn
+  fi
+  
+  align_text  
+  emit_text
+
+  align_rodata
+
+  if test -n "${ALL_TEXT_BEFORE_RO}"; then
+    test -n "${SEPARATE_CODE}" || emit_early_ro
+    test -n "${NON_ALLOC_DYN}${SEPARATE_CODE}" || emit_dyn
+  fi
+
+  test -z "${SEPARATE_CODE}" || emit_early_ro
+  test -z "${SEPARATE_CODE}" || emit_dyn
+  emit_rodata
+  
+  emit_data
+  emit_large_data
+
+  test -z "${NON_ALLOC_DYN}" || emit_dyn
+  emit_misc
+
+cat <<EOF
 }
 EOF

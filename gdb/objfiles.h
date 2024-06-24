@@ -1,6 +1,6 @@
 /* Definitions for symbol file management in GDB.
 
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -20,22 +20,15 @@
 #if !defined (OBJFILES_H)
 #define OBJFILES_H
 
-#include "hashtab.h"
-#include "gdbsupport/gdb_obstack.h"	/* For obstack internals.  */
+#include "gdbsupport/gdb_obstack.h"
 #include "objfile-flags.h"
 #include "symfile.h"
 #include "progspace.h"
 #include "registry.h"
 #include "gdb_bfd.h"
-#include "psymtab.h"
-#include <atomic>
 #include <bitset>
-#include <vector>
-#include "gdbsupport/next-iterator.h"
-#include "gdbsupport/safe-iterator.h"
 #include "bcache.h"
 #include "gdbarch.h"
-#include "gdbsupport/refcounted-object.h"
 #include "jit.h"
 #include "quick-symbol.h"
 #include <forward_list>
@@ -235,14 +228,14 @@ struct objfile_per_bfd_storage
 
   const char *intern (const char *str)
   {
-    return (const char *) string_cache.insert (str, strlen (str) + 1);
+    return string_cache.insert (str, strlen (str) + 1);
   }
 
   /* Same as the above, but for an std::string.  */
 
   const char *intern (const std::string &str)
   {
-    return (const char *) string_cache.insert (str.c_str (), str.size () + 1);
+    return string_cache.insert (str.c_str (), str.size () + 1);
   }
 
   /* Get the BFD this object is associated to.  */
@@ -395,6 +388,12 @@ struct obj_section
     return this->addr () + bfd_section_size (this->the_bfd_section);
   }
 
+  /* True if ADDR is in this obj_section, false otherwise.  */
+  bool contains (CORE_ADDR addr) const
+  {
+    return addr >= this->addr () && addr < endaddr ();
+  }
+
   /* BFD section pointer */
   struct bfd_section *the_bfd_section;
 
@@ -514,6 +513,16 @@ public:
 
   bool has_partial_symbols ();
 
+  /* Look for a separate debug symbol file for this objfile, make use of
+     build-id, debug-link, and debuginfod as necessary.  If a suitable
+     separate debug symbol file is found then it is loaded using a call to
+     symbol_file_add_separate (SYMFILE_FLAGS is passed through unmodified
+     to this call) and this function returns true.  If no suitable separate
+     debug symbol file is found and loaded then this function returns
+     false.  */
+
+  bool find_and_add_separate_symbol_file (symfile_add_flags symfile_flags);
+
   /* Return true if this objfile has any unexpanded symbols.  A return
      value of false indicates either, that this objfile has all its
      symbols fully expanded (i.e. fully read in), or that this objfile has
@@ -552,8 +561,9 @@ public:
      defined, or NULL if no such symbol table exists.  If OBJFILE
      contains !TYPE_OPAQUE symbol prefer its compunit.  If it contains
      only TYPE_OPAQUE symbol(s), return at least that compunit.  */
-  struct compunit_symtab *lookup_symbol (block_enum kind, const char *name,
-					 domain_enum domain);
+  struct compunit_symtab *lookup_symbol (block_enum kind,
+					 const lookup_name_info &name,
+					 domain_search_flags domain);
 
   /* See quick_symbol_functions.  */
   void print_stats (bool print_bcache);
@@ -576,20 +586,13 @@ public:
   void expand_symtabs_with_fullname (const char *fullname);
 
   /* See quick_symbol_functions.  */
-  void expand_matching_symbols
-    (const lookup_name_info &name, domain_enum domain,
-     int global,
-     symbol_compare_ftype *ordered_compare);
-
-  /* See quick_symbol_functions.  */
   bool expand_symtabs_matching
     (gdb::function_view<expand_symtabs_file_matcher_ftype> file_matcher,
      const lookup_name_info *lookup_name,
      gdb::function_view<expand_symtabs_symbol_matcher_ftype> symbol_matcher,
      gdb::function_view<expand_symtabs_exp_notify_ftype> expansion_notify,
      block_search_flags search_flags,
-     domain_enum domain,
-     enum search_domain kind);
+     domain_search_flags domain);
 
   /* See quick_symbol_functions.  */
   struct compunit_symtab *find_pc_sect_compunit_symtab
@@ -603,15 +606,15 @@ public:
 			     bool need_fullname);
 
   /* See quick_symbol_functions.  */
+  void compute_main_name ();
+
+  /* See quick_symbol_functions.  */
   struct compunit_symtab *find_compunit_symtab_by_address (CORE_ADDR address);
 
   /* See quick_symbol_functions.  */
   enum language lookup_global_symbol_language (const char *name,
-					       domain_enum domain,
+					       domain_search_flags domain,
 					       bool *symbol_found_p);
-
-  /* See quick_symbol_functions.  */
-  void require_partial_symbols (bool verbose);
 
   /* Return the relocation offset applied to SECTION.  */
   CORE_ADDR section_offset (bfd_section *section) const
@@ -695,17 +698,6 @@ public:
     return (iterator_range<section_iterator>
 	    (section_iterator (sections_start, sections_end),
 	     section_iterator (sections_end, sections_end)));
-  }
-
-private:
-
-  /* Ensure that partial symbols have been read and return the "quick" (aka
-     partial) symbol functions for this symbol reader.  */
-  const std::forward_list<quick_symbol_functions_up> &
-  qf_require_partial_symbols ()
-  {
-    this->require_partial_symbols (true);
-    return qf;
   }
 
 public:
@@ -872,6 +864,17 @@ public:
      next time.  If an objfile does not have the symbols, it will
      never have them.  */
   bool skip_jit_symbol_lookup = false;
+
+  /* Flag which indicates, when true, that the object format
+     potentially supports copy relocations.  ABIs for some
+     architectures that use ELF have a copy relocation in which the
+     initialization for a global variable defined in a shared object
+     will be copied to memory allocated to the main program during
+     dynamic linking.  Therefore this flag will be set for ELF
+     objfiles.  Other object formats that use the same copy relocation
+     mechanism as ELF should set this flag too.  This flag is used in
+     conjunction with the minimal_symbol::maybe_copied method.  */
+  bool object_format_has_copy_relocs = false;
 };
 
 /* A deleter for objfile.  */

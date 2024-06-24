@@ -1,6 +1,6 @@
 /* Exception (throw catch) mechanism, for GDB, the GNU debugger.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 #include <functional>
+
+#include "gdbsupport/underlying.h"
 
 /* Reasons for calling throw_exceptions().  NOTE: all reason values
    must be different from zero.  enum value 0 is reserved for internal
@@ -200,7 +202,7 @@ struct hash<gdb_exception>
 {
   size_t operator() (const gdb_exception &exc) const
   {
-    size_t result = exc.reason + exc.error;
+    size_t result = to_underlying (exc.reason) + to_underlying (exc.error);
     if (exc.message != nullptr)
       result += std::hash<std::string> {} (*exc.message);
     return result;

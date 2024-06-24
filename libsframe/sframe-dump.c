@@ -1,8 +1,8 @@
 /* sframe-dump.c - Textual dump of .sframe.
 
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
-   his file is part of libsframe.
+   This file is part of libsframe.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,9 +32,9 @@ is_sframe_abi_arch_aarch64 (sframe_decoder_ctx *sfd_ctx)
 {
   bool aarch64_p = false;
 
-  unsigned char abi_arch = sframe_decoder_get_abi_arch (sfd_ctx);
-  if ((abi_arch == SFRAME_ABI_AARCH64_ENDIAN_BIG)
-      || (abi_arch == SFRAME_ABI_AARCH64_ENDIAN_LITTLE))
+  uint8_t abi_arch = sframe_decoder_get_abi_arch (sfd_ctx);
+  if (abi_arch == SFRAME_ABI_AARCH64_ENDIAN_BIG
+      || abi_arch == SFRAME_ABI_AARCH64_ENDIAN_LITTLE)
     aarch64_p = true;
 
   return aarch64_p;
@@ -43,27 +43,33 @@ is_sframe_abi_arch_aarch64 (sframe_decoder_ctx *sfd_ctx)
 static void
 dump_sframe_header (sframe_decoder_ctx *sfd_ctx)
 {
-  const char *verstr = NULL;
+  uint8_t ver;
+  uint8_t flags;
+  char *flags_str;
+  const char *ver_str = NULL;
   const sframe_header *header = &(sfd_ctx->sfd_header);
 
   /* Prepare SFrame section version string.  */
   const char *version_names[]
     = { "NULL",
-	"SFRAME_VERSION_1" };
-  unsigned char ver = header->sfh_preamble.sfp_version;
+	"SFRAME_VERSION_1",
+	"SFRAME_VERSION_2" };
+
+  /* PS: Keep SFRAME_HEADER_FLAGS_STR_MAX_LEN in sync if adding more members to
+     this array.  */
+  const char *flag_names[]
+    = { "SFRAME_F_FDE_SORTED",
+	"SFRAME_F_FRAME_POINTER" };
+
+  ver = sframe_decoder_get_version (sfd_ctx);
   if (ver <= SFRAME_VERSION)
-    verstr = version_names[ver];
+    ver_str = version_names[ver];
 
   /* Prepare SFrame section flags string.  */
-  unsigned char flags = header->sfh_preamble.sfp_flags;
-  char *flags_str
-    = (char*) calloc (sizeof (char), SFRAME_HEADER_FLAGS_STR_MAX_LEN);
+  flags = header->sfh_preamble.sfp_flags;
+  flags_str = (char*) calloc (SFRAME_HEADER_FLAGS_STR_MAX_LEN, sizeof (char));
   if (flags)
     {
-      const char *flag_names[]
-	= { "SFRAME_F_FDE_SORTED",
-	    "SFRAME_F_FRAME_POINTER" };
-      unsigned char flags = header->sfh_preamble.sfp_flags;
       if (flags & SFRAME_F_FDE_SORTED)
 	strcpy (flags_str, flag_names[0]);
       if (flags & SFRAME_F_FRAME_POINTER)
@@ -80,9 +86,9 @@ dump_sframe_header (sframe_decoder_ctx *sfd_ctx)
   printf ("\n");
   printf ("  %s :\n", subsec_name);
   printf ("\n");
-  printf ("    Version: %s\n", verstr);
+  printf ("    Version: %s\n", ver_str);
   printf ("    Flags: %s\n", flags_str);
-  printf ("    Num FDEs: %d\n", header->sfh_num_fdes);
+  printf ("    Num FDEs: %d\n", sframe_decoder_get_num_fidx (sfd_ctx));
   printf ("    Num FREs: %d\n", header->sfh_num_fres);
 
   free (flags_str);
@@ -105,7 +111,7 @@ dump_sframe_func_with_fres (sframe_decoder_ctx *sfd_ctx,
   int32_t cfa_offset = 0;
   int32_t fp_offset = 0;
   int32_t ra_offset = 0;
-  unsigned int base_reg_id = 0;
+  uint8_t base_reg_id = 0;
   int err[3] = {0, 0, 0};
 
   sframe_frame_row_entry fre;
@@ -134,7 +140,8 @@ dump_sframe_func_with_fres (sframe_decoder_ctx *sfd_ctx,
 
   char temp[100];
 
-  printf ("\n    %-7s%-8s %-10s%-10s%-13s", "STARTPC", fde_type_marker, "CFA", "FP", "RA");
+  printf ("\n    %-7s%-8s %-10s%-10s%-13s",
+	  "STARTPC", fde_type_marker, "CFA", "FP", "RA");
   for (j = 0; j < num_fres; j++)
     {
       sframe_decoder_get_fre (sfd_ctx, funcidx, j, &fre);
@@ -163,11 +170,15 @@ dump_sframe_func_with_fres (sframe_decoder_ctx *sfd_ctx,
 	strcpy (temp, "u");
       printf ("%-10s", temp);
 
-      /* Dump RA info.  */
-      if (err[2] == 0)
-	sprintf (temp, "c%+d", ra_offset);
-      else
+      /* Dump RA info.
+	 If an ABI does not track RA offset, e.g., AMD64, display a 'u',
+	 else display the offset d as 'c+-d'.  */
+      if (sframe_decoder_get_fixed_ra_offset(sfd_ctx)
+	  != SFRAME_CFA_FIXED_RA_INVALID)
 	strcpy (temp, "u");
+      else if (err[2] == 0)
+	sprintf (temp, "c%+d", ra_offset);
+
       /* Mark SFrame FRE's RA information with "[s]" if the RA is mangled
 	 with signature bits.  */
       const char *ra_mangled_p_str
@@ -198,6 +209,14 @@ dump_sframe_functions (sframe_decoder_ctx *sfd_ctx, uint64_t sec_addr)
 void
 dump_sframe (sframe_decoder_ctx *sfd_ctx, uint64_t sec_addr)
 {
+  uint8_t ver;
+
   dump_sframe_header (sfd_ctx);
-  dump_sframe_functions (sfd_ctx, sec_addr);
+
+  ver = sframe_decoder_get_version (sfd_ctx);
+  if (ver == SFRAME_VERSION)
+    dump_sframe_functions (sfd_ctx, sec_addr);
+  else
+    printf ("\n No further information can be displayed.  %s",
+	    "SFrame version not supported\n");
 }

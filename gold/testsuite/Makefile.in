@@ -296,6 +296,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@am__append_31 = x86_64_mov_to_lea.sh \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_indirect_call_to_direct.sh \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_gd_to_le.sh \
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_ie_to_le.sh \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_overflow_pc32.sh \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x32_overflow_pc32.sh \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	pr23016_1.sh \
@@ -319,6 +320,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_indirect_call_to_direct1.stdout \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_indirect_jump_to_direct1.stdout \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_gd_to_le.stdout \
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_ie_to_le.stdout \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_overflow_pc32.err \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x32_overflow_pc32.err \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	pr23016_1.stdout \
@@ -343,6 +345,7 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_indirect_call_to_direct1 \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_indirect_jump_to_direct1 \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_gd_to_le \
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_ie_to_le \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x86_64_overflow_pc32.err \
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	x32_overflow_pc32.err
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@am__append_34 = pr17704a_test
@@ -466,6 +469,8 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_10.sh ver_test_13.sh \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_14.sh \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr23409.sh \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830.sh \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830_lto.sh \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	weak_as_needed.sh relro_test.sh \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_matching_test.sh \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	script_test_3.sh \
@@ -523,6 +528,10 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_13.syms \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_14.syms \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr23409.syms \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830_a.syms \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830_b.syms \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830_lto_a.syms \
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	ver_test_pr31830_lto_b.syms \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	weak_as_needed.stdout \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	protected_3.err \
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	relro_test.stdout \
@@ -1135,11 +1144,19 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 @DEFAULT_TARGET_X86_64_TRUE@	retain_2.out
 subdir = testsuite
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/ax_pthread.m4 \
+am__aclocal_m4_deps =  \
+	$(top_srcdir)/../config/ax_cxx_compile_stdcxx.m4 \
+	$(top_srcdir)/../config/ax_pthread.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gettext-sister.m4 \
+	$(top_srcdir)/../config/gettext.m4 \
+	$(top_srcdir)/../config/iconv.m4 \
+	$(top_srcdir)/../config/intlmacosx.m4 \
 	$(top_srcdir)/../config/lcmessage.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/lib-ld.m4 \
+	$(top_srcdir)/../config/lib-link.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/nls.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/pkg.m4 \
@@ -2638,6 +2655,7 @@ GMSGFMT = @GMSGFMT@
 GOLD_LDADD = @GOLD_LDADD@
 GOLD_LDFLAGS = @GOLD_LDFLAGS@
 GREP = @GREP@
+HAVE_CXX11 = @HAVE_CXX11@
 INCINTL = @INCINTL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -2645,15 +2663,20 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
+INTLLIBS = @INTLLIBS@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JANSSON_CFLAGS = @JANSSON_CFLAGS@
 JANSSON_LIBS = @JANSSON_LIBS@
 LDFLAGS = @LDFLAGS@
 LFS_CFLAGS = @LFS_CFLAGS@
+LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBINTL_DEP = @LIBINTL_DEP@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
+LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
@@ -5736,6 +5759,13 @@ x86_64_gd_to_le.sh.log: x86_64_gd_to_le.sh
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+x86_64_ie_to_le.sh.log: x86_64_ie_to_le.sh
+	@p='x86_64_ie_to_le.sh'; \
+	b='x86_64_ie_to_le.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 x86_64_overflow_pc32.sh.log: x86_64_overflow_pc32.sh
 	@p='x86_64_overflow_pc32.sh'; \
 	b='x86_64_overflow_pc32.sh'; \
@@ -5872,6 +5902,20 @@ ver_test_14.sh.log: ver_test_14.sh
 ver_test_pr23409.sh.log: ver_test_pr23409.sh
 	@p='ver_test_pr23409.sh'; \
 	b='ver_test_pr23409.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ver_test_pr31830.sh.log: ver_test_pr31830.sh
+	@p='ver_test_pr31830.sh'; \
+	b='ver_test_pr31830.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ver_test_pr31830_lto.sh.log: ver_test_pr31830_lto.sh
+	@p='ver_test_pr31830_lto.sh'; \
+	b='ver_test_pr31830_lto.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -8474,6 +8518,13 @@ uninstall-am:
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -o $@ $<
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_gd_to_le.stdout: x86_64_gd_to_le
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_OBJDUMP) -dw $< > $@
+
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_ie_to_le.o: x86_64_ie_to_le.s
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_AS) --64 -o $@ $<
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_ie_to_le: x86_64_ie_to_le.o gcctestdir/ld
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -o $@ $<
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_ie_to_le.stdout: x86_64_ie_to_le
+@DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_OBJDUMP) -dw $< > $@
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_overflow_pc32.o: x86_64_overflow_pc32.s
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_AS) -o $@ $<
 @DEFAULT_TARGET_X86_64_TRUE@@GCC_TRUE@@NATIVE_LINKER_TRUE@x86_64_overflow_pc32.err: x86_64_overflow_pc32.o gcctestdir/ld
@@ -8869,6 +8920,22 @@ uninstall-am:
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -shared -o $@ ver_test_1.o ver_test_pr23409_2.so --version-script $(srcdir)/ver_test_pr23409_1.script
 @GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr23409_2.so: gcctestdir/ld ver_test_1.o $(srcdir)/ver_test_pr23409_2.script
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -shared -o $@ ver_test_1.o --version-script $(srcdir)/ver_test_pr23409_2.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_a.syms: ver_test_pr31830_a.so
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) --dyn-syms -W $< >$@
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_b.syms: ver_test_pr31830_b.so
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) --dyn-syms -W $< >$@
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_a.so: gcctestdir/ld ver_test_pr31830_a.o ver_test_pr31830_b.o $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -shared -o $@ ver_test_pr31830_a.o ver_test_pr31830_b.o --version-script $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_b.so: gcctestdir/ld ver_test_pr31830_a.o ver_test_pr31830_b.o $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	gcctestdir/ld -shared -o $@ ver_test_pr31830_b.o ver_test_pr31830_a.o --version-script $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_lto_a.syms: ver_test_pr31830_lto_a.so
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) --dyn-syms -W $< >$@
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_lto_a.so: gcctestdir/ld $(srcdir)/ver_test_pr31830_lto.c $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(LINK) -Bgcctestdir/ -shared -o $@ -O2 -fPIC -flto-partition=max $(srcdir)/ver_test_pr31830_lto.c -Wl,--version-script,$(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_lto_b.syms: ver_test_pr31830_lto_b.so
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) --dyn-syms -W $< >$@
+@GCC_TRUE@@NATIVE_LINKER_TRUE@ver_test_pr31830_lto_b.so: gcctestdir/ld $(srcdir)/ver_test_pr31830_lto.c $(srcdir)/ver_test_pr31830.script
+@GCC_TRUE@@NATIVE_LINKER_TRUE@	$(LINK) -Bgcctestdir/ -shared -o $@ -O2 -fPIC -flto-partition=max -flto=2 $(srcdir)/ver_test_pr31830_lto.c -Wl,--version-script,$(srcdir)/ver_test_pr31830.script
 @GCC_TRUE@@NATIVE_LINKER_TRUE@weak_as_needed.stdout: weak_as_needed_a.so
 @GCC_TRUE@@NATIVE_LINKER_TRUE@	$(TEST_READELF) -dW --dyn-syms $< >$@
 @GCC_TRUE@@NATIVE_LINKER_TRUE@weak_as_needed_a.so: gcctestdir/ld weak_as_needed_a.o weak_as_needed_b.so weak_as_needed_c.so

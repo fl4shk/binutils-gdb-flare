@@ -2,15 +2,15 @@
 #source: sframe-foo.s
 #source: sframe-bar.s
 #objdump: --sframe=.sframe
-#ld: -shared
-#name: SFrame Simple link
+#ld: -shared --no-rosegment
+#name: SFrame simple link
 
 .*: +file format .*
 
 Contents of the SFrame section .sframe:
   Header :
 
-    Version: SFRAME_VERSION_1
+    Version: SFRAME_VERSION_2
     Flags: SFRAME_F_FDE_SORTED
 #...
 

@@ -1,6 +1,6 @@
 /* GDB parameters implemented in Guile.
 
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,10 +17,9 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "value.h"
 #include "charset.h"
-#include "gdbcmd.h"
+#include "cli/cli-cmds.h"
 #include "cli/cli-decode.h"
 #include "completer.h"
 #include "language.h"
@@ -101,7 +100,7 @@ struct param_smob
      space, it will be freed with the smob.  */
   const char * const *enumeration;
 
-  /* The set_func funcion or #f if not specified.
+  /* The set_func function or #f if not specified.
      This function is called *after* the parameter is set.
      It returns a string that will be displayed to the user.  */
   SCM set_func;
@@ -118,7 +117,7 @@ struct param_smob
 
 /* Guile parameter types as in PARAMETER_TYPES later on.  */
 
-enum param_types
+enum scm_param_types
 {
   param_boolean,
   param_auto_boolean,
@@ -134,7 +133,7 @@ enum param_types
 };
 
 /* Translation from Guile parameters to GDB variable types.  Keep in the
-   same order as PARAM_TYPES due to C++'s lack of designated initializers.  */
+   same order as SCM_PARAM_TYPES due to C++'s lack of designated initializers.  */
 
 static const struct
 {
@@ -202,7 +201,7 @@ static SCM initial_value_keyword;
 static SCM auto_keyword;
 
 static int pascm_is_valid (param_smob *);
-static const char *pascm_param_type_name (enum param_types type);
+static const char *pascm_param_type_name (enum scm_param_types type);
 static SCM pascm_param_value (const setting &var, int arg_pos,
 			      const char *func_name);
 
@@ -612,7 +611,7 @@ pascm_valid_parameter_type_p (int param_type)
 /* Return PARAM_TYPE as a string.  */
 
 static const char *
-pascm_param_type_name (enum param_types param_type)
+pascm_param_type_name (enum scm_param_types param_type)
 {
   int i;
 
@@ -1038,7 +1037,7 @@ gdbscm_make_parameter (SCM name_scm, SCM rest)
   p_smob->name = name;
   p_smob->cmd_class = (enum command_class) cmd_class;
   p_smob->pname
-    = pascm_param_type_name (static_cast<enum param_types> (param_type));
+    = pascm_param_type_name (static_cast<enum scm_param_types> (param_type));
   p_smob->type = param_to_var[param_type].type;
   p_smob->extra_literals = param_to_var[param_type].extra_literals;
   p_smob->doc = doc;

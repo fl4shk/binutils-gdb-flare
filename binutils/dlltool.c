@@ -1,5 +1,5 @@
 /* dlltool.c -- tool to generate stuff for PE style DLLs
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
    This file is part of GNU Binutils.
 
@@ -583,22 +583,48 @@ static const char i386_trampoline[] =
   "\tpopl %%ecx\n"
   "\tjmp *%%eax\n";
 
+/* Save integer arg regs in parameter space reserved by our caller
+   above the return address.  Allocate space for six fp arg regs plus
+   parameter space possibly used by __delayLoadHelper2 plus alignment.
+   We enter with the stack offset from 16-byte alignment by the return
+   address, so allocate 96 + 32 + 8 = 136 bytes.  Note that only the
+   first four xmm regs are used to pass fp args, but the first six
+   vector ymm (zmm too?) are used to pass vector args.  We are
+   assuming that volatile vector regs are not modified inside
+   __delayLoadHelper2.  However, it is known that at least xmm0 and
+   xmm1 are trashed in some versions of Microsoft dlls, and if xmm4 or
+   xmm5 are also used then that would trash the lower bits of ymm4 and
+   ymm5.  If it turns out that vector insns with a vex prefix are used
+   then we'll need to save ymm0-5 here but that can't be done without
+   first testing cpuid and xcr0.  */
 static const char i386_x64_trampoline[] =
-  "\tsubq $72, %%rsp\n"
-  "\t.seh_stackalloc 72\n"
+  "\tsubq $136, %%rsp\n"
+  "\t.seh_stackalloc 136\n"
   "\t.seh_endprologue\n"
-  "\tmovq %%rcx, 64(%%rsp)\n"
-  "\tmovq %%rdx, 56(%%rsp)\n"
-  "\tmovq %%r8, 48(%%rsp)\n"
-  "\tmovq %%r9, 40(%%rsp)\n"
-  "\tmovq  %%rax, %%rdx\n"
-  "\tleaq  __DELAY_IMPORT_DESCRIPTOR_%s(%%rip), %%rcx\n"
+  "\tmovq %%rcx, 136+8(%%rsp)\n"
+  "\tmovq %%rdx, 136+16(%%rsp)\n"
+  "\tmovq %%r8, 136+24(%%rsp)\n"
+  "\tmovq %%r9, 136+32(%%rsp)\n"
+  "\tmovaps %%xmm0, 32(%%rsp)\n"
+  "\tmovaps %%xmm1, 48(%%rsp)\n"
+  "\tmovaps %%xmm2, 64(%%rsp)\n"
+  "\tmovaps %%xmm3, 80(%%rsp)\n"
+  "\tmovaps %%xmm4, 96(%%rsp)\n"
+  "\tmovaps %%xmm5, 112(%%rsp)\n"
+  "\tmovq %%rax, %%rdx\n"
+  "\tleaq __DELAY_IMPORT_DESCRIPTOR_%s(%%rip), %%rcx\n"
   "\tcall __delayLoadHelper2\n"
-  "\tmovq 40(%%rsp), %%r9\n"
-  "\tmovq 48(%%rsp), %%r8\n"
-  "\tmovq 56(%%rsp), %%rdx\n"
-  "\tmovq 64(%%rsp), %%rcx\n"
-  "\taddq $72, %%rsp\n"
+  "\tmovq 136+8(%%rsp), %%rcx\n"
+  "\tmovq 136+16(%%rsp), %%rdx\n"
+  "\tmovq 136+24(%%rsp), %%r8\n"
+  "\tmovq 136+32(%%rsp), %%r9\n"
+  "\tmovaps 32(%%rsp), %%xmm0\n"
+  "\tmovaps 48(%%rsp), %%xmm1\n"
+  "\tmovaps 64(%%rsp), %%xmm2\n"
+  "\tmovaps 80(%%rsp), %%xmm3\n"
+  "\tmovaps 96(%%rsp), %%xmm4\n"
+  "\tmovaps 112(%%rsp), %%xmm5\n"
+  "\taddq $136, %%rsp\n"
   "\tjmp *%%rax\n";
 
 struct mac
@@ -850,7 +876,7 @@ dlltmp (char **buf, const char *fmt)
 {
   if (!*buf)
     {
-      *buf = malloc (strlen (tmp_prefix) + 64);
+      *buf = xmalloc (strlen (tmp_prefix) + 64);
       sprintf (*buf, fmt, tmp_prefix);
     }
   return *buf;
@@ -1474,7 +1500,8 @@ scan_filtered_symbols (bfd *abfd, void *minisyms, long symcount,
 	bfd_fatal (bfd_get_filename (abfd));
 
       symbol_name = bfd_asymbol_name (sym);
-      if (bfd_get_symbol_leading_char (abfd) == symbol_name[0])
+      if (*symbol_name
+	  && *symbol_name == bfd_get_symbol_leading_char (abfd))
 	++symbol_name;
 
       def_exports (xstrdup (symbol_name) , 0, -1, 0, 0,
@@ -3063,20 +3090,22 @@ gen_lib_file (int delay)
   if (dontdeltemps < 2)
     {
       char *name;
+      size_t stub_len = strlen (TMP_STUB);
 
-      name = xmalloc (strlen (TMP_STUB) + 10);
+      name = xmalloc (stub_len + 10);
+      memcpy (name, TMP_STUB, stub_len);
       for (i = 0; (exp = d_exports_lexically[i]); i++)
 	{
 	  /* Don't delete non-existent stubs for PRIVATE entries.  */
           if (exp->private)
 	    continue;
-	  sprintf (name, "%s%05d.o", TMP_STUB, i);
+	  sprintf (name + stub_len, "%05d.o", i);
 	  if (unlink (name) < 0)
 	    /* xgettext:c-format */
 	    non_fatal (_("cannot delete %s: %s"), name, strerror (errno));
 	  if (ext_prefix_alias)
 	    {
-	      sprintf (name, "%s%05d.o", TMP_STUB, i + PREFIX_ALIAS_BASE);
+	      sprintf (name + stub_len, "%05d.o", i + PREFIX_ALIAS_BASE);
 	      if (unlink (name) < 0)
 		/* xgettext:c-format */
 		non_fatal (_("cannot delete %s: %s"), name, strerror (errno));
@@ -4160,9 +4189,9 @@ look_for_prog (const char *prog_name, const char *prefix, int end_prefix)
 		 + strlen (EXECUTABLE_SUFFIX)
 #endif
 		 + 10);
-  strcpy (cmd, prefix);
+  memcpy (cmd, prefix, end_prefix);
 
-  sprintf (cmd + end_prefix, "%s", prog_name);
+  strcpy (cmd + end_prefix, prog_name);
 
   if (strchr (cmd, '/') != NULL)
     {

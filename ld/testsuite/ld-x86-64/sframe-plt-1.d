@@ -2,7 +2,7 @@
 #source: sframe-foo.s
 #source: sframe-bar.s
 #objdump: --sframe=.sframe
-#ld: -shared
+#ld: -shared --no-rosegment
 #name: SFrame for plt0 and pltN
 
 .*: +file format .*
@@ -10,7 +10,7 @@
 Contents of the SFrame section .sframe:
   Header :
 
-    Version: SFRAME_VERSION_1
+    Version: SFRAME_VERSION_2
     Flags: SFRAME_F_FDE_SORTED
 #...
 

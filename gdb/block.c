@@ -1,6 +1,6 @@
 /* Block-related functions for the GNU debugger, GDB.
 
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,7 +17,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "block.h"
 #include "symtab.h"
 #include "symfile.h"
@@ -31,7 +30,7 @@
    C++ files, namely using declarations and the current namespace in
    scope.  */
 
-struct block_namespace_info : public allocate_on_obstack
+struct block_namespace_info : public allocate_on_obstack<block_namespace_info>
 {
   const char *scope = nullptr;
   struct using_direct *using_decl = nullptr;
@@ -378,6 +377,19 @@ block::global_block () const
 
 /* See block.h.  */
 
+const struct block *
+block::function_block () const
+{
+  const block *block = this;
+
+  while (block != nullptr && block->function () == nullptr)
+    block = block->superblock ();
+
+  return block;
+}
+
+/* See block.h.  */
+
 void
 block::set_compunit_symtab (struct compunit_symtab *cu)
 {
@@ -617,26 +629,32 @@ block_iterator_next (struct block_iterator *iterator)
 /* See block.h.  */
 
 bool
-best_symbol (struct symbol *a, const domain_enum domain)
+best_symbol (struct symbol *a, const domain_search_flags domain)
 {
-  return (a->domain () == domain
-	  && a->aclass () != LOC_UNRESOLVED);
+  if (a->aclass () == LOC_UNRESOLVED)
+    return false;
+
+  if ((domain & SEARCH_VAR_DOMAIN) != 0)
+    return a->domain () == VAR_DOMAIN;
+
+  return a->matches (domain);
 }
 
 /* See block.h.  */
 
 struct symbol *
-better_symbol (struct symbol *a, struct symbol *b, const domain_enum domain)
+better_symbol (struct symbol *a, struct symbol *b,
+	       const domain_search_flags domain)
 {
   if (a == NULL)
     return b;
   if (b == NULL)
     return a;
 
-  if (a->domain () == domain && b->domain () != domain)
+  if (a->matches (domain) && !b->matches (domain))
     return a;
 
-  if (b->domain () == domain && a->domain () != domain)
+  if (b->matches (domain) && !a->matches (domain))
     return b;
 
   if (a->aclass () != LOC_UNRESOLVED && b->aclass () == LOC_UNRESOLVED)
@@ -660,17 +678,14 @@ better_symbol (struct symbol *a, struct symbol *b, const domain_enum domain)
    non-encoded names tested for a match.  */
 
 struct symbol *
-block_lookup_symbol (const struct block *block, const char *name,
-		     symbol_name_match_type match_type,
-		     const domain_enum domain)
+block_lookup_symbol (const struct block *block, const lookup_name_info &name,
+		     const domain_search_flags domain)
 {
-  lookup_name_info lookup_name (name, match_type);
-
   if (!block->function ())
     {
       struct symbol *other = NULL;
 
-      for (struct symbol *sym : block_iterator_range (block, &lookup_name))
+      for (struct symbol *sym : block_iterator_range (block, &name))
 	{
 	  /* See comment related to PR gcc/debug/91507 in
 	     block_lookup_symbol_primary.  */
@@ -680,8 +695,7 @@ block_lookup_symbol (const struct block *block, const char *name,
 	     STRUCT vs VAR domain symbols.  So if a matching symbol is found,
 	     make sure there is no "better" matching symbol, i.e., one with
 	     exactly the same domain.  PR 16253.  */
-	  if (symbol_matches_domain (sym->language (),
-				     sym->domain (), domain))
+	  if (sym->matches (domain))
 	    other = better_symbol (other, sym, domain);
 	}
       return other;
@@ -699,10 +713,9 @@ block_lookup_symbol (const struct block *block, const char *name,
 
       struct symbol *sym_found = NULL;
 
-      for (struct symbol *sym : block_iterator_range (block, &lookup_name))
+      for (struct symbol *sym : block_iterator_range (block, &name))
 	{
-	  if (symbol_matches_domain (sym->language (),
-				     sym->domain (), domain))
+	  if (sym->matches (domain))
 	    {
 	      sym_found = sym;
 	      if (!sym->is_argument ())
@@ -719,7 +732,7 @@ block_lookup_symbol (const struct block *block, const char *name,
 
 struct symbol *
 block_lookup_symbol_primary (const struct block *block, const char *name,
-			     const domain_enum domain)
+			     const domain_search_flags domain)
 {
   struct symbol *sym, *other;
   struct mdict_iterator mdict_iter;
@@ -766,11 +779,11 @@ block_lookup_symbol_primary (const struct block *block, const char *name,
       if (best_symbol (sym, domain))
 	return sym;
 
-      /* This is a bit of a hack, but symbol_matches_domain might ignore
+      /* This is a bit of a hack, but 'matches' might ignore
 	 STRUCT vs VAR domain symbols.  So if a matching symbol is found,
 	 make sure there is no "better" matching symbol, i.e., one with
 	 exactly the same domain.  PR 16253.  */
-      if (symbol_matches_domain (sym->language (), sym->domain (), domain))
+      if (sym->matches (domain))
 	other = better_symbol (other, sym, domain);
     }
 
@@ -780,46 +793,25 @@ block_lookup_symbol_primary (const struct block *block, const char *name,
 /* See block.h.  */
 
 struct symbol *
-block_find_symbol (const struct block *block, const char *name,
-		   const domain_enum domain,
-		   block_symbol_matcher_ftype *matcher, void *data)
+block_find_symbol (const struct block *block, const lookup_name_info &name,
+		   const domain_search_flags domain, struct symbol **stub)
 {
-  lookup_name_info lookup_name (name, symbol_name_match_type::FULL);
-
   /* Verify BLOCK is STATIC_BLOCK or GLOBAL_BLOCK.  */
   gdb_assert (block->superblock () == NULL
 	      || block->superblock ()->superblock () == NULL);
 
-  for (struct symbol *sym : block_iterator_range (block, &lookup_name))
+  for (struct symbol *sym : block_iterator_range (block, &name))
     {
-      /* MATCHER is deliberately called second here so that it never sees
-	 a non-domain-matching symbol.  */
-      if (symbol_matches_domain (sym->language (), sym->domain (), domain)
-	  && matcher (sym, data))
+      if (!sym->matches (domain))
+	continue;
+
+      if (!TYPE_IS_OPAQUE (sym->type ()))
 	return sym;
+
+      if (stub != nullptr)
+	*stub = sym;
     }
-  return NULL;
-}
-
-/* See block.h.  */
-
-int
-block_find_non_opaque_type (struct symbol *sym, void *data)
-{
-  return !TYPE_IS_OPAQUE (sym->type ());
-}
-
-/* See block.h.  */
-
-int
-block_find_non_opaque_type_preferred (struct symbol *sym, void *data)
-{
-  struct symbol **best = (struct symbol **) data;
-
-  if (!TYPE_IS_OPAQUE (sym->type ()))
-    return 1;
-  *best = sym;
-  return 0;
+  return nullptr;
 }
 
 /* See block.h.  */

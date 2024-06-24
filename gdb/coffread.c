@@ -1,5 +1,5 @@
 /* Read coff symbol tables and convert to internal format, for GDB.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Contributed by David D. Johnson, Brown University (ddj@cs.brown.edu).
 
    This file is part of GDB.
@@ -17,7 +17,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
+#include "event-top.h"
 #include "symtab.h"
 #include "gdbtypes.h"
 #include "demangle.h"
@@ -27,8 +27,8 @@
 #include "gdbsupport/gdb_obstack.h"
 #include <ctype.h>
 
-#include "coff/internal.h"	/* Internal format of COFF symbols in BFD */
-#include "libcoff.h"		/* FIXME secret internal data from BFD */
+#include "coff/internal.h"
+#include "libcoff.h"
 #include "objfiles.h"
 #include "buildsym-legacy.h"
 #include "stabsread.h"
@@ -39,9 +39,6 @@
 #include "dwarf2/public.h"
 
 #include "coff-pe-read.h"
-
-#include "psymtab.h"
-#include "build-id.h"
 
 /* The objfile we are currently reading.  */
 
@@ -65,8 +62,8 @@ static const registry<objfile>::key<coff_symfile_info> coff_objfile_data_key;
 
 /* Translate an external name string into a user-visible name.  */
 #define	EXTERNAL_NAME(string, abfd) \
-	(string[0] == bfd_get_symbol_leading_char (abfd) \
-	? string + 1 : string)
+  (*string != '\0' && *string == bfd_get_symbol_leading_char (abfd)	\
+   ? string + 1 : string)
 
 /* To be an sdb debug type, type must have at least a basic or primary
    derived type.  Using this rather than checking against T_NULL is
@@ -160,6 +157,7 @@ static file_ptr linetab_offset;
 static file_ptr linetab_size;
 
 static char *stringtab = NULL;
+static long stringtab_length = 0;
 
 extern void stabsread_clear_cache (void);
 
@@ -354,7 +352,7 @@ coff_alloc_type (int index)
      We will fill it in later if we find out how.  */
   if (type == NULL)
     {
-      type = type_allocator (coffread_objfile).new_type ();
+      type = type_allocator (coffread_objfile, language_c).new_type ();
       *type_addr = type;
     }
   return type;
@@ -711,8 +709,6 @@ coff_symfile_read (struct objfile *objfile, symfile_add_flags symfile_flags)
 
       /* FIXME: dubious.  Why can't we use something normal like
 	 bfd_get_section_contents?  */
-      bfd_seek (abfd, abfd->where, 0);
-
       stabstrsize = bfd_section_size (info->stabstrsect);
 
       coffstab_build_psymtabs (objfile,
@@ -720,35 +716,19 @@ coff_symfile_read (struct objfile *objfile, symfile_add_flags symfile_flags)
 			       *info->stabsects,
 			       info->stabstrsect->filepos, stabstrsize);
     }
-  if (dwarf2_has_info (objfile, NULL))
+
+  if (dwarf2_initialize_objfile (objfile))
     {
-      /* DWARF2 sections.  */
-      dwarf2_initialize_objfile (objfile);
+      /* Nothing.  */
     }
 
   /* Try to add separate debug file if no symbols table found.   */
-  if (!objfile->has_partial_symbols ())
+  else if (!objfile->has_partial_symbols ()
+	   && objfile->separate_debug_objfile == NULL
+	   && objfile->separate_debug_objfile_backlink == NULL)
     {
-      std::vector<std::string> warnings_vector;
-      std::string debugfile
-	= find_separate_debug_file_by_buildid (objfile, &warnings_vector);
-
-      if (debugfile.empty ())
-	debugfile
-	  = find_separate_debug_file_by_debuglink (objfile, &warnings_vector);
-
-      if (!debugfile.empty ())
-	{
-	  gdb_bfd_ref_ptr debug_bfd (symfile_bfd_open (debugfile.c_str ()));
-
-	  symbol_file_add_separate (debug_bfd, debugfile.c_str (),
-				    symfile_flags, objfile);
-	}
-      /* If all the methods to collect the debuginfo failed, print any
-	 warnings that were collected.  */
-      if (debugfile.empty () && !warnings_vector.empty ())
-	for (const std::string &w : warnings_vector)
-	  warning ("%s", w.c_str ());
+      if (objfile->find_and_add_separate_symbol_file (symfile_flags))
+	gdb_assert (objfile->separate_debug_objfile != nullptr);
     }
 }
 
@@ -806,22 +786,6 @@ coff_symtab_read (minimal_symbol_reader &reader,
   struct minimal_symbol *msym;
 
   scoped_free_pendings free_pending;
-
-  /* Work around a stdio bug in SunOS4.1.1 (this makes me nervous....
-     it's hard to know I've really worked around it.  The fix should
-     be harmless, anyway).  The symptom of the bug is that the first
-     fread (in read_one_sym), will (in my example) actually get data
-     from file offset 268, when the fseek was to 264 (and ftell shows
-     264).  This causes all hell to break loose.  I was unable to
-     reproduce this on a short test program which operated on the same
-     file, performing (I think) the same sequence of operations.
-
-     It stopped happening when I put in this (former) rewind().
-
-     FIXME: Find out if this has been reported to Sun, whether it has
-     been fixed in a later release, etc.  */
-
-  bfd_seek (objfile->obfd.get (), 0, 0);
 
   /* Position to read the symbol table.  */
   val = bfd_seek (objfile->obfd.get (), symtab_offset, 0);
@@ -932,7 +896,7 @@ coff_symtab_read (minimal_symbol_reader &reader,
 	     backtraces, so filter them out (from phdm@macqel.be).  */
 	  if (within_function)
 	    break;
-	  /* Fall through.  */
+	  [[fallthrough]];
 	case C_STAT:
 	case C_THUMBLABEL:
 	case C_THUMBSTAT:
@@ -970,7 +934,7 @@ coff_symtab_read (minimal_symbol_reader &reader,
 	       that look like this.  Ignore them.  */
 	    break;
 	  /* For static symbols that don't start with '.'...  */
-	  /* Fall through.  */
+	  [[fallthrough]];
 	case C_THUMBEXT:
 	case C_THUMBEXTFUNC:
 	case C_EXT:
@@ -1224,14 +1188,14 @@ read_one_sym (struct coff_symbol *cs,
   bfd_size_type bytes;
 
   cs->c_symnum = symnum;
-  bytes = bfd_bread (temp_sym, local_symesz, nlist_bfd_global);
+  bytes = bfd_read (temp_sym, local_symesz, nlist_bfd_global);
   if (bytes != local_symesz)
     error (_("%s: error reading symbols"), objfile_name (coffread_objfile));
   bfd_coff_swap_sym_in (symfile_bfd, temp_sym, (char *) sym);
   cs->c_naux = sym->n_numaux & 0xff;
   if (cs->c_naux >= 1)
     {
-      bytes  = bfd_bread (temp_aux, local_auxesz, nlist_bfd_global);
+      bytes = bfd_read (temp_aux, local_auxesz, nlist_bfd_global);
       if (bytes != local_auxesz)
 	error (_("%s: error reading symbols"), objfile_name (coffread_objfile));
       bfd_coff_swap_aux_in (symfile_bfd, temp_aux,
@@ -1241,7 +1205,7 @@ read_one_sym (struct coff_symbol *cs,
 	 is important).  */
       for (i = 1; i < cs->c_naux; i++)
 	{
-	  bytes = bfd_bread (temp_aux, local_auxesz, nlist_bfd_global);
+	  bytes = bfd_read (temp_aux, local_auxesz, nlist_bfd_global);
 	  if (bytes != local_auxesz)
 	    error (_("%s: error reading symbols"),
 		   objfile_name (coffread_objfile));
@@ -1308,12 +1272,13 @@ init_stringtab (bfd *abfd, file_ptr offset, gdb::unique_xmalloc_ptr<char> *stora
   if (bfd_seek (abfd, offset, 0) < 0)
     return -1;
 
-  val = bfd_bread ((char *) lengthbuf, sizeof lengthbuf, abfd);
-  length = bfd_h_get_32 (symfile_bfd, lengthbuf);
-
+  val = bfd_read (lengthbuf, sizeof lengthbuf, abfd);
   /* If no string table is needed, then the file may end immediately
      after the symbols.  Just return with `stringtab' set to null.  */
-  if (val != sizeof lengthbuf || length < sizeof lengthbuf)
+  if (val != sizeof lengthbuf)
+    return 0;
+  length = bfd_h_get_32 (symfile_bfd, lengthbuf);
+  if (length < sizeof lengthbuf)
     return 0;
 
   storage->reset ((char *) xmalloc (length));
@@ -1321,11 +1286,12 @@ init_stringtab (bfd *abfd, file_ptr offset, gdb::unique_xmalloc_ptr<char> *stora
   /* This is in target format (probably not very useful, and not
      currently used), not host format.  */
   memcpy (stringtab, lengthbuf, sizeof lengthbuf);
+  stringtab_length = length;
   if (length == sizeof length)	/* Empty table -- just the count.  */
     return 0;
 
-  val = bfd_bread (stringtab + sizeof lengthbuf, 
-		   length - sizeof lengthbuf, abfd);
+  val = bfd_read (stringtab + sizeof lengthbuf,
+		  length - sizeof lengthbuf, abfd);
   if (val != length - sizeof lengthbuf || stringtab[length - 1] != '\0')
     return -1;
 
@@ -1340,8 +1306,9 @@ getsymname (struct internal_syment *symbol_entry)
 
   if (symbol_entry->_n._n_n._n_zeroes == 0)
     {
-      /* FIXME: Probably should be detecting corrupt symbol files by
-	 seeing whether offset points to within the stringtab.  */
+      if (symbol_entry->_n._n_n._n_offset > stringtab_length)
+	error (_("COFF Error: string table offset (%s) outside string table (length %ld)"),
+	       hex_string (symbol_entry->_n._n_n._n_offset), stringtab_length);
       result = stringtab + symbol_entry->_n._n_n._n_offset;
     }
   else
@@ -1371,8 +1338,9 @@ coff_getfilename (union internal_auxent *aux_entry)
     }
   else
     {
-      strncpy (buffer, aux_entry->x_file.x_n.x_fname, FILNMLEN);
-      buffer[FILNMLEN] = '\0';
+      size_t x_fname_len = sizeof (aux_entry->x_file.x_n.x_fname);
+      strncpy (buffer, aux_entry->x_file.x_n.x_fname, x_fname_len);
+      buffer[x_fname_len] = '\0';
     }
   result = buffer;
 
@@ -1408,7 +1376,7 @@ init_lineno (bfd *abfd, file_ptr offset, file_ptr size,
   storage->reset ((char *) xmalloc (size + local_linesz));
   linetab = storage->get ();
 
-  val = bfd_bread (storage->get (), size, abfd);
+  val = bfd_read (storage->get (), size, abfd);
   if (val != size)
     return -1;
 
@@ -1476,14 +1444,9 @@ patch_type (struct type *type, struct type *real_type)
 {
   struct type *target = type->target_type ();
   struct type *real_target = real_type->target_type ();
-  int field_size = real_target->num_fields () * sizeof (struct field);
 
   target->set_length (real_target->length ());
-  target->set_num_fields (real_target->num_fields ());
-
-  field *fields = (struct field *) TYPE_ALLOC (target, field_size);
-  memcpy (fields, real_target->fields (), field_size);
-  target->set_fields (fields);
+  target->copy_fields (real_target);
 
   if (real_target->name ())
     {
@@ -1510,7 +1473,7 @@ patch_opaque_types (struct symtab *s)
 	 but search the whole chain, as there may be several syms
 	 from different files with the same name.  */
       if (real_sym->aclass () == LOC_TYPEDEF
-	  && real_sym->domain () == VAR_DOMAIN
+	  && real_sym->domain () == TYPE_DOMAIN
 	  && real_sym->type ()->code () == TYPE_CODE_PTR
 	  && real_sym->type ()->target_type ()->length () != 0)
 	{
@@ -1581,6 +1544,7 @@ process_coff_symbol (struct coff_symbol *cs,
 
   if (ISFCN (cs->c_type))
     {
+      sym->set_domain (FUNCTION_DOMAIN);
       sym->set_value_longest
 	(sym->value_longest () + objfile->text_section_offset ());
       sym->set_type
@@ -1663,7 +1627,7 @@ process_coff_symbol (struct coff_symbol *cs,
 
 	case C_TPDEF:
 	  sym->set_aclass_index (LOC_TYPEDEF);
-	  sym->set_domain (VAR_DOMAIN);
+	  sym->set_domain (TYPE_DOMAIN);
 
 	  /* If type has no name, give it one.  */
 	  if (sym->type ()->name () == 0)
@@ -1782,7 +1746,7 @@ decode_type (struct coff_symbol *cs, unsigned int c_type,
 
 	  base_type = decode_type (cs, new_c_type, aux, objfile);
 	  index_type = builtin_type (objfile)->builtin_int;
-	  type_allocator alloc (objfile);
+	  type_allocator alloc (objfile, language_c);
 	  range_type
 	    = create_static_range_type (alloc, index_type, 0, n - 1);
 	  type = create_array_type (alloc, base_type, range_type);
@@ -2023,7 +1987,7 @@ coff_read_struct_type (int index, int length, int lastsym,
 	  list->field.set_type (decode_type (ms, ms->c_type, &sub_aux,
 					     objfile));
 	  list->field.set_loc_bitpos (8 * ms->c_value);
-	  FIELD_BITSIZE (list->field) = 0;
+	  list->field.set_bitsize (0);
 	  nfields++;
 	  break;
 
@@ -2040,7 +2004,7 @@ coff_read_struct_type (int index, int length, int lastsym,
 	  list->field.set_type (decode_type (ms, ms->c_type, &sub_aux,
 					     objfile));
 	  list->field.set_loc_bitpos (ms->c_value);
-	  FIELD_BITSIZE (list->field) = sub_aux.x_sym.x_misc.x_lnsz.x_size;
+	  list->field.set_bitsize (sub_aux.x_sym.x_misc.x_lnsz.x_size);
 	  nfields++;
 	  break;
 
@@ -2051,9 +2015,7 @@ coff_read_struct_type (int index, int length, int lastsym,
     }
   /* Now create the vector of fields, and record how big it is.  */
 
-  type->set_num_fields (nfields);
-  type->set_fields
-    ((struct field *) TYPE_ALLOC (type, sizeof (struct field) * nfields));
+  type->alloc_fields (nfields);
 
   /* Copy the saved-up fields into the field vector.  */
 
@@ -2131,9 +2093,7 @@ coff_read_enum_type (int index, int length, int lastsym,
   else /* Assume ints.  */
     type->set_length (gdbarch_int_bit (gdbarch) / TARGET_CHAR_BIT);
   type->set_code (TYPE_CODE_ENUM);
-  type->set_num_fields (nsyms);
-  type->set_fields
-    ((struct field *) TYPE_ALLOC (type, sizeof (struct field) * nsyms));
+  type->alloc_fields (nsyms);
 
   /* Find the symbols for the values and put them into the type.
      The symbols can be found in the symlist that we put them on
@@ -2158,7 +2118,7 @@ coff_read_enum_type (int index, int length, int lastsym,
 	  type->field (n).set_loc_enumval (xsym->value_longest ());
 	  if (xsym->value_longest () < 0)
 	    unsigned_enum = 0;
-	  TYPE_FIELD_BITSIZE (type, n) = 0;
+	  type->field (n).set_bitsize (0);
 	}
       if (syms == osyms)
 	break;

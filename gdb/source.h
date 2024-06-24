@@ -1,5 +1,5 @@
 /* List lines of source files for GDB, the GNU debugger.
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -191,6 +191,13 @@ private:
   int m_startline;
   int m_stopline;
 };
+
+/* Get the number of the last line in the given symtab.  */
+extern int last_symtab_line (struct symtab *s);
+
+/* Check if the line LINE can be found in the symtab S, so that it can be
+   printed.  */
+extern bool can_print_line (struct symtab *s, int line);
 
 /* Variation of previous print_source_lines that takes a range instead of a
    start and end line number.  */

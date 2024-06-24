@@ -2,7 +2,7 @@
 
 # Architecture commands for GDB, the GNU debugger.
 #
-# Copyright (C) 1998-2023 Free Software Foundation, Inc.
+# Copyright (C) 1998-2024 Free Software Foundation, Inc.
 #
 # This file is part of GDB.
 #
@@ -50,6 +50,7 @@ def not_info(c: Component):
 
 with open("gdbarch-gen.h", "w") as f:
     print(copyright, file=f)
+    print(file=f)
     print(file=f)
     print(file=f)
     print("/* The following are pre-initialized by GDBARCH.  */", file=f)
@@ -120,6 +121,7 @@ with open("gdbarch-gen.h", "w") as f:
 
 with open("gdbarch.c", "w") as f:
     print(copyright, file=f)
+    print(file=f)
     print(file=f)
     print("/* Maintain the struct gdbarch object.  */", file=f)
     print(file=f)

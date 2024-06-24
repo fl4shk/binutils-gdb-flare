@@ -1,5 +1,5 @@
 /* aarch64-opc.h -- Header file for aarch64-opc.c and aarch64-opc-2.c.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU opcodes library.
@@ -36,6 +36,8 @@ enum aarch64_field_kind
   FLD_CSSC_imm8,
   FLD_H,
   FLD_L,
+  FLD_LSE128_Rt,
+  FLD_LSE128_Rt2,
   FLD_M,
   FLD_N,
   FLD_Q,
@@ -58,9 +60,12 @@ enum aarch64_field_kind
   FLD_SME_V,
   FLD_SME_VL_10,
   FLD_SME_VL_13,
+  FLD_SME_ZAda_1b,
   FLD_SME_ZAda_2b,
   FLD_SME_ZAda_3b,
+  FLD_SME_ZdnT,
   FLD_SME_Zdn2,
+  FLD_SME_Zdn2_0,
   FLD_SME_Zdn4,
   FLD_SME_Zm,
   FLD_SME_Zm2,
@@ -102,10 +107,15 @@ enum aarch64_field_kind
   FLD_SVE_Zn,
   FLD_SVE_Zt,
   FLD_SVE_i1,
+  FLD_SVE_i1_23,
+  FLD_SVE_i2,
   FLD_SVE_i2h,
   FLD_SVE_i3h,
   FLD_SVE_i3h2,
+  FLD_SVE_i3h3,
   FLD_SVE_i3l,
+  FLD_SVE_i3l2,
+  FLD_SVE_i4l2,
   FLD_SVE_imm3,
   FLD_SVE_imm4,
   FLD_SVE_imm5,
@@ -143,15 +153,19 @@ enum aarch64_field_kind
   FLD_hw,
   FLD_imm1_0,
   FLD_imm1_2,
+  FLD_imm1_3,
   FLD_imm1_8,
   FLD_imm1_10,
+  FLD_imm1_14,
   FLD_imm1_15,
   FLD_imm1_16,
   FLD_imm2_0,
   FLD_imm2_1,
+  FLD_imm2_2,
   FLD_imm2_8,
   FLD_imm2_10,
   FLD_imm2_12,
+  FLD_imm2_13,
   FLD_imm2_15,
   FLD_imm2_16,
   FLD_imm2_19,
@@ -161,6 +175,7 @@ enum aarch64_field_kind
   FLD_imm3_12,
   FLD_imm3_14,
   FLD_imm3_15,
+  FLD_imm3_19,
   FLD_imm4_0,
   FLD_imm4_5,
   FLD_imm4_10,
@@ -208,6 +223,16 @@ enum aarch64_field_kind
   FLD_sz,
   FLD_type,
   FLD_vldst_size,
+  FLD_off3,
+  FLD_off2,
+  FLD_ZAn_1,
+  FLD_ol,
+  FLD_ZAn_2,
+  FLD_ZAn_3,
+  FLD_ZAn,
+  FLD_opc2,
+  FLD_rcpc3_size,
+  FLD_brbop,
 };
 
 /* Field description.  */
@@ -291,6 +316,13 @@ verify_constraints (const struct aarch64_inst *, const aarch64_insn, bfd_vma,
 
 #undef F_REG_IN_CRM
 #define F_REG_IN_CRM	(1 << 5)  /* Register extra encoding in CRm.  */
+
+#undef F_REG_ALIAS
+#define F_REG_ALIAS	(1 << 6)  /* Register name aliases another.  */
+
+#undef F_REG_128
+#define F_REG_128	(1 << 7) /* System regsister implementable as 128-bit wide.  */
+
 
 /* PSTATE field name for the MSR instruction this is encoded in "op1:op2:CRm".
    Part of CRm can be used to encode <pstatefield>. E.g. CRm[3:1] for SME.

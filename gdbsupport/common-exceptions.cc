@@ -1,6 +1,6 @@
 /* Exception (throw catch) mechanism, for GDB, the GNU debugger.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,7 +17,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "common-defs.h"
 #include "common-exceptions.h"
 #include <forward_list>
 
@@ -80,7 +79,7 @@ exceptions_state_mc (enum catcher_action action)
       switch (action)
 	{
 	case CATCH_ITER:
-	  /* No error/quit has occured.  */
+	  /* No error/quit has occurred.  */
 	  return 0;
 	case CATCH_ITER_1:
 	  catchers.front ().state = CATCHER_RUNNING_1;

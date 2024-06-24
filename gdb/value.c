@@ -1,6 +1,6 @@
 /* Low level packing and unpacking of values for GDB, the GNU Debugger.
 
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -17,14 +17,14 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "defs.h"
 #include "arch-utils.h"
+#include "extract-store-integer.h"
 #include "symtab.h"
 #include "gdbtypes.h"
 #include "value.h"
 #include "gdbcore.h"
 #include "command.h"
-#include "gdbcmd.h"
+#include "cli/cli-cmds.h"
 #include "target.h"
 #include "language.h"
 #include "demangle.h"
@@ -762,7 +762,7 @@ static int max_value_size = 65536; /* 64k bytes */
    is bigger than LONGEST on all GDB supported hosts we're fine.  */
 
 #define MIN_VALUE_FOR_MAX_VALUE_SIZE 16
-gdb_static_assert (sizeof (LONGEST) <= MIN_VALUE_FOR_MAX_VALUE_SIZE);
+static_assert (sizeof (LONGEST) <= MIN_VALUE_FOR_MAX_VALUE_SIZE);
 
 /* Implement the "set max-value-size" command.  */
 
@@ -804,7 +804,7 @@ check_type_length_before_alloc (const struct type *type)
 {
   ULONGEST length = type->length ();
 
-  if (max_value_size > -1 && length > max_value_size)
+  if (exceeds_max_value_size (length))
     {
       if (type->name () != NULL)
 	error (_("value of type `%s' requires %s bytes, which is more "
@@ -815,10 +815,18 @@ check_type_length_before_alloc (const struct type *type)
     }
 }
 
+/* See value.h.  */
+
+bool
+exceeds_max_value_size (ULONGEST length)
+{
+  return max_value_size > -1 && length > max_value_size;
+}
+
 /* When this has a value, it is used to limit the number of array elements
    of an array that are loaded into memory when an array value is made
    non-lazy.  */
-static gdb::optional<int> array_length_limiting_element_count;
+static std::optional<int> array_length_limiting_element_count;
 
 /* See value.h.  */
 scoped_array_length_limiting::scoped_array_length_limiting (int elements)
@@ -949,6 +957,48 @@ struct value *
 value::allocate (struct type *type)
 {
   return allocate (type, true);
+}
+
+/* See value.h  */
+
+value *
+value::allocate_register_lazy (const frame_info_ptr &initial_next_frame,
+			       int regnum, struct type *type)
+{
+  if (type == nullptr)
+    type = register_type (frame_unwind_arch (initial_next_frame), regnum);
+
+  value *result = value::allocate_lazy (type);
+
+  result->set_lval (lval_register);
+  result->m_location.reg.regnum = regnum;
+
+  /* If this register value is created during unwind (while computing a frame
+     id), and NEXT_FRAME is a frame inlined in the frame being unwound, then
+     NEXT_FRAME will not have a valid frame id yet.  Find the next non-inline
+     frame (possibly the sentinel frame).  This is where registers are unwound
+     from anyway.  */
+  frame_info_ptr next_frame = initial_next_frame;
+  while (get_frame_type (next_frame) == INLINE_FRAME)
+    next_frame = get_next_frame_sentinel_okay (next_frame);
+
+  result->m_location.reg.next_frame_id = get_frame_id (next_frame);
+
+  /* We should have a next frame with a valid id.  */
+  gdb_assert (frame_id_p (result->m_location.reg.next_frame_id));
+
+  return result;
+}
+
+/* See value.h  */
+
+value *
+value::allocate_register (const frame_info_ptr &next_frame, int regnum,
+			  struct type *type)
+{
+  value *result = value::allocate_register_lazy (next_frame, regnum, type);
+  result->set_lazy (false);
+  return result;
 }
 
 /* Allocate a  value  that has the correct length
@@ -1180,6 +1230,9 @@ value::contents_copy_raw (struct value *dst, LONGEST dst_offset,
   gdb_assert (!dst->bits_any_optimized_out (TARGET_CHAR_BIT * dst_offset,
 					    TARGET_CHAR_BIT * length));
 
+  if ((src_offset + copy_length) * unit_size > enclosing_type ()-> length ())
+    error (_("access outside bounds of object"));
+
   /* Copy the data.  */
   gdb::array_view<gdb_byte> dst_contents
     = dst->contents_all_raw ().slice (dst_offset * unit_size,
@@ -1362,7 +1415,7 @@ value::address () const
     return m_parent->address () + m_offset;
   if (NULL != TYPE_DATA_LOCATION (type ()))
     {
-      gdb_assert (PROP_CONST == TYPE_DATA_LOCATION_KIND (type ()));
+      gdb_assert (TYPE_DATA_LOCATION (type ())->is_constant ());
       return TYPE_DATA_LOCATION_ADDR (type ());
     }
 
@@ -1384,21 +1437,6 @@ value::set_address (CORE_ADDR addr)
   m_location.address = addr;
 }
 
-struct frame_id *
-value::deprecated_next_frame_id_hack ()
-{
-  gdb_assert (m_lval == lval_register);
-  return &m_location.reg.next_frame_id;
-}
-
-int *
-value::deprecated_regnum_hack ()
-{
-  gdb_assert (m_lval == lval_register);
-  return &m_location.reg.regnum;
-}
-
-
 /* Return a mark in the value chain.  All values allocated after the
    mark is obtained (except for those released) are subject to being freed
    if a subsequent value_free_to_mark is passed the mark.  */
@@ -1612,14 +1650,14 @@ value::set_component_location (const struct value *whole)
      update the address of the COMPONENT.  */
   type = whole->type ();
   if (NULL != TYPE_DATA_LOCATION (type)
-      && TYPE_DATA_LOCATION_KIND (type) == PROP_CONST)
+      && TYPE_DATA_LOCATION (type)->is_constant ())
     set_address (TYPE_DATA_LOCATION_ADDR (type));
 
   /* Similarly, if the COMPONENT value has a dynamically resolved location
      property then update its address.  */
   type = this->type ();
   if (NULL != TYPE_DATA_LOCATION (type)
-      && TYPE_DATA_LOCATION_KIND (type) == PROP_CONST)
+      && TYPE_DATA_LOCATION (type)->is_constant ())
     {
       /* If the COMPONENT has a dynamic location, and is an
 	 lval_internalvar_component, then we change it to a lval_memory.
@@ -2044,8 +2082,9 @@ value_of_internalvar (struct gdbarch *gdbarch, struct internalvar *var)
       break;
 
     case INTERNALVAR_STRING:
-      val = value_cstring (var->u.string, strlen (var->u.string),
-			   builtin_type (gdbarch)->builtin_char);
+      val = current_language->value_string (gdbarch,
+					    var->u.string,
+					    strlen (var->u.string));
       break;
 
     case INTERNALVAR_VALUE:
@@ -2106,6 +2145,21 @@ get_internalvar_integer (struct internalvar *var, LONGEST *result)
       if (type->code () == TYPE_CODE_INT)
 	{
 	  *result = value_as_long (var->u.value);
+	  return 1;
+	}
+    }
+
+  if (var->kind == INTERNALVAR_MAKE_VALUE)
+    {
+      struct gdbarch *gdbarch = get_current_arch ();
+      struct value *val
+	= (*var->u.make_value.functions->make_value) (gdbarch, var,
+						      var->u.make_value.data);
+      struct type *type = check_typedef (val->type ());
+
+      if (type->code () == TYPE_CODE_INT)
+	{
+	  *result = value_as_long (val);
 	  return 1;
 	}
     }
@@ -2506,7 +2560,7 @@ value::from_xmethod (xmethod_worker_up &&worker)
 {
   struct value *v;
 
-  v = value::allocate (builtin_type (target_gdbarch ())->xmethod);
+  v = value::allocate (builtin_type (current_inferior ()->arch ())->xmethod);
   v->m_lval = lval_xcallable;
   v->m_location.xm_worker = worker.release ();
   v->m_modifiable = false;
@@ -2872,7 +2926,8 @@ value_static_field (struct type *type, int fieldno)
     {
       const char *phys_name = type->field (fieldno).loc_physname ();
       /* type->field (fieldno).name (); */
-      struct block_symbol sym = lookup_symbol (phys_name, 0, VAR_DOMAIN, 0);
+      struct block_symbol sym = lookup_symbol (phys_name, nullptr,
+					       SEARCH_VAR_DOMAIN, nullptr);
 
       if (sym.symbol == NULL)
 	{
@@ -2937,7 +2992,7 @@ value::primitive_field (LONGEST offset, int fieldno, struct type *arg_type)
      description correctly.  */
   check_typedef (type);
 
-  if (TYPE_FIELD_BITSIZE (arg_type, fieldno))
+  if (arg_type->field (fieldno).bitsize ())
     {
       /* Handle packed fields.
 
@@ -2952,7 +3007,7 @@ value::primitive_field (LONGEST offset, int fieldno, struct type *arg_type)
       LONGEST container_bitsize = type->length () * 8;
 
       v = value::allocate_lazy (type);
-      v->set_bitsize (TYPE_FIELD_BITSIZE (arg_type, fieldno));
+      v->set_bitsize (arg_type->field (fieldno).bitsize ());
       if ((bitpos % container_bitsize) + v->bitsize () <= container_bitsize
 	  && type->length () <= (int) sizeof (LONGEST))
 	v->set_bitpos (bitpos % container_bitsize);
@@ -3005,7 +3060,7 @@ value::primitive_field (LONGEST offset, int fieldno, struct type *arg_type)
 
       gdb_assert (0 == offset);
       /* We expect an already resolved data location.  */
-      gdb_assert (PROP_CONST == TYPE_DATA_LOCATION_KIND (type));
+      gdb_assert (TYPE_DATA_LOCATION (type)->is_constant ());
       /* For dynamic data types defer memory allocation
 	 until we actual access the value.  */
       v = value::allocate_lazy (type);
@@ -3063,7 +3118,8 @@ value_fn_field (struct value **arg1p, struct fn_field *f,
   struct symbol *sym;
   struct bound_minimal_symbol msym;
 
-  sym = lookup_symbol (physname, 0, VAR_DOMAIN, 0).symbol;
+  sym = lookup_symbol (physname, nullptr, SEARCH_FUNCTION_DOMAIN,
+		       nullptr).symbol;
   if (sym == nullptr)
     {
       msym = lookup_bound_minimal_symbol (physname);
@@ -3171,7 +3227,7 @@ unpack_value_field_as_long (struct type *type, const gdb_byte *valaddr,
 			    const struct value *val, LONGEST *result)
 {
   int bitpos = type->field (fieldno).loc_bitpos ();
-  int bitsize = TYPE_FIELD_BITSIZE (type, fieldno);
+  int bitsize = type->field (fieldno).bitsize ();
   struct type *field_type = type->field (fieldno).type ();
   int bit_offset;
 
@@ -3194,7 +3250,7 @@ LONGEST
 unpack_field_as_long (struct type *type, const gdb_byte *valaddr, int fieldno)
 {
   int bitpos = type->field (fieldno).loc_bitpos ();
-  int bitsize = TYPE_FIELD_BITSIZE (type, fieldno);
+  int bitsize = type->field (fieldno).bitsize ();
   struct type *field_type = type->field (fieldno).type ();
 
   return unpack_bits_as_long (field_type, valaddr, bitpos, bitsize);
@@ -3252,7 +3308,7 @@ value_field_bitfield (struct type *type, int fieldno,
 		      LONGEST embedded_offset, const struct value *val)
 {
   int bitpos = type->field (fieldno).loc_bitpos ();
-  int bitsize = TYPE_FIELD_BITSIZE (type, fieldno);
+  int bitsize = type->field (fieldno).bitsize ();
   struct value *res_val = value::allocate (type->field (fieldno).type ());
 
   val->unpack_bitfield (res_val, bitpos, bitsize, valaddr, embedded_offset);
@@ -3327,7 +3383,7 @@ pack_long (gdb_byte *buf, struct type *type, LONGEST num)
     {
     case TYPE_CODE_RANGE:
       num -= type->bounds ()->bias;
-      /* Fall through.  */
+      [[fallthrough]];
     case TYPE_CODE_INT:
     case TYPE_CODE_CHAR:
     case TYPE_CODE_ENUM:
@@ -3543,7 +3599,7 @@ struct value *
 value_from_contents_and_address (struct type *type,
 				 const gdb_byte *valaddr,
 				 CORE_ADDR address,
-				 frame_info_ptr frame)
+				 const frame_info_ptr &frame)
 {
   gdb::array_view<const gdb_byte> view;
   if (valaddr != nullptr)
@@ -3551,14 +3607,21 @@ value_from_contents_and_address (struct type *type,
   struct type *resolved_type = resolve_dynamic_type (type, view, address,
 						     &frame);
   struct type *resolved_type_no_typedef = check_typedef (resolved_type);
-  struct value *v;
 
-  if (valaddr == NULL)
+  struct value *v;
+  if (resolved_type_no_typedef->code () == TYPE_CODE_ARRAY
+      && resolved_type_no_typedef->bound_optimized_out ())
+    {
+      /* Resolution found that the bounds are optimized out.  In this
+	 case, mark the array itself as optimized-out.  */
+      v = value::allocate_optimized_out (resolved_type);
+    }
+  else if (valaddr == nullptr)
     v = value::allocate_lazy (resolved_type);
   else
     v = value_from_contents (resolved_type, valaddr);
   if (TYPE_DATA_LOCATION (resolved_type_no_typedef) != NULL
-      && TYPE_DATA_LOCATION_KIND (resolved_type_no_typedef) == PROP_CONST)
+      && TYPE_DATA_LOCATION (resolved_type_no_typedef)->is_constant ())
     address = TYPE_DATA_LOCATION_ADDR (resolved_type_no_typedef);
   v->set_lval (lval_memory);
   v->set_address (address);
@@ -3875,10 +3938,10 @@ value::fetch_lazy_memory ()
 void
 value::fetch_lazy_register ()
 {
-  frame_info_ptr next_frame;
-  int regnum;
   struct type *type = check_typedef (this->type ());
-  struct value *new_val = this, *mark = value_mark ();
+  struct value *new_val = this;
+
+  scoped_value_mark mark;
 
   /* Offsets are not supported here; lazy register values must
      refer to the entire register.  */
@@ -3886,12 +3949,11 @@ value::fetch_lazy_register ()
 
   while (new_val->lval () == lval_register && new_val->lazy ())
     {
-      struct frame_id next_frame_id = VALUE_NEXT_FRAME_ID (new_val);
-
-      next_frame = frame_find_by_id (next_frame_id);
-      regnum = VALUE_REGNUM (new_val);
-
+      frame_id next_frame_id = new_val->next_frame_id ();
+      frame_info_ptr next_frame = frame_find_by_id (next_frame_id);
       gdb_assert (next_frame != NULL);
+
+      int regnum = new_val->regnum ();
 
       /* Convertible register routines are used for multi-register
 	 values and for interpretation in different types
@@ -3901,12 +3963,6 @@ value::fetch_lazy_register ()
       gdb_assert (!gdbarch_convert_register_p (get_frame_arch (next_frame),
 					       regnum, type));
 
-      /* FRAME was obtained, above, via VALUE_NEXT_FRAME_ID.
-	 Since a "->next" operation was performed when setting
-	 this field, we do not need to perform a "next" operation
-	 again when unwinding the register.  That's why
-	 frame_unwind_register_value() is called here instead of
-	 get_frame_register_value().  */
       new_val = frame_unwind_register_value (next_frame, regnum);
 
       /* If we get another lazy lval_register value, it means the
@@ -3921,7 +3977,7 @@ value::fetch_lazy_register ()
 	 in this situation.  */
       if (new_val->lval () == lval_register
 	  && new_val->lazy ()
-	  && VALUE_NEXT_FRAME_ID (new_val) == next_frame_id)
+	  && new_val->next_frame_id () == next_frame_id)
 	internal_error (_("infinite loop while fetching a register"));
     }
 
@@ -3939,12 +3995,10 @@ value::fetch_lazy_register ()
 
   if (frame_debug)
     {
-      struct gdbarch *gdbarch;
-      frame_info_ptr frame;
-      frame = frame_find_by_id (VALUE_NEXT_FRAME_ID (this));
+      frame_info_ptr frame = frame_find_by_id (this->next_frame_id ());
       frame = get_prev_frame_always (frame);
-      regnum = VALUE_REGNUM (this);
-      gdbarch = get_frame_arch (frame);
+      int regnum = this->regnum ();
+      gdbarch *gdbarch = get_frame_arch (frame);
 
       string_file debug_file;
       gdb_printf (&debug_file,
@@ -3960,12 +4014,8 @@ value::fetch_lazy_register ()
 	}
       else
 	{
-	  int i;
-	  gdb::array_view<const gdb_byte> buf = new_val->contents ();
-
 	  if (new_val->lval () == lval_register)
-	    gdb_printf (&debug_file, " register=%d",
-			VALUE_REGNUM (new_val));
+	    gdb_printf (&debug_file, " register=%d", new_val->regnum ());
 	  else if (new_val->lval () == lval_memory)
 	    gdb_printf (&debug_file, " address=%s",
 			paddress (gdbarch,
@@ -3973,19 +4023,25 @@ value::fetch_lazy_register ()
 	  else
 	    gdb_printf (&debug_file, " computed");
 
-	  gdb_printf (&debug_file, " bytes=");
-	  gdb_printf (&debug_file, "[");
-	  for (i = 0; i < register_size (gdbarch, regnum); i++)
-	    gdb_printf (&debug_file, "%02x", buf[i]);
-	  gdb_printf (&debug_file, "]");
+	  if (new_val->entirely_available ())
+	    {
+	      int i;
+	      gdb::array_view<const gdb_byte> buf = new_val->contents ();
+
+	      gdb_printf (&debug_file, " bytes=");
+	      gdb_printf (&debug_file, "[");
+	      for (i = 0; i < register_size (gdbarch, regnum); i++)
+		gdb_printf (&debug_file, "%02x", buf[i]);
+	      gdb_printf (&debug_file, "]");
+	    }
+	  else if (new_val->entirely_unavailable ())
+	    gdb_printf (&debug_file, " unavailable");
+	  else
+	    gdb_printf (&debug_file, " partly unavailable");
 	}
 
       frame_debug_printf ("%s", debug_file.c_str ());
     }
-
-  /* Dispose of the intermediate values.  This prevents
-     watchpoints from trying to watch the saved frame pointer.  */
-  value_free_to_mark (mark);
 }
 
 /* See value.h.  */
@@ -4017,6 +4073,144 @@ value::fetch_lazy ()
     internal_error (_("Unexpected lazy value type."));
 
   set_lazy (false);
+}
+
+/* See value.h.  */
+
+value *
+pseudo_from_raw_part (const frame_info_ptr &next_frame, int pseudo_reg_num,
+		      int raw_reg_num, int raw_offset)
+{
+  value *pseudo_reg_val
+    = value::allocate_register (next_frame, pseudo_reg_num);
+  value *raw_reg_val = value_of_register (raw_reg_num, next_frame);
+  raw_reg_val->contents_copy (pseudo_reg_val, 0, raw_offset,
+			      pseudo_reg_val->type ()->length ());
+  return pseudo_reg_val;
+}
+
+/* See value.h.  */
+
+void
+pseudo_to_raw_part (const frame_info_ptr &next_frame,
+		    gdb::array_view<const gdb_byte> pseudo_buf,
+		    int raw_reg_num, int raw_offset)
+{
+  int raw_reg_size
+    = register_size (frame_unwind_arch (next_frame), raw_reg_num);
+
+  /* When overflowing a register, put_frame_register_bytes writes to the
+     subsequent registers.  We don't want that behavior here, so make sure
+     the write is wholly within register RAW_REG_NUM.  */
+  gdb_assert (raw_offset + pseudo_buf.size () <= raw_reg_size);
+  put_frame_register_bytes (next_frame, raw_reg_num, raw_offset, pseudo_buf);
+}
+
+/* See value.h.  */
+
+value *
+pseudo_from_concat_raw (const frame_info_ptr &next_frame, int pseudo_reg_num,
+			int raw_reg_1_num, int raw_reg_2_num)
+{
+  value *pseudo_reg_val
+    = value::allocate_register (next_frame, pseudo_reg_num);
+  int dst_offset = 0;
+
+  value *raw_reg_1_val = value_of_register (raw_reg_1_num, next_frame);
+  raw_reg_1_val->contents_copy (pseudo_reg_val, dst_offset, 0,
+				raw_reg_1_val->type ()->length ());
+  dst_offset += raw_reg_1_val->type ()->length ();
+
+  value *raw_reg_2_val = value_of_register (raw_reg_2_num, next_frame);
+  raw_reg_2_val->contents_copy (pseudo_reg_val, dst_offset, 0,
+				raw_reg_2_val->type ()->length ());
+  dst_offset += raw_reg_2_val->type ()->length ();
+
+  gdb_assert (dst_offset == pseudo_reg_val->type ()->length ());
+
+  return pseudo_reg_val;
+}
+
+/* See value.h. */
+
+void
+pseudo_to_concat_raw (const frame_info_ptr &next_frame,
+		      gdb::array_view<const gdb_byte> pseudo_buf,
+		      int raw_reg_1_num, int raw_reg_2_num)
+{
+  int src_offset = 0;
+  gdbarch *arch = frame_unwind_arch (next_frame);
+
+  int raw_reg_1_size = register_size (arch, raw_reg_1_num);
+  put_frame_register (next_frame, raw_reg_1_num,
+		      pseudo_buf.slice (src_offset, raw_reg_1_size));
+  src_offset += raw_reg_1_size;
+
+  int raw_reg_2_size = register_size (arch, raw_reg_2_num);
+  put_frame_register (next_frame, raw_reg_2_num,
+		      pseudo_buf.slice (src_offset, raw_reg_2_size));
+  src_offset += raw_reg_2_size;
+
+  gdb_assert (src_offset == pseudo_buf.size ());
+}
+
+/* See value.h.  */
+
+value *
+pseudo_from_concat_raw (const frame_info_ptr &next_frame, int pseudo_reg_num,
+			int raw_reg_1_num, int raw_reg_2_num,
+			int raw_reg_3_num)
+{
+  value *pseudo_reg_val
+    = value::allocate_register (next_frame, pseudo_reg_num);
+  int dst_offset = 0;
+
+  value *raw_reg_1_val = value_of_register (raw_reg_1_num, next_frame);
+  raw_reg_1_val->contents_copy (pseudo_reg_val, dst_offset, 0,
+				raw_reg_1_val->type ()->length ());
+  dst_offset += raw_reg_1_val->type ()->length ();
+
+  value *raw_reg_2_val = value_of_register (raw_reg_2_num, next_frame);
+  raw_reg_2_val->contents_copy (pseudo_reg_val, dst_offset, 0,
+				raw_reg_2_val->type ()->length ());
+  dst_offset += raw_reg_2_val->type ()->length ();
+
+  value *raw_reg_3_val = value_of_register (raw_reg_3_num, next_frame);
+  raw_reg_3_val->contents_copy (pseudo_reg_val, dst_offset, 0,
+				raw_reg_3_val->type ()->length ());
+  dst_offset += raw_reg_3_val->type ()->length ();
+
+  gdb_assert (dst_offset == pseudo_reg_val->type ()->length ());
+
+  return pseudo_reg_val;
+}
+
+/* See value.h. */
+
+void
+pseudo_to_concat_raw (const frame_info_ptr &next_frame,
+		      gdb::array_view<const gdb_byte> pseudo_buf,
+		      int raw_reg_1_num, int raw_reg_2_num, int raw_reg_3_num)
+{
+  int src_offset = 0;
+  gdbarch *arch = frame_unwind_arch (next_frame);
+
+  int raw_reg_1_size = register_size (arch, raw_reg_1_num);
+  put_frame_register (next_frame, raw_reg_1_num,
+		      pseudo_buf.slice (src_offset, raw_reg_1_size));
+  src_offset += raw_reg_1_size;
+
+  int raw_reg_2_size = register_size (arch, raw_reg_2_num);
+  put_frame_register (next_frame, raw_reg_2_num,
+		      pseudo_buf.slice (src_offset, raw_reg_2_size));
+  src_offset += raw_reg_2_size;
+
+  int raw_reg_3_size = register_size (arch, raw_reg_3_num);
+  put_frame_register (next_frame, raw_reg_3_num,
+		      pseudo_buf.slice (src_offset, raw_reg_3_size));
+  src_offset += raw_reg_3_size;
+
+  gdb_assert (src_offset == pseudo_buf.size ());
 }
 
 /* Implementation of the convenience function $_isvoid.  */
@@ -4215,7 +4409,7 @@ test_insert_into_bit_range_vector ()
 static void
 test_value_copy ()
 {
-  type *type = builtin_type (current_inferior ()->gdbarch)->builtin_int;
+  type *type = builtin_type (current_inferior ()->arch ())->builtin_int;
 
   /* Verify that we can copy an entirely optimized out value, that may not have
      its contents allocated.  */
@@ -4312,12 +4506,13 @@ and exceeds this limit will cause an error."),
 			    selftests::test_insert_into_bit_range_vector);
   selftests::register_test ("value_copy", selftests::test_value_copy);
 #endif
-}
 
-/* See value.h.  */
-
-void
-finalize_values ()
-{
-  all_values.clear ();
+  /* Destroy any values currently allocated in a final cleanup instead
+     of leaving it to global destructors, because that may be too
+     late.  For example, the destructors of xmethod values call into
+     the Python runtime.  */
+  add_final_cleanup ([] ()
+    {
+      all_values.clear ();
+    });
 }

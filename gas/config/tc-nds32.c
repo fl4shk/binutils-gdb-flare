@@ -1,5 +1,5 @@
 /* tc-nds32.c -- Assemble for the nds32
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GAS, the GNU Assembler.
@@ -2519,6 +2519,7 @@ parse_expression (char *str, expressionS *exp)
   tmp = input_line_pointer;	/* Save line pointer.  */
   input_line_pointer = str;
   expression (exp);
+  resolve_register (exp);
   s = input_line_pointer;
   input_line_pointer = tmp;	/* Restore line pointer.  */
 
@@ -4571,6 +4572,7 @@ nds32_asm_parse_operand (struct nds32_asm_desc *pdesc ATTRIBUTE_UNUSED,
   hold = input_line_pointer;
   input_line_pointer = *pstr;
   expression (pexp);
+  resolve_register (pexp);
   *pstr = input_line_pointer;
   input_line_pointer = hold;
 

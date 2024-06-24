@@ -1,6 +1,6 @@
 /* Dynamic architecture support for GDB, the GNU debugger.
 
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -57,6 +57,8 @@ struct syscalls_info;
 struct thread_info;
 struct ui_out;
 struct inferior;
+struct x86_xsave_layout;
+struct solib_ops;
 
 #include "regcache.h"
 
@@ -70,21 +72,6 @@ struct gdbarch_tdep_base
 };
 
 using gdbarch_tdep_up = std::unique_ptr<gdbarch_tdep_base>;
-
-/* The architecture associated with the inferior through the
-   connection to the target.
-
-   The architecture vector provides some information that is really a
-   property of the inferior, accessed through a particular target:
-   ptrace operations; the layout of certain RSP packets; the solib_ops
-   vector; etc.  To differentiate architecture accesses to
-   per-inferior/target properties from
-   per-thread/per-frame/per-objfile properties, accesses to
-   per-inferior/target properties should be made through this
-   gdbarch.  */
-
-/* This is a convenience wrapper for 'current_inferior ()->gdbarch'.  */
-extern struct gdbarch *target_gdbarch (void);
 
 /* Callback type for the 'iterate_over_objfiles_in_search_order'
    gdbarch  method.  */
@@ -201,7 +188,7 @@ gdbarch_tdep (struct gdbarch *gdbarch)
    The more traditional mega-struct containing architecture specific
    data for all the various GDB components was also considered.  Since
    GDB is built from a variable number of (fairly independent)
-   components it was determined that the global aproach was not
+   components it was determined that the global approach was not
    applicable.  */
 
 
@@ -246,12 +233,6 @@ struct gdbarch_list
 
 struct gdbarch_info
 {
-  gdbarch_info ()
-    /* Ensure the union is zero-initialized.  Relies on the fact that there's
-       no member larger than TDESC_DATA.  */
-    : tdesc_data ()
-  {}
-
   const struct bfd_arch_info *bfd_arch_info = nullptr;
 
   enum bfd_endian byte_order = BFD_ENDIAN_UNKNOWN;
@@ -261,7 +242,7 @@ struct gdbarch_info
   bfd *abfd = nullptr;
 
   /* Architecture-specific target description data.  */
-  struct tdesc_arch_data *tdesc_data;
+  struct tdesc_arch_data *tdesc_data = nullptr;
 
   enum gdb_osabi osabi = GDB_OSABI_UNKNOWN;
 
@@ -277,6 +258,9 @@ extern void gdbarch_register (enum bfd_architecture architecture,
 			      gdbarch_dump_tdep_ftype *dump_tdep = nullptr,
 			      gdbarch_supports_arch_info_ftype *supports_arch_info = nullptr);
 
+/* Return true if ARCH is initialized.  */
+
+bool gdbarch_initialized_p (gdbarch *arch);
 
 /* Return a vector of the valid architecture names.  Since architectures are
    registered during the _initialize phase this function only returns useful
@@ -301,7 +285,7 @@ extern struct gdbarch *gdbarch_alloc (const struct gdbarch_info *info,
 
 
 /* Helper function.  Free a partially-constructed ``struct gdbarch''.
-   It is assumed that the caller freeds the ``struct
+   It is assumed that the caller frees the ``struct
    gdbarch_tdep''.  */
 
 extern void gdbarch_free (struct gdbarch *);
@@ -354,12 +338,6 @@ extern int gdbarch_update_p (struct gdbarch_info info);
 
 extern struct gdbarch *gdbarch_find_by_info (struct gdbarch_info info);
 
-
-/* Helper function.  Set the target gdbarch to "gdbarch".  */
-
-extern void set_target_gdbarch (struct gdbarch *gdbarch);
-
-
 /* A registry adaptor for gdbarch.  This arranges to store the
    registry in the gdbarch.  */
 template<>
@@ -390,6 +368,14 @@ static inline int
 gdbarch_num_cooked_regs (gdbarch *arch)
 {
   return gdbarch_num_regs (arch) + gdbarch_num_pseudo_regs (arch);
+}
+
+/* Return true if stacks for ARCH grow down, otherwise return true.  */
+
+static inline bool
+gdbarch_stack_grows_down (gdbarch *arch)
+{
+  return gdbarch_inner_than (arch, 1, 2);
 }
 
 #endif

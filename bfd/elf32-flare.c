@@ -2532,8 +2532,8 @@ flare_elf_relax_section (bfd *abfd,
 #define ELF_MACHINE_CODE    EM_FLARE_UNOFFICIAL
 #define ELF_MAXPAGESIZE     0x1
 
-#define TARGET_BIG_SYM    flare_elf32_vec
-#define TARGET_BIG_NAME   "elf32-flare"
+#define TARGET_LITTLE_SYM    flare_elf32_vec
+#define TARGET_LITTLE_NAME   "elf32-flare"
 
 #define elf_info_to_howto_rel         NULL
 #define elf_info_to_howto             flare_elf_info_to_howto

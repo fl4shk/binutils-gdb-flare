@@ -23,7 +23,7 @@
 
 /* Contributed by Andrew Clark (FL4SHK) */
 #define TC_FLARE 1
-#define TARGET_BYTES_BIG_ENDIAN 1
+#define TARGET_BYTES_BIG_ENDIAN 0
 
 /* Words are big enough to hold addresses.  */
 #define WORKING_DOT_WORD 1

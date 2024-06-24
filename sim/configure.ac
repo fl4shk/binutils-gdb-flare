@@ -103,6 +103,7 @@ if test "${enable_sim}" != no; then
       [[cr16*-*-*], [cr16]],
       [[cris-*-* | crisv32-*-*], [cris]],
       [[d10v-*-*], [d10v]],
+      [[flare-*-*], [flare]],
       [[frv-*-*], [frv]],
       [[ft32-*-*], [ft32]],
       [[h8300*-*-*], [h8300]],

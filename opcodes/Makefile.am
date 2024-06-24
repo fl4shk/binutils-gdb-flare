@@ -141,6 +141,8 @@ TARGET32_LIBOPCODES_CFILES = \
 	epiphany-dis.c \
 	epiphany-ibld.c \
 	epiphany-opc.c \
+	flare-dis.c \
+	flare-opc.c \
 	fr30-asm.c \
 	fr30-desc.c \
 	fr30-dis.c \

@@ -813,6 +813,7 @@ ALL_TARGET_OBS = \
 	csky-tdep.o \
 	dicos-tdep.o \
 	fbsd-tdep.o \
+	flare-tdep.o \
 	frv-linux-tdep.o \
 	frv-tdep.o \
 	ft32-tdep.o \
@@ -1372,6 +1373,7 @@ HFILES_NO_SRCDIR = \
 	fbsd-nat.h \
 	fbsd-tdep.h \
 	filesystem.h \
+	flare-tdep.h \
 	frame.h \
 	frame-base.h \
 	frame-unwind.h \

@@ -544,6 +544,8 @@ TARGET32_LIBOPCODES_CFILES = \
 	epiphany-dis.c \
 	epiphany-ibld.c \
 	epiphany-opc.c \
+	flare-dis.c \
+	flare-opc.c \
 	fr30-asm.c \
 	fr30-desc.c \
 	fr30-dis.c \
@@ -917,6 +919,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-dis.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-ibld.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epiphany-opc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flare-dis.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flare-opc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-asm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-desc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fr30-dis.Plo@am__quote@

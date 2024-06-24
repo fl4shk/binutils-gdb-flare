@@ -447,6 +447,7 @@
 
 /* Old, unofficial value for Moxie.  */
 #define EM_MOXIE_OLD            0xFEED
+#define EM_FLARE_UNOFFICIAL	0xfeee /* Unofficial Flare */
 
 #define EM_MICROBLAZE_OLD	0xbaab	/* Old MicroBlaze */
 

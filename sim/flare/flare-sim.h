@@ -1,4 +1,4 @@
-/* Flare32 Simulator definition.
+/* Flare Simulator definition.
    Copyright (C) 2023 Free Software Foundation, Inc.
    Contributed by Andrew Clark (FL4SHK)
 
@@ -17,19 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef FLARE32_SIM_H
-#define FLARE32_SIM_H
+#ifndef FLARE_SIM_H
+#define FLARE_SIM_H
 
-#include "opcode/flare32.h"
+#include "opcode/flare.h"
 
-#define PCIDX (FLARE32_NUM_GPRS + FLARE32_NUM_SPRS)
+#define PCIDX (FLARE_NUM_GPRS + FLARE_NUM_SPRS)
 
-struct flare32_sim_cpu_t
+struct flare_sim_cpu_t
 {
-  unsigned_word regs[FLARE32_TOTAL_NUM_REGS];
+  unsigned_word regs[FLARE_TOTAL_NUM_REGS];
 };
 
-#define FLARE32_SIM_CPU(cpu)\
-  ((struct flare32_sim_cpu_t *) CPU_ARCH_DATA (cpu))
+#define FLARE_SIM_CPU(cpu)\
+  ((struct flare_sim_cpu_t *) CPU_ARCH_DATA (cpu))
 
-#endif    /* FLARE32_SIM_H */
+#endif    /* FLARE_SIM_H */

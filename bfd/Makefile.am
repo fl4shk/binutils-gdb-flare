@@ -111,7 +111,7 @@ ALL_MACHINES = \
 	cpu-d30v.lo \
 	cpu-dlx.lo \
 	cpu-epiphany.lo \
-	cpu-flare32.lo \
+	cpu-flare.lo \
 	cpu-fr30.lo \
 	cpu-frv.lo \
 	cpu-ft32.lo \
@@ -195,7 +195,7 @@ ALL_MACHINES_CFILES = \
 	cpu-d30v.c \
 	cpu-dlx.c \
 	cpu-epiphany.c \
-	cpu-flare32.c \
+	cpu-flare.c \
 	cpu-fr30.c \
 	cpu-frv.c \
 	cpu-ft32.c \
@@ -309,7 +309,7 @@ BFD32_BACKENDS = \
 	elf32-d30v.lo \
 	elf32-dlx.lo \
 	elf32-epiphany.lo \
-	elf32-flare32.lo \
+	elf32-flare.lo \
 	elf32-fr30.lo \
 	elf32-frv.lo \
 	elf32-ft32.lo \
@@ -445,7 +445,7 @@ BFD32_BACKENDS_CFILES = \
 	elf32-d30v.c \
 	elf32-dlx.c \
 	elf32-epiphany.c \
-	elf32-flare32.c \
+	elf32-flare.c \
 	elf32-fr30.c \
 	elf32-frv.c \
 	elf32-ft32.c \

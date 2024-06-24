@@ -1,4 +1,4 @@
-/* flare32-specific support for 32-bit ELF.
+/* flare-specific support for 32-bit ELF.
    Copyright (C) 2023 Free Software Foundation, Inc.
    Written by Andrew Clark (FL4SHK)
 
@@ -26,17 +26,17 @@
 
 
 extern reloc_howto_type *
-flare32_reloc_type_lookup (bfd *abfd ATTRIBUTE_UNUSED,
+flare_reloc_type_lookup (bfd *abfd ATTRIBUTE_UNUSED,
                         bfd_reloc_code_real_type code);
 extern reloc_howto_type *
-flare32_reloc_name_lookup (bfd *abfd ATTRIBUTE_UNUSED, const char *r_name);
+flare_reloc_name_lookup (bfd *abfd ATTRIBUTE_UNUSED, const char *r_name);
 
 //extern bool
-//flare32_elf_info_to_howto (bfd *abfd,
+//flare_elf_info_to_howto (bfd *abfd,
 //                          arelent *cache_ptr,
 //                          Elf_Internal_Rela *dst);
 //extern bool
-//flare32_elf_relax_section (bfd *abfd,
+//flare_elf_relax_section (bfd *abfd,
 //                          asection *sec,
 //                          struct bfd_link_info *link_info,
 //                          bool *again);

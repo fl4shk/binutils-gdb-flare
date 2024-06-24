@@ -1,4 +1,4 @@
-/* tc-flare32.c -- Assemble code for flare32
+/* tc-flare.c -- Assemble code for flare
    Copyright (C) 2023 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
@@ -18,11 +18,11 @@
    the Free Software Foundation, 51 Franklin Street - Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-#ifndef __TC_FLARE32_H__
-#define __TC_FLARE32_H__
+#ifndef __TC_FLARE_H__
+#define __TC_FLARE_H__
 
 /* Contributed by Andrew Clark (FL4SHK) */
-#define TC_FLARE32 1
+#define TC_FLARE 1
 #define TARGET_BYTES_BIG_ENDIAN 1
 
 /* Words are big enough to hold addresses.  */
@@ -39,23 +39,23 @@
 
 
 /* This macro is the BFD architecture to pass to `bfd_set_arch_mach'.  */
-#define TARGET_FORMAT "elf32-flare32"
-#define TARGET_ARCH bfd_arch_flare32
+#define TARGET_FORMAT "elf32-flare"
+#define TARGET_ARCH bfd_arch_flare
 
 #define md_undefined_symbol(NAME)           0
 
 #define md_number_to_chars(buf, val, n) \
-  flare32_number_to_chars (buf, val, n)
+  flare_number_to_chars (buf, val, n)
 extern void
-flare32_number_to_chars (char *buf, valueT val, int n);
+flare_number_to_chars (char *buf, valueT val, int n);
 
 #define md_atof(type, litP, sizeP) \
-  flare32_md_atof (type, litP, sizeP)
+  flare_md_atof (type, litP, sizeP)
 extern const char *
-flare32_md_atof (int type, char *litP, int *sizeP);
+flare_md_atof (int type, char *litP, int *sizeP);
 
-#define md_pre_output_hook flare32_pre_output_hook ()
-extern void flare32_pre_output_hook (void);
+#define md_pre_output_hook flare_pre_output_hook ()
+extern void flare_pre_output_hook (void);
 
 /* If this macro is defined and evaluates to zero then GAS will not fold 
   expressions that add or subtract a constant to/from a register to give 
@@ -69,8 +69,8 @@ extern void flare32_pre_output_hook (void);
 
 
 extern void
-flare32_md_end (void);
-#define md_end flare32_md_end
+flare_md_end (void);
+#define md_end flare_md_end
 
 ///* These macros must be defined, but is will be a fatal assembler
 //   error if we ever hit them.  */
@@ -81,9 +81,9 @@ flare32_md_end (void);
 
 //#define GAS_SORT_RELOCS 1
 #define md_relax_frag(segment, fragP, stretch) \
-  flare32_relax_frag (segment, fragP, stretch)
+  flare_relax_frag (segment, fragP, stretch)
 extern int
-flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
+flare_relax_frag (asection *sec, fragS *fragP, long stretch);
 
 /* If you define this macro, and the global variable ‘linkrelax’ is set 
   (because of a command-line option, or unconditionally in md_begin),
@@ -102,12 +102,12 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
   Check also that `fx_addsy` is not `NULL`, to make sure the fixup refers 
   to some sort of label. */
 //#define TC_VALIDATE_FIX(fixP, valP, seg)
-//  if ((fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S5
-//    || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S17
-//    || fixP->fx_r_type == BFD_RELOC_FLARE32_G1G5G6_S32
-//    || fixP->fx_r_type == BFD_RELOC_FLARE32_G3_S9_PCREL
-//    || fixP->fx_r_type == BFD_RELOC_FLARE32_G3_S21_PCREL
-//    || fixP->fx_r_type == BFD_RELOC_FLARE32_G3_S32_PCREL)
+//  if ((fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S5
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S17
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S9_PCREL
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S21_PCREL
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S32_PCREL)
 //    && fixP->fx_addsy != NULL
 //    && fixP->fx_subsy != NULL)
 //  {
@@ -120,8 +120,8 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
 /* This macro is evaluated for any fixup with a fx_subsy that
   fixup_segment cannot reduce to a number.  If the macro returns
   false an error will be reported.  */
-//#define TC_VALIDATE_FIX_SUB(fix, seg) flare32_validate_fix_sub (fix)
-//extern int flare32_validate_fix_sub (fixS *fix);
+//#define TC_VALIDATE_FIX_SUB(fix, seg) flare_validate_fix_sub (fix)
+//extern int flare_validate_fix_sub (fixS *fix);
 //#define TC_VALIDATE_FIX_SUB(fix, seg) 1
 
 /* Because we evaluate relocs in the linker, we don't need
@@ -136,11 +136,11 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
   linkrelax is turned on.  */
 //#define TC_FORCE_RELOCATION(fix) 1
 //#define TC_FORCE_RELOCATION(fix)
-//  flare32_force_relocation (fix)
+//  flare_force_relocation (fix)
 //#define TC_FORCE_RELOCATION_SUB_SAME(fix, seg)
 //  (GENERIC_FORCE_RELOCATION_SUB_SAME (fix, seg)
-//    || flare32_force_relocation (fix))
-//extern int flare32_force_relocation (fixS *fix);
+//    || flare_force_relocation (fix))
+//extern int flare_force_relocation (fixS *fix);
 
 /* Postpone text-section label subtraction calculation until linking, since
    linker relaxations might change the deltas.  */
@@ -155,10 +155,10 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
 ///* Do not use PC relative fixups and relocations for
 //  anything but real PCREL relocations.  */
 //#define TC_FORCE_RELOCATION_SUB_LOCAL(FIX, SEG)
-//  (((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S9_PCREL)
-//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S21_PCREL)
-//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S32_PCREL)
-//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX))
+//  (((FIX)->fx_r_type != BFD_RELOC_FLARE_G3_S9_PCREL)
+//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE_G3_S21_PCREL)
+//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE_G3_S32_PCREL)
+//  && ((FIX)->fx_r_type != BFD_RELOC_FLARE_G3_S32_PCREL_NO_RELAX))
 
 /* Values passed to md_apply_fix don't include symbol values.  */
 #define MD_APPLY_SYM_VALUE(FIX) 0
@@ -166,14 +166,14 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
 /* Let the linker resolve all the relocs due to relaxation. */
 #define tc_fix_adjustable(fixP) 0
 #define md_allow_local_subtract(l, r, s) 0
-//#define tc_fix_adjustable(fixP) flare32_fix_adjustable (fixP)
+//#define tc_fix_adjustable(fixP) flare_fix_adjustable (fixP)
 //extern int
-//flare32_fix_adjustable (fixS *fixp);
+//flare_fix_adjustable (fixS *fixp);
 
 //#define md_allow_local_subtract(l,r,s)
-//  flare32_allow_local_subtract (l, r, s)
+//  flare_allow_local_subtract (l, r, s)
 //extern bool
-//flare32_allow_local_subtract (expressionS *left, expressionS *right,
+//flare_allow_local_subtract (expressionS *left, expressionS *right,
 //  segT section);
 
 /* No shared lib support, so we don't need to ensure externally
@@ -181,21 +181,21 @@ flare32_relax_frag (asection *sec, fragS *fragP, long stretch);
 #define EXTERN_FORCE_RELOC 1
 
 /* Used to generate fixups during data allocation pseudo-ops */  
-#define TC_CONS_FIX_NEW flare32_cons_fix_new
+#define TC_CONS_FIX_NEW flare_cons_fix_new
 extern void
-flare32_cons_fix_new (struct frag *fragP,
+flare_cons_fix_new (struct frag *fragP,
                       int where,
                       unsigned int nbytes,
                       struct expressionS *ex,
                       const int unused_arg ATTRIBUTE_UNUSED);
 
-#define tc_regname_to_dw2regnum flare32_regname_to_dw2regnum
+#define tc_regname_to_dw2regnum flare_regname_to_dw2regnum
 extern int
-flare32_regname_to_dw2regnum (char *name);
+flare_regname_to_dw2regnum (char *name);
 #define tc_cfi_frame_initial_instructions \
-  flare32_cfi_frame_initial_instructions
+  flare_cfi_frame_initial_instructions
 extern void
-flare32_cfi_frame_initial_instructions (void);
+flare_cfi_frame_initial_instructions (void);
 
 //extern const relax_typeS md_relax_table[];
 //#define TC_GENERIC_RELAX_TABLE md_relax_table
@@ -224,6 +224,6 @@ flare32_cfi_frame_initial_instructions (void);
   However, some other use the program counter for it? I don't yet know if
   that is the correct option for my case. */
 #define DWARF2_DEFAULT_RETURN_COLUMN \
-  (flare32_regname_to_dw2regnum ((char *)"lr"))
+  (flare_regname_to_dw2regnum ((char *)"lr"))
 
-#endif    /* __TC_FLARE32_H__ */
+#endif    /* __TC_FLARE_H__ */

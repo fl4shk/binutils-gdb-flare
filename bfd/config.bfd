@@ -515,8 +515,8 @@ case "${targ}" in
     targ_defvec=m68k_elf32_vec
     ;;
 
-  flare32-*-elf)
-    targ_defvec=flare32_elf32_vec
+  flare-*-elf)
+    targ_defvec=flare_elf32_vec
     ;;
 
   fr30-*-elf)

@@ -1,4 +1,4 @@
-/* Target-dependent code for Flare32.
+/* Target-dependent code for Flare.
 
    Copyright (C) 2023 Free Software Foundation, Inc.
 
@@ -38,5 +38,5 @@
 #include "record.h"
 #include "record-full.h"
 
-#include "flare32-tdep.h"
+#include "flare-tdep.h"
 #include <algorithm>

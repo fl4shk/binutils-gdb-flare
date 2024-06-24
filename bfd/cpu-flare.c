@@ -1,4 +1,4 @@
-/* BFD support for the flare32 processor.
+/* BFD support for the flare processor.
    Copyright (C) 2023 Free Software Foundation, Inc.
    Written by Andrew Clark (FL4SHK)
 
@@ -22,15 +22,15 @@
 #include "bfd.h"
 #include "libbfd.h"
 
-const bfd_arch_info_type bfd_flare32_arch =
+const bfd_arch_info_type bfd_flare_arch =
 {
   32,   /* Bits in a word. */
   32,   /* Bits in an address. */
   8,    /* Bits in a byte. */
-  bfd_arch_flare32,   /* Architecture number. */
-  bfd_mach_flare32,   /* Machine number. */
-  "flare32",          /* Arch name." */
-  "flare32",          /* Printable name." */
+  bfd_arch_flare,   /* Architecture number. */
+  bfd_mach_flare,   /* Machine number. */
+  "flare",          /* Arch name." */
+  "flare",          /* Printable name." */
   1,                  /* Section alignment power. */
   true,               /* The one and only. */
   bfd_default_compatible,

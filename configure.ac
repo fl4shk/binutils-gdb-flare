@@ -1139,7 +1139,7 @@ case "${target}" in
   d30v-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
-  flare32-*-*)
+  flare-*-*)
     noconfigdirs="$noconfigdirs gdb gprof target-libgloss"
     ;;
   fr30-*-elf*)

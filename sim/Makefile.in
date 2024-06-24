@@ -29,7 +29,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#AM_CPPFLAGS_%C% = -DWITH_TARGET_WORD_BITSIZE=$(SIM_FLARE32_BITSIZE)
+#AM_CPPFLAGS_%C% = -DWITH_TARGET_WORD_BITSIZE=$(SIM_FLARE_BITSIZE)
 
 
 
@@ -177,8 +177,8 @@ TESTS = testsuite/common/bits32m0$(EXEEXT) \
 @SIM_ENABLE_ARCH_erc32_TRUE@am__append_33 = sim-erc32-uninstall-local
 @SIM_ENABLE_ARCH_examples_TRUE@am__append_34 = example-synacor/libsim.a
 @SIM_ENABLE_ARCH_examples_TRUE@am__append_35 = example-synacor/run
-@SIM_ENABLE_ARCH_flare32_TRUE@am__append_36 = flare32/libsim.a
-@SIM_ENABLE_ARCH_flare32_TRUE@am__append_37 = flare32/run
+@SIM_ENABLE_ARCH_flare_TRUE@am__append_36 = flare/libsim.a
+@SIM_ENABLE_ARCH_flare_TRUE@am__append_37 = flare/run
 @SIM_ENABLE_ARCH_frv_TRUE@am__append_38 = frv/libsim.a
 @SIM_ENABLE_ARCH_frv_TRUE@am__append_39 = frv/run
 @SIM_ENABLE_ARCH_frv_TRUE@am__append_40 = frv/eng.h
@@ -357,7 +357,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = aarch64/.gdbinit arm/.gdbinit avr/.gdbinit \
 	bfin/.gdbinit bpf/.gdbinit cr16/.gdbinit cris/.gdbinit \
-	d10v/.gdbinit flare32/.gdbinit frv/.gdbinit ft32/.gdbinit \
+	d10v/.gdbinit flare/.gdbinit frv/.gdbinit ft32/.gdbinit \
 	h8300/.gdbinit iq2000/.gdbinit lm32/.gdbinit m32c/.gdbinit \
 	m32r/.gdbinit m68hc11/.gdbinit mcore/.gdbinit \
 	microblaze/.gdbinit mips/.gdbinit mn10300/.gdbinit \
@@ -545,20 +545,20 @@ example_synacor_libsim_a_AR = $(AR) $(ARFLAGS)
 example_synacor_libsim_a_OBJECTS =  \
 	$(am_example_synacor_libsim_a_OBJECTS) \
 	$(nodist_example_synacor_libsim_a_OBJECTS)
-flare32_libsim_a_AR = $(AR) $(ARFLAGS)
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_libsim_a_DEPENDENCIES =  \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(patsubst \
-@SIM_ENABLE_ARCH_flare32_TRUE@	%,flare32/%,$(SIM_NEW_COMMON_OBJS)) \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(patsubst \
-@SIM_ENABLE_ARCH_flare32_TRUE@	%,flare32/dv-%.o,$(SIM_HW_DEVICES)) \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/interp.o \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/sim-resume.o
-@SIM_ENABLE_ARCH_flare32_TRUE@am_flare32_libsim_a_OBJECTS =  \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(am__objects_1)
-@SIM_ENABLE_ARCH_flare32_TRUE@nodist_flare32_libsim_a_OBJECTS =  \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/modules.$(OBJEXT)
-flare32_libsim_a_OBJECTS = $(am_flare32_libsim_a_OBJECTS) \
-	$(nodist_flare32_libsim_a_OBJECTS)
+flare_libsim_a_AR = $(AR) $(ARFLAGS)
+@SIM_ENABLE_ARCH_flare_TRUE@flare_libsim_a_DEPENDENCIES =  \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(patsubst \
+@SIM_ENABLE_ARCH_flare_TRUE@	%,flare/%,$(SIM_NEW_COMMON_OBJS)) \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(patsubst \
+@SIM_ENABLE_ARCH_flare_TRUE@	%,flare/dv-%.o,$(SIM_HW_DEVICES)) \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/interp.o \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/sim-resume.o
+@SIM_ENABLE_ARCH_flare_TRUE@am_flare_libsim_a_OBJECTS =  \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(am__objects_1)
+@SIM_ENABLE_ARCH_flare_TRUE@nodist_flare_libsim_a_OBJECTS =  \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/modules.$(OBJEXT)
+flare_libsim_a_OBJECTS = $(am_flare_libsim_a_OBJECTS) \
+	$(nodist_flare_libsim_a_OBJECTS)
 frv_libsim_a_AR = $(AR) $(ARFLAGS)
 @SIM_ENABLE_ARCH_frv_TRUE@frv_libsim_a_DEPENDENCIES = $(patsubst \
 @SIM_ENABLE_ARCH_frv_TRUE@	%,frv/%,$(SIM_NEW_COMMON_OBJS)) \
@@ -929,7 +929,7 @@ am__EXEEXT_7 = testsuite/common/bits32m0$(EXEEXT) \
 @SIM_ENABLE_ARCH_erc32_TRUE@	erc32/sis$(EXEEXT)
 @SIM_ENABLE_ARCH_examples_TRUE@am__EXEEXT_18 =  \
 @SIM_ENABLE_ARCH_examples_TRUE@	example-synacor/run$(EXEEXT)
-@SIM_ENABLE_ARCH_flare32_TRUE@am__EXEEXT_19 = flare32/run$(EXEEXT)
+@SIM_ENABLE_ARCH_flare_TRUE@am__EXEEXT_19 = flare/run$(EXEEXT)
 @SIM_ENABLE_ARCH_frv_TRUE@am__EXEEXT_20 = frv/run$(EXEEXT)
 @SIM_ENABLE_ARCH_ft32_TRUE@am__EXEEXT_21 = ft32/run$(EXEEXT)
 @SIM_ENABLE_ARCH_h8300_TRUE@am__EXEEXT_22 = h8300/run$(EXEEXT)
@@ -1023,11 +1023,11 @@ example_synacor_run_OBJECTS = $(am_example_synacor_run_OBJECTS)
 @SIM_ENABLE_ARCH_examples_TRUE@	example-synacor/nrun.o \
 @SIM_ENABLE_ARCH_examples_TRUE@	example-synacor/libsim.a \
 @SIM_ENABLE_ARCH_examples_TRUE@	$(am__DEPENDENCIES_4)
-am_flare32_run_OBJECTS =
-flare32_run_OBJECTS = $(am_flare32_run_OBJECTS)
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_run_DEPENDENCIES =  \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/nrun.o flare32/libsim.a \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(am__DEPENDENCIES_4)
+am_flare_run_OBJECTS =
+flare_run_OBJECTS = $(am_flare_run_OBJECTS)
+@SIM_ENABLE_ARCH_flare_TRUE@flare_run_DEPENDENCIES =  \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/nrun.o flare/libsim.a \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(am__DEPENDENCIES_4)
 am_frv_run_OBJECTS =
 frv_run_OBJECTS = $(am_frv_run_OBJECTS)
 @SIM_ENABLE_ARCH_frv_TRUE@frv_run_DEPENDENCIES = frv/nrun.o \
@@ -1230,7 +1230,7 @@ SOURCES = $(aarch64_libsim_a_SOURCES) \
 	$(erc32_libsim_a_SOURCES) $(nodist_erc32_libsim_a_SOURCES) \
 	$(example_synacor_libsim_a_SOURCES) \
 	$(nodist_example_synacor_libsim_a_SOURCES) \
-	$(flare32_libsim_a_SOURCES) $(nodist_flare32_libsim_a_SOURCES) \
+	$(flare_libsim_a_SOURCES) $(nodist_flare_libsim_a_SOURCES) \
 	$(frv_libsim_a_SOURCES) $(nodist_frv_libsim_a_SOURCES) \
 	$(ft32_libsim_a_SOURCES) $(nodist_ft32_libsim_a_SOURCES) \
 	$(h8300_libsim_a_SOURCES) $(nodist_h8300_libsim_a_SOURCES) \
@@ -1259,7 +1259,7 @@ SOURCES = $(aarch64_libsim_a_SOURCES) \
 	$(cris_run_SOURCES) $(cris_rvdummy_SOURCES) \
 	$(d10v_gencode_SOURCES) $(d10v_run_SOURCES) \
 	$(erc32_run_SOURCES) erc32/sis.c \
-	$(example_synacor_run_SOURCES) $(flare32_run_SOURCES) \
+	$(example_synacor_run_SOURCES) $(flare_run_SOURCES) \
 	$(frv_run_SOURCES) $(ft32_run_SOURCES) $(h8300_run_SOURCES) \
 	$(igen_filter_SOURCES) $(igen_gen_SOURCES) \
 	$(igen_igen_SOURCES) $(igen_ld_cache_SOURCES) \
@@ -1552,7 +1552,7 @@ AS_FOR_TARGET_CRIS = @AS_FOR_TARGET_CRIS@
 AS_FOR_TARGET_D10V = @AS_FOR_TARGET_D10V@
 AS_FOR_TARGET_ERC32 = @AS_FOR_TARGET_ERC32@
 AS_FOR_TARGET_EXAMPLE_SYNACOR = @AS_FOR_TARGET_EXAMPLE_SYNACOR@
-AS_FOR_TARGET_FLARE32 = @AS_FOR_TARGET_FLARE32@
+AS_FOR_TARGET_FLARE = @AS_FOR_TARGET_FLARE@
 AS_FOR_TARGET_FRV = @AS_FOR_TARGET_FRV@
 AS_FOR_TARGET_FT32 = @AS_FOR_TARGET_FT32@
 AS_FOR_TARGET_H8300 = @AS_FOR_TARGET_H8300@
@@ -1593,7 +1593,7 @@ CC_FOR_TARGET_CRIS = @CC_FOR_TARGET_CRIS@
 CC_FOR_TARGET_D10V = @CC_FOR_TARGET_D10V@
 CC_FOR_TARGET_ERC32 = @CC_FOR_TARGET_ERC32@
 CC_FOR_TARGET_EXAMPLE_SYNACOR = @CC_FOR_TARGET_EXAMPLE_SYNACOR@
-CC_FOR_TARGET_FLARE32 = @CC_FOR_TARGET_FLARE32@
+CC_FOR_TARGET_FLARE = @CC_FOR_TARGET_FLARE@
 CC_FOR_TARGET_FRV = @CC_FOR_TARGET_FRV@
 CC_FOR_TARGET_FT32 = @CC_FOR_TARGET_FT32@
 CC_FOR_TARGET_H8300 = @CC_FOR_TARGET_H8300@
@@ -1656,7 +1656,7 @@ LD_FOR_TARGET_CRIS = @LD_FOR_TARGET_CRIS@
 LD_FOR_TARGET_D10V = @LD_FOR_TARGET_D10V@
 LD_FOR_TARGET_ERC32 = @LD_FOR_TARGET_ERC32@
 LD_FOR_TARGET_EXAMPLE_SYNACOR = @LD_FOR_TARGET_EXAMPLE_SYNACOR@
-LD_FOR_TARGET_FLARE32 = @LD_FOR_TARGET_FLARE32@
+LD_FOR_TARGET_FLARE = @LD_FOR_TARGET_FLARE@
 LD_FOR_TARGET_FRV = @LD_FOR_TARGET_FRV@
 LD_FOR_TARGET_FT32 = @LD_FOR_TARGET_FT32@
 LD_FOR_TARGET_H8300 = @LD_FOR_TARGET_H8300@
@@ -2340,23 +2340,23 @@ testsuite_common_CPPFLAGS = \
 @SIM_ENABLE_ARCH_examples_TRUE@	example-synacor/libsim.a \
 @SIM_ENABLE_ARCH_examples_TRUE@	$(SIM_COMMON_LIBS)
 
-@SIM_ENABLE_ARCH_flare32_TRUE@nodist_flare32_libsim_a_SOURCES = \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/modules.c
+@SIM_ENABLE_ARCH_flare_TRUE@nodist_flare_libsim_a_SOURCES = \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/modules.c
 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_libsim_a_SOURCES = \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(common_libcommon_a_SOURCES)
+@SIM_ENABLE_ARCH_flare_TRUE@flare_libsim_a_SOURCES = \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(common_libcommon_a_SOURCES)
 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_libsim_a_LIBADD = \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(patsubst %,flare32/%,$(SIM_NEW_COMMON_OBJS)) \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(patsubst %,flare32/dv-%.o,$(SIM_HW_DEVICES)) \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/interp.o \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/sim-resume.o
+@SIM_ENABLE_ARCH_flare_TRUE@flare_libsim_a_LIBADD = \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(patsubst %,flare/%,$(SIM_NEW_COMMON_OBJS)) \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(patsubst %,flare/dv-%.o,$(SIM_HW_DEVICES)) \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/interp.o \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/sim-resume.o
 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_run_SOURCES = 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32_run_LDADD = \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/nrun.o \
-@SIM_ENABLE_ARCH_flare32_TRUE@	flare32/libsim.a \
-@SIM_ENABLE_ARCH_flare32_TRUE@	$(SIM_COMMON_LIBS)
+@SIM_ENABLE_ARCH_flare_TRUE@flare_run_SOURCES = 
+@SIM_ENABLE_ARCH_flare_TRUE@flare_run_LDADD = \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/nrun.o \
+@SIM_ENABLE_ARCH_flare_TRUE@	flare/libsim.a \
+@SIM_ENABLE_ARCH_flare_TRUE@	$(SIM_COMMON_LIBS)
 
 @SIM_ENABLE_ARCH_frv_TRUE@AM_CPPFLAGS_frv = $(SIM_FRV_TRAPDUMP_FLAGS)
 @SIM_ENABLE_ARCH_frv_TRUE@AM_CFLAGS_frv_memory.o = -Wno-error
@@ -3113,7 +3113,7 @@ all: $(BUILT_SOURCES) config.h
 .SUFFIXES: .c .lo .log .o .obj .test .test$(EXEEXT) .trs
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/common/local.mk $(srcdir)/igen/local.mk $(srcdir)/testsuite/local.mk $(srcdir)/testsuite/common/local.mk $(srcdir)/aarch64/local.mk $(srcdir)/arm/local.mk $(srcdir)/avr/local.mk $(srcdir)/bfin/local.mk $(srcdir)/bpf/local.mk $(srcdir)/cr16/local.mk $(srcdir)/cris/local.mk $(srcdir)/d10v/local.mk $(srcdir)/erc32/local.mk $(srcdir)/example-synacor/local.mk $(srcdir)/flare32/local.mk $(srcdir)/frv/local.mk $(srcdir)/ft32/local.mk $(srcdir)/h8300/local.mk $(srcdir)/iq2000/local.mk $(srcdir)/lm32/local.mk $(srcdir)/m32c/local.mk $(srcdir)/m32r/local.mk $(srcdir)/m68hc11/local.mk $(srcdir)/mcore/local.mk $(srcdir)/microblaze/local.mk $(srcdir)/mips/local.mk $(srcdir)/mn10300/local.mk $(srcdir)/moxie/local.mk $(srcdir)/msp430/local.mk $(srcdir)/or1k/local.mk $(srcdir)/ppc/local.mk $(srcdir)/pru/local.mk $(srcdir)/riscv/local.mk $(srcdir)/rl78/local.mk $(srcdir)/rx/local.mk $(srcdir)/sh/local.mk $(srcdir)/v850/local.mk $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/common/local.mk $(srcdir)/igen/local.mk $(srcdir)/testsuite/local.mk $(srcdir)/testsuite/common/local.mk $(srcdir)/aarch64/local.mk $(srcdir)/arm/local.mk $(srcdir)/avr/local.mk $(srcdir)/bfin/local.mk $(srcdir)/bpf/local.mk $(srcdir)/cr16/local.mk $(srcdir)/cris/local.mk $(srcdir)/d10v/local.mk $(srcdir)/erc32/local.mk $(srcdir)/example-synacor/local.mk $(srcdir)/flare/local.mk $(srcdir)/frv/local.mk $(srcdir)/ft32/local.mk $(srcdir)/h8300/local.mk $(srcdir)/iq2000/local.mk $(srcdir)/lm32/local.mk $(srcdir)/m32c/local.mk $(srcdir)/m32r/local.mk $(srcdir)/m68hc11/local.mk $(srcdir)/mcore/local.mk $(srcdir)/microblaze/local.mk $(srcdir)/mips/local.mk $(srcdir)/mn10300/local.mk $(srcdir)/moxie/local.mk $(srcdir)/msp430/local.mk $(srcdir)/or1k/local.mk $(srcdir)/ppc/local.mk $(srcdir)/pru/local.mk $(srcdir)/riscv/local.mk $(srcdir)/rl78/local.mk $(srcdir)/rx/local.mk $(srcdir)/sh/local.mk $(srcdir)/v850/local.mk $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -3135,7 +3135,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
 	esac;
-$(srcdir)/common/local.mk $(srcdir)/igen/local.mk $(srcdir)/testsuite/local.mk $(srcdir)/testsuite/common/local.mk $(srcdir)/aarch64/local.mk $(srcdir)/arm/local.mk $(srcdir)/avr/local.mk $(srcdir)/bfin/local.mk $(srcdir)/bpf/local.mk $(srcdir)/cr16/local.mk $(srcdir)/cris/local.mk $(srcdir)/d10v/local.mk $(srcdir)/erc32/local.mk $(srcdir)/example-synacor/local.mk $(srcdir)/flare32/local.mk $(srcdir)/frv/local.mk $(srcdir)/ft32/local.mk $(srcdir)/h8300/local.mk $(srcdir)/iq2000/local.mk $(srcdir)/lm32/local.mk $(srcdir)/m32c/local.mk $(srcdir)/m32r/local.mk $(srcdir)/m68hc11/local.mk $(srcdir)/mcore/local.mk $(srcdir)/microblaze/local.mk $(srcdir)/mips/local.mk $(srcdir)/mn10300/local.mk $(srcdir)/moxie/local.mk $(srcdir)/msp430/local.mk $(srcdir)/or1k/local.mk $(srcdir)/ppc/local.mk $(srcdir)/pru/local.mk $(srcdir)/riscv/local.mk $(srcdir)/rl78/local.mk $(srcdir)/rx/local.mk $(srcdir)/sh/local.mk $(srcdir)/v850/local.mk $(am__empty):
+$(srcdir)/common/local.mk $(srcdir)/igen/local.mk $(srcdir)/testsuite/local.mk $(srcdir)/testsuite/common/local.mk $(srcdir)/aarch64/local.mk $(srcdir)/arm/local.mk $(srcdir)/avr/local.mk $(srcdir)/bfin/local.mk $(srcdir)/bpf/local.mk $(srcdir)/cr16/local.mk $(srcdir)/cris/local.mk $(srcdir)/d10v/local.mk $(srcdir)/erc32/local.mk $(srcdir)/example-synacor/local.mk $(srcdir)/flare/local.mk $(srcdir)/frv/local.mk $(srcdir)/ft32/local.mk $(srcdir)/h8300/local.mk $(srcdir)/iq2000/local.mk $(srcdir)/lm32/local.mk $(srcdir)/m32c/local.mk $(srcdir)/m32r/local.mk $(srcdir)/m68hc11/local.mk $(srcdir)/mcore/local.mk $(srcdir)/microblaze/local.mk $(srcdir)/mips/local.mk $(srcdir)/mn10300/local.mk $(srcdir)/moxie/local.mk $(srcdir)/msp430/local.mk $(srcdir)/or1k/local.mk $(srcdir)/ppc/local.mk $(srcdir)/pru/local.mk $(srcdir)/riscv/local.mk $(srcdir)/rl78/local.mk $(srcdir)/rx/local.mk $(srcdir)/sh/local.mk $(srcdir)/v850/local.mk $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -3176,7 +3176,7 @@ cris/.gdbinit: $(top_builddir)/config.status $(top_srcdir)/common/gdbinit.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 d10v/.gdbinit: $(top_builddir)/config.status $(top_srcdir)/common/gdbinit.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-flare32/.gdbinit: $(top_builddir)/config.status $(top_srcdir)/common/gdbinit.in
+flare/.gdbinit: $(top_builddir)/config.status $(top_srcdir)/common/gdbinit.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 frv/.gdbinit: $(top_builddir)/config.status $(top_srcdir)/common/gdbinit.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -3394,19 +3394,19 @@ example-synacor/libsim.a: $(example_synacor_libsim_a_OBJECTS) $(example_synacor_
 	$(AM_V_at)-rm -f example-synacor/libsim.a
 	$(AM_V_AR)$(example_synacor_libsim_a_AR) example-synacor/libsim.a $(example_synacor_libsim_a_OBJECTS) $(example_synacor_libsim_a_LIBADD)
 	$(AM_V_at)$(RANLIB) example-synacor/libsim.a
-flare32/$(am__dirstamp):
-	@$(MKDIR_P) flare32
-	@: > flare32/$(am__dirstamp)
-flare32/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) flare32/$(DEPDIR)
-	@: > flare32/$(DEPDIR)/$(am__dirstamp)
-flare32/modules.$(OBJEXT): flare32/$(am__dirstamp) \
-	flare32/$(DEPDIR)/$(am__dirstamp)
+flare/$(am__dirstamp):
+	@$(MKDIR_P) flare
+	@: > flare/$(am__dirstamp)
+flare/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) flare/$(DEPDIR)
+	@: > flare/$(DEPDIR)/$(am__dirstamp)
+flare/modules.$(OBJEXT): flare/$(am__dirstamp) \
+	flare/$(DEPDIR)/$(am__dirstamp)
 
-flare32/libsim.a: $(flare32_libsim_a_OBJECTS) $(flare32_libsim_a_DEPENDENCIES) $(EXTRA_flare32_libsim_a_DEPENDENCIES) flare32/$(am__dirstamp)
-	$(AM_V_at)-rm -f flare32/libsim.a
-	$(AM_V_AR)$(flare32_libsim_a_AR) flare32/libsim.a $(flare32_libsim_a_OBJECTS) $(flare32_libsim_a_LIBADD)
-	$(AM_V_at)$(RANLIB) flare32/libsim.a
+flare/libsim.a: $(flare_libsim_a_OBJECTS) $(flare_libsim_a_DEPENDENCIES) $(EXTRA_flare_libsim_a_DEPENDENCIES) flare/$(am__dirstamp)
+	$(AM_V_at)-rm -f flare/libsim.a
+	$(AM_V_AR)$(flare_libsim_a_AR) flare/libsim.a $(flare_libsim_a_OBJECTS) $(flare_libsim_a_LIBADD)
+	$(AM_V_at)$(RANLIB) flare/libsim.a
 frv/$(am__dirstamp):
 	@$(MKDIR_P) frv
 	@: > frv/$(am__dirstamp)
@@ -3798,9 +3798,9 @@ example-synacor/run$(EXEEXT): $(example_synacor_run_OBJECTS) $(example_synacor_r
 	@rm -f example-synacor/run$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(example_synacor_run_OBJECTS) $(example_synacor_run_LDADD) $(LIBS)
 
-flare32/run$(EXEEXT): $(flare32_run_OBJECTS) $(flare32_run_DEPENDENCIES) $(EXTRA_flare32_run_DEPENDENCIES) flare32/$(am__dirstamp)
-	@rm -f flare32/run$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(flare32_run_OBJECTS) $(flare32_run_LDADD) $(LIBS)
+flare/run$(EXEEXT): $(flare_run_OBJECTS) $(flare_run_DEPENDENCIES) $(EXTRA_flare_run_DEPENDENCIES) flare/$(am__dirstamp)
+	@rm -f flare/run$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(flare_run_OBJECTS) $(flare_run_LDADD) $(LIBS)
 
 frv/run$(EXEEXT): $(frv_run_OBJECTS) $(frv_run_DEPENDENCIES) $(EXTRA_frv_run_DEPENDENCIES) frv/$(am__dirstamp)
 	@rm -f frv/run$(EXEEXT)
@@ -3971,7 +3971,7 @@ mostlyclean-compile:
 	-rm -f d10v/*.$(OBJEXT)
 	-rm -f erc32/*.$(OBJEXT)
 	-rm -f example-synacor/*.$(OBJEXT)
-	-rm -f flare32/*.$(OBJEXT)
+	-rm -f flare/*.$(OBJEXT)
 	-rm -f frv/*.$(OBJEXT)
 	-rm -f ft32/*.$(OBJEXT)
 	-rm -f h8300/*.$(OBJEXT)
@@ -4023,7 +4023,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@erc32/$(DEPDIR)/modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@erc32/$(DEPDIR)/sis.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@example-synacor/$(DEPDIR)/modules.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@flare32/$(DEPDIR)/modules.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@flare/$(DEPDIR)/modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@frv/$(DEPDIR)/modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ft32/$(DEPDIR)/modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@h8300/$(DEPDIR)/modules.Po@am__quote@
@@ -4112,7 +4112,7 @@ clean-libtool:
 	-rm -rf d10v/.libs d10v/_libs
 	-rm -rf erc32/.libs erc32/_libs
 	-rm -rf example-synacor/.libs example-synacor/_libs
-	-rm -rf flare32/.libs flare32/_libs
+	-rm -rf flare/.libs flare/_libs
 	-rm -rf frv/.libs frv/_libs
 	-rm -rf ft32/.libs ft32/_libs
 	-rm -rf h8300/.libs h8300/_libs
@@ -4702,8 +4702,8 @@ distclean-generic:
 	-rm -f erc32/$(am__dirstamp)
 	-rm -f example-synacor/$(DEPDIR)/$(am__dirstamp)
 	-rm -f example-synacor/$(am__dirstamp)
-	-rm -f flare32/$(DEPDIR)/$(am__dirstamp)
-	-rm -f flare32/$(am__dirstamp)
+	-rm -f flare/$(DEPDIR)/$(am__dirstamp)
+	-rm -f flare/$(am__dirstamp)
 	-rm -f frv/$(DEPDIR)/$(am__dirstamp)
 	-rm -f frv/$(am__dirstamp)
 	-rm -f ft32/$(DEPDIR)/$(am__dirstamp)
@@ -4764,7 +4764,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf aarch64/$(DEPDIR) arm/$(DEPDIR) avr/$(DEPDIR) bfin/$(DEPDIR) bpf/$(DEPDIR) common/$(DEPDIR) cr16/$(DEPDIR) cris/$(DEPDIR) d10v/$(DEPDIR) erc32/$(DEPDIR) example-synacor/$(DEPDIR) flare32/$(DEPDIR) frv/$(DEPDIR) ft32/$(DEPDIR) h8300/$(DEPDIR) igen/$(DEPDIR) iq2000/$(DEPDIR) lm32/$(DEPDIR) m32c/$(DEPDIR) m32r/$(DEPDIR) m68hc11/$(DEPDIR) mcore/$(DEPDIR) microblaze/$(DEPDIR) mips/$(DEPDIR) mn10300/$(DEPDIR) moxie/$(DEPDIR) msp430/$(DEPDIR) or1k/$(DEPDIR) pru/$(DEPDIR) riscv/$(DEPDIR) rl78/$(DEPDIR) rx/$(DEPDIR) sh/$(DEPDIR) testsuite/common/$(DEPDIR) v850/$(DEPDIR)
+	-rm -rf aarch64/$(DEPDIR) arm/$(DEPDIR) avr/$(DEPDIR) bfin/$(DEPDIR) bpf/$(DEPDIR) common/$(DEPDIR) cr16/$(DEPDIR) cris/$(DEPDIR) d10v/$(DEPDIR) erc32/$(DEPDIR) example-synacor/$(DEPDIR) flare/$(DEPDIR) frv/$(DEPDIR) ft32/$(DEPDIR) h8300/$(DEPDIR) igen/$(DEPDIR) iq2000/$(DEPDIR) lm32/$(DEPDIR) m32c/$(DEPDIR) m32r/$(DEPDIR) m68hc11/$(DEPDIR) mcore/$(DEPDIR) microblaze/$(DEPDIR) mips/$(DEPDIR) mn10300/$(DEPDIR) moxie/$(DEPDIR) msp430/$(DEPDIR) or1k/$(DEPDIR) pru/$(DEPDIR) riscv/$(DEPDIR) rl78/$(DEPDIR) rx/$(DEPDIR) sh/$(DEPDIR) testsuite/common/$(DEPDIR) v850/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-DEJAGNU distclean-compile \
 	distclean-generic distclean-hdr distclean-libtool \
@@ -4815,7 +4815,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf aarch64/$(DEPDIR) arm/$(DEPDIR) avr/$(DEPDIR) bfin/$(DEPDIR) bpf/$(DEPDIR) common/$(DEPDIR) cr16/$(DEPDIR) cris/$(DEPDIR) d10v/$(DEPDIR) erc32/$(DEPDIR) example-synacor/$(DEPDIR) flare32/$(DEPDIR) frv/$(DEPDIR) ft32/$(DEPDIR) h8300/$(DEPDIR) igen/$(DEPDIR) iq2000/$(DEPDIR) lm32/$(DEPDIR) m32c/$(DEPDIR) m32r/$(DEPDIR) m68hc11/$(DEPDIR) mcore/$(DEPDIR) microblaze/$(DEPDIR) mips/$(DEPDIR) mn10300/$(DEPDIR) moxie/$(DEPDIR) msp430/$(DEPDIR) or1k/$(DEPDIR) pru/$(DEPDIR) riscv/$(DEPDIR) rl78/$(DEPDIR) rx/$(DEPDIR) sh/$(DEPDIR) testsuite/common/$(DEPDIR) v850/$(DEPDIR)
+	-rm -rf aarch64/$(DEPDIR) arm/$(DEPDIR) avr/$(DEPDIR) bfin/$(DEPDIR) bpf/$(DEPDIR) common/$(DEPDIR) cr16/$(DEPDIR) cris/$(DEPDIR) d10v/$(DEPDIR) erc32/$(DEPDIR) example-synacor/$(DEPDIR) flare/$(DEPDIR) frv/$(DEPDIR) ft32/$(DEPDIR) h8300/$(DEPDIR) igen/$(DEPDIR) iq2000/$(DEPDIR) lm32/$(DEPDIR) m32c/$(DEPDIR) m32r/$(DEPDIR) m68hc11/$(DEPDIR) mcore/$(DEPDIR) microblaze/$(DEPDIR) mips/$(DEPDIR) mn10300/$(DEPDIR) moxie/$(DEPDIR) msp430/$(DEPDIR) or1k/$(DEPDIR) pru/$(DEPDIR) riscv/$(DEPDIR) rl78/$(DEPDIR) rx/$(DEPDIR) sh/$(DEPDIR) testsuite/common/$(DEPDIR) v850/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -5248,12 +5248,12 @@ testsuite/common/bits64m63.c: testsuite/common/bits-gen$(EXEEXT) testsuite/commo
 
 @SIM_ENABLE_ARCH_examples_TRUE@example-synacor/%.o: common/%.c ; $(SIM_COMPILE)
 @SIM_ENABLE_ARCH_examples_TRUE@-@am__include@ example-synacor/$(DEPDIR)/*.Po
-@SIM_ENABLE_ARCH_flare32_TRUE@$(flare32_libsim_a_OBJECTS) $(flare32_libsim_a_LIBADD): flare32/hw-config.h
+@SIM_ENABLE_ARCH_flare_TRUE@$(flare_libsim_a_OBJECTS) $(flare_libsim_a_LIBADD): flare/hw-config.h
 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32/modules.o: flare32/modules.c
+@SIM_ENABLE_ARCH_flare_TRUE@flare/modules.o: flare/modules.c
 
-@SIM_ENABLE_ARCH_flare32_TRUE@flare32/%.o: common/%.c ; $(SIM_COMPILE)
-@SIM_ENABLE_ARCH_flare32_TRUE@-@am__include@ flare32/$(DEPDIR)/*.Po
+@SIM_ENABLE_ARCH_flare_TRUE@flare/%.o: common/%.c ; $(SIM_COMPILE)
+@SIM_ENABLE_ARCH_flare_TRUE@-@am__include@ flare/$(DEPDIR)/*.Po
 @SIM_ENABLE_ARCH_frv_TRUE@$(frv_libsim_a_OBJECTS) $(frv_libsim_a_LIBADD): frv/hw-config.h
 
 @SIM_ENABLE_ARCH_frv_TRUE@frv/modules.o: frv/modules.c

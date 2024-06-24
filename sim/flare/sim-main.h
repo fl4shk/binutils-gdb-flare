@@ -1,4 +1,4 @@
-/* Flare32 Simulator definition.
+/* Flare Simulator definition.
    Copyright (C) 2023 Free Software Foundation, Inc.
    Contributed by Andrew Clark (FL4SHK)
 
@@ -21,31 +21,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 #define SIM_MAIN_H
 
 #include <stdint.h>
-#include "opcode/flare32.h"
+#include "opcode/flare.h"
 #include "sim-basics.h"
 #include "sim-base.h"
 
 typedef struct
-  //flare32_regset_t
-  flare32_cpu_t
+  //flare_regset_t
+  flare_cpu_t
 {
   int32_t
-    gprs[FLARE32_NUM_GPRS],
-    sprs[FLARE32_NUM_SPRS],
+    gprs[FLARE_NUM_GPRS],
+    sprs[FLARE_NUM_SPRS],
     pc;
   unsigned long insn_cnt;
 }
-  //flare32_regset_t
-  flare32_cpu_t;
+  //flare_regset_t
+  flare_cpu_t;
 
-//typedef union flare32_cpu_t
+//typedef union flare_cpu_t
 //{
-//  flare32_regset_t asregs;
+//  flare_regset_t asregs;
 //  int32_t asints[1];    /* accessed as larger values */
-//} flare32_cpu_t;
+//} flare_cpu_t;
 extern void
-flare32_cpu_set_asint (flare32_cpu_t *self, unsigned rn, int32_t value);
+flare_cpu_set_asint (flare_cpu_t *self, unsigned rn, int32_t value);
 extern int32_t
-flare32_cpu_get_asint (flare32_cpu_t *self, unsigned rn);
+flare_cpu_get_asint (flare_cpu_t *self, unsigned rn);
 
 #endif    /* SIM_MAIN_H */

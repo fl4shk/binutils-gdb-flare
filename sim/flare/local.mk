@@ -16,7 +16,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#AM_CPPFLAGS_%C% = -DWITH_TARGET_WORD_BITSIZE=$(SIM_FLARE32_BITSIZE)
+#AM_CPPFLAGS_%C% = -DWITH_TARGET_WORD_BITSIZE=$(SIM_FLARE_BITSIZE)
 
 nodist_%C%_libsim_a_SOURCES = \
 	%D%/modules.c

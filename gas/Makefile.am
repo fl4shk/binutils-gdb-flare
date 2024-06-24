@@ -151,7 +151,7 @@ TARGET_CPU_CFILES = \
 	config/tc-d30v.c \
 	config/tc-dlx.c \
 	config/tc-epiphany.c \
-	config/tc-flare32.c \
+	config/tc-flare.c \
 	config/tc-fr30.c \
 	config/tc-frv.c \
 	config/tc-ft32.c \

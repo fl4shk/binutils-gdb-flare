@@ -336,7 +336,7 @@ case ${generic_target} in
   moxie-*-moxiebox*)                    fmt=elf endian=little ;;
   moxie-*-*)				fmt=elf ;;
 
-  flare32-*-*)				fmt=elf ;;
+  flare-*-*)				fmt=elf ;;
     
   mt-*-elf)				fmt=elf bfd_gas=yes ;;
 

@@ -1,5 +1,5 @@
-/* flare32-relax-reloc-lookup.h:
-   lookup `bfd_reloc_code_real_type`s for relaxing Flare32 instructions.
+/* flare-relax-reloc-lookup.h:
+   lookup `bfd_reloc_code_real_type`s for relaxing Flare instructions.
 
    Copyright (C) 2023 Free Software Foundation, Inc.
    Contributed by Andrew Clark (FL4SHK).
@@ -21,65 +21,65 @@
    Free Software Foundation, 51 Franklin Street - Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-#ifndef _FLARE32_RELAX_RELOC_LOOKUP_H_
-#define _FLARE32_RELAX_RELOC_LOOKUP_H_
+#ifndef _FLARE_RELAX_RELOC_LOOKUP_H_
+#define _FLARE_RELAX_RELOC_LOOKUP_H_
 
-struct flare32_relax_reloc_tuple_mbr
+struct flare_relax_reloc_tuple_mbr
 {
   bfd_reloc_code_real_type reloc;
   unsigned int r_type;
 };
-struct flare32_relax_reloc_tuple
+struct flare_relax_reloc_tuple
 {
-  struct flare32_relax_reloc_tuple_mbr
+  struct flare_relax_reloc_tuple_mbr
     small,
     pre,
     lpre,
     lpre_no_relax;
 };
 
-static const struct flare32_relax_reloc_tuple
-flare32_relax_reloc_tuple_pcrel =
+static const struct flare_relax_reloc_tuple
+flare_relax_reloc_tuple_pcrel =
 {
-  {BFD_RELOC_FLARE32_G3_S9_PCREL, R_FLARE32_G3_S9_PCREL}, /* small */
-  {BFD_RELOC_FLARE32_G3_S21_PCREL, R_FLARE32_G3_S21_PCREL}, /* pre */
-  {BFD_RELOC_FLARE32_G3_S32_PCREL, R_FLARE32_G3_S32_PCREL}, /* lpre */
-  {BFD_RELOC_FLARE32_G3_S32_PCREL_NO_RELAX,
-    R_FLARE32_G3_S32_PCREL_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G3_S9_PCREL, R_FLARE_G3_S9_PCREL}, /* small */
+  {BFD_RELOC_FLARE_G3_S21_PCREL, R_FLARE_G3_S21_PCREL}, /* pre */
+  {BFD_RELOC_FLARE_G3_S32_PCREL, R_FLARE_G3_S32_PCREL}, /* lpre */
+  {BFD_RELOC_FLARE_G3_S32_PCREL_NO_RELAX,
+    R_FLARE_G3_S32_PCREL_NO_RELAX}, /* lpre_no_relax */
 };
-static const struct flare32_relax_reloc_tuple
-flare32_relax_reloc_tuple_g7_icreload =
+static const struct flare_relax_reloc_tuple
+flare_relax_reloc_tuple_g7_icreload =
 {
-  {BFD_RELOC_FLARE32_G7_ICRELOAD_S5, R_FLARE32_G7_ICRELOAD_S5}, /* small */
-  {BFD_RELOC_FLARE32_G7_ICRELOAD_S17, R_FLARE32_G7_ICRELOAD_S17}, /* pre */
-  {BFD_RELOC_FLARE32_G7_ICRELOAD_S32,
-    R_FLARE32_G7_ICRELOAD_S32}, /* lpre */
-  {BFD_RELOC_FLARE32_G7_ICRELOAD_S32_NO_RELAX,
-    R_FLARE32_G7_ICRELOAD_S32_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G7_ICRELOAD_S5, R_FLARE_G7_ICRELOAD_S5}, /* small */
+  {BFD_RELOC_FLARE_G7_ICRELOAD_S17, R_FLARE_G7_ICRELOAD_S17}, /* pre */
+  {BFD_RELOC_FLARE_G7_ICRELOAD_S32,
+    R_FLARE_G7_ICRELOAD_S32}, /* lpre */
+  {BFD_RELOC_FLARE_G7_ICRELOAD_S32_NO_RELAX,
+    R_FLARE_G7_ICRELOAD_S32_NO_RELAX}, /* lpre_no_relax */
 };
-static const struct flare32_relax_reloc_tuple
-flare32_relax_reloc_tuple_g1g5g6_uimm =
+static const struct flare_relax_reloc_tuple
+flare_relax_reloc_tuple_g1g5g6_uimm =
 {
-  {BFD_RELOC_FLARE32_G1G5G6_U5,
-    R_FLARE32_G1G5G6_U5}, /* small */
-  {BFD_RELOC_FLARE32_G1G5G6_S17_FOR_U5,
-    R_FLARE32_G1G5G6_S17_FOR_U5}, /* pre */
-  {BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5,
-    R_FLARE32_G1G5G6_S32_FOR_U5}, /* lpre */
-  {BFD_RELOC_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX,
-    R_FLARE32_G1G5G6_S32_FOR_U5_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G1G5G6_U5,
+    R_FLARE_G1G5G6_U5}, /* small */
+  {BFD_RELOC_FLARE_G1G5G6_S17_FOR_U5,
+    R_FLARE_G1G5G6_S17_FOR_U5}, /* pre */
+  {BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5,
+    R_FLARE_G1G5G6_S32_FOR_U5}, /* lpre */
+  {BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX,
+    R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX}, /* lpre_no_relax */
 };
-static const struct flare32_relax_reloc_tuple
-flare32_relax_reloc_tuple_g1g5g6_simm =
+static const struct flare_relax_reloc_tuple
+flare_relax_reloc_tuple_g1g5g6_simm =
 {
-  {BFD_RELOC_FLARE32_G1G5G6_S5, R_FLARE32_G1G5G6_S5}, /* small */
-  {BFD_RELOC_FLARE32_G1G5G6_S17, R_FLARE32_G1G5G6_S17}, /* pre */
-  {BFD_RELOC_FLARE32_G1G5G6_S32, R_FLARE32_G1G5G6_S32}, /* lpre */
-  {BFD_RELOC_FLARE32_G1G5G6_S32_NO_RELAX,
-    R_FLARE32_G1G5G6_S32_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G1G5G6_S5, R_FLARE_G1G5G6_S5}, /* small */
+  {BFD_RELOC_FLARE_G1G5G6_S17, R_FLARE_G1G5G6_S17}, /* pre */
+  {BFD_RELOC_FLARE_G1G5G6_S32, R_FLARE_G1G5G6_S32}, /* lpre */
+  {BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX,
+    R_FLARE_G1G5G6_S32_NO_RELAX}, /* lpre_no_relax */
 };
-static inline const struct flare32_relax_reloc_tuple *
-flare32_relax_reloc_lookup
+static inline const struct flare_relax_reloc_tuple *
+flare_relax_reloc_lookup
   (bool is_pcrel, bool is_g7_icreload, bool is_small_imm_unsigned)
 {
   return
@@ -88,10 +88,10 @@ flare32_relax_reloc_lookup
       !is_g7_icreload
       ? (
         !is_small_imm_unsigned
-        ? &flare32_relax_reloc_tuple_g1g5g6_simm
-        : &flare32_relax_reloc_tuple_g1g5g6_uimm
-      ) : &flare32_relax_reloc_tuple_g7_icreload
-    ) : &flare32_relax_reloc_tuple_pcrel;
+        ? &flare_relax_reloc_tuple_g1g5g6_simm
+        : &flare_relax_reloc_tuple_g1g5g6_uimm
+      ) : &flare_relax_reloc_tuple_g7_icreload
+    ) : &flare_relax_reloc_tuple_pcrel;
 }
 
-#endif    /* _FLARE32_RELAX_RELOC_LOOKUP_H_ */
+#endif    /* _FLARE_RELAX_RELOC_LOOKUP_H_ */

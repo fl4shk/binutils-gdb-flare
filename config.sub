@@ -1241,7 +1241,7 @@ case $cpu-$vendor in
 			| mmix \
 			| mn10200 | mn10300 \
 			| moxie \
-			| flare32 \
+			| flare \
 			| mt \
 			| msp430 \
 			| nds32 | nds32le | nds32be \

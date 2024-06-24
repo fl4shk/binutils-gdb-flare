@@ -789,11 +789,11 @@ SIM_ENABLE_ARCH_frv_TRUE
 CC_FOR_TARGET_FRV
 LD_FOR_TARGET_FRV
 AS_FOR_TARGET_FRV
-SIM_ENABLE_ARCH_flare32_FALSE
-SIM_ENABLE_ARCH_flare32_TRUE
-CC_FOR_TARGET_FLARE32
-LD_FOR_TARGET_FLARE32
-AS_FOR_TARGET_FLARE32
+SIM_ENABLE_ARCH_flare_FALSE
+SIM_ENABLE_ARCH_flare_TRUE
+CC_FOR_TARGET_FLARE
+LD_FOR_TARGET_FLARE
+AS_FOR_TARGET_FLARE
 SIM_ENABLE_ARCH_d10v_FALSE
 SIM_ENABLE_ARCH_d10v_TRUE
 CC_FOR_TARGET_D10V
@@ -1053,9 +1053,9 @@ CC_FOR_TARGET_CRIS
 AS_FOR_TARGET_D10V
 LD_FOR_TARGET_D10V
 CC_FOR_TARGET_D10V
-AS_FOR_TARGET_FLARE32
-LD_FOR_TARGET_FLARE32
-CC_FOR_TARGET_FLARE32
+AS_FOR_TARGET_FLARE
+LD_FOR_TARGET_FLARE
+CC_FOR_TARGET_FLARE
 AS_FOR_TARGET_FRV
 LD_FOR_TARGET_FRV
 CC_FOR_TARGET_FRV
@@ -1874,12 +1874,12 @@ Some influential environment variables:
               Linker for d10v tests
   CC_FOR_TARGET_D10V
               C compiler for d10v tests
-  AS_FOR_TARGET_FLARE32
-              Assembler for flare32 tests
-  LD_FOR_TARGET_FLARE32
-              Linker for flare32 tests
-  CC_FOR_TARGET_FLARE32
-              C compiler for flare32 tests
+  AS_FOR_TARGET_FLARE
+              Assembler for flare tests
+  LD_FOR_TARGET_FLARE
+              Linker for flare tests
+  CC_FOR_TARGET_FLARE
+              C compiler for flare tests
   AS_FOR_TARGET_FRV
               Assembler for frv tests
   LD_FOR_TARGET_FRV
@@ -14521,40 +14521,40 @@ else
 fi
 
 
-      sim_enable_arch_flare32=false
+      sim_enable_arch_flare=false
   case "${targ}" in
-    all|flare32-*-*)
+    all|flare-*-*)
       if test "${targ}" = "${target}"; then
-        SIM_PRIMARY_TARGET=flare32
+        SIM_PRIMARY_TARGET=flare
       fi
         ENABLE_SIM=yes
-  as_fn_append SIM_ENABLED_ARCHES " flare32"
+  as_fn_append SIM_ENABLED_ARCHES " flare"
 
-  ac_config_files="$ac_config_files flare32/.gdbinit:common/gdbinit.in"
+  ac_config_files="$ac_config_files flare/.gdbinit:common/gdbinit.in"
 
 
-      sim_enable_arch_flare32=true
+      sim_enable_arch_flare=true
       ;;
   esac
 
 
 
 
-  if test "$SIM_PRIMARY_TARGET" = "flare32"; then :
-      : "${AS_FOR_TARGET_FLARE32:=\$(AS_FOR_TARGET)}"
-    : "${LD_FOR_TARGET_FLARE32:=\$(LD_FOR_TARGET)}"
-    : "${CC_FOR_TARGET_FLARE32:=\$(CC_FOR_TARGET)}"
+  if test "$SIM_PRIMARY_TARGET" = "flare"; then :
+      : "${AS_FOR_TARGET_FLARE:=\$(AS_FOR_TARGET)}"
+    : "${LD_FOR_TARGET_FLARE:=\$(LD_FOR_TARGET)}"
+    : "${CC_FOR_TARGET_FLARE:=\$(CC_FOR_TARGET)}"
 
 fi
 
-as_fn_append SIM_TOOLCHAIN_VARS " AS_FOR_TARGET_FLARE32 LD_FOR_TARGET_FLARE32 CC_FOR_TARGET_FLARE32"
+as_fn_append SIM_TOOLCHAIN_VARS " AS_FOR_TARGET_FLARE LD_FOR_TARGET_FLARE CC_FOR_TARGET_FLARE"
 
-   if ${sim_enable_arch_flare32}; then
-  SIM_ENABLE_ARCH_flare32_TRUE=
-  SIM_ENABLE_ARCH_flare32_FALSE='#'
+   if ${sim_enable_arch_flare}; then
+  SIM_ENABLE_ARCH_flare_TRUE=
+  SIM_ENABLE_ARCH_flare_FALSE='#'
 else
-  SIM_ENABLE_ARCH_flare32_TRUE='#'
-  SIM_ENABLE_ARCH_flare32_FALSE=
+  SIM_ENABLE_ARCH_flare_TRUE='#'
+  SIM_ENABLE_ARCH_flare_FALSE=
 fi
 
 
@@ -16472,8 +16472,8 @@ if test -z "${SIM_ENABLE_ARCH_d10v_TRUE}" && test -z "${SIM_ENABLE_ARCH_d10v_FAL
   as_fn_error $? "conditional \"SIM_ENABLE_ARCH_d10v\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${SIM_ENABLE_ARCH_flare32_TRUE}" && test -z "${SIM_ENABLE_ARCH_flare32_FALSE}"; then
-  as_fn_error $? "conditional \"SIM_ENABLE_ARCH_flare32\" was never defined.
+if test -z "${SIM_ENABLE_ARCH_flare_TRUE}" && test -z "${SIM_ENABLE_ARCH_flare_FALSE}"; then
+  as_fn_error $? "conditional \"SIM_ENABLE_ARCH_flare\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${SIM_ENABLE_ARCH_frv_TRUE}" && test -z "${SIM_ENABLE_ARCH_frv_FALSE}"; then
@@ -17456,7 +17456,7 @@ do
     "cr16/.gdbinit") CONFIG_FILES="$CONFIG_FILES cr16/.gdbinit:common/gdbinit.in" ;;
     "cris/.gdbinit") CONFIG_FILES="$CONFIG_FILES cris/.gdbinit:common/gdbinit.in" ;;
     "d10v/.gdbinit") CONFIG_FILES="$CONFIG_FILES d10v/.gdbinit:common/gdbinit.in" ;;
-    "flare32/.gdbinit") CONFIG_FILES="$CONFIG_FILES flare32/.gdbinit:common/gdbinit.in" ;;
+    "flare/.gdbinit") CONFIG_FILES="$CONFIG_FILES flare/.gdbinit:common/gdbinit.in" ;;
     "frv/.gdbinit") CONFIG_FILES="$CONFIG_FILES frv/.gdbinit:common/gdbinit.in" ;;
     "ft32/.gdbinit") CONFIG_FILES="$CONFIG_FILES ft32/.gdbinit:common/gdbinit.in" ;;
     "h8300/.gdbinit") CONFIG_FILES="$CONFIG_FILES h8300/.gdbinit:common/gdbinit.in" ;;

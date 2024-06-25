@@ -120,12 +120,36 @@ flare_insn_number_to_chars (char *p, flare_temp_t val, int n)
   //  val,
   //  n
   //);
-  //for (int i = 0; i < n / 2; ++i)
-  for (int i = (int)(n / 2) - 1; i >= 0; --i)
+  //gas_assert (n == 2 || n == 4 || n == 6);
+  for (int i = 0; i < n / 2; ++i)
+  //for (int i = (int)(n / 2) - 1; i >= 0; --i)
   {
     const unsigned to_print = (val >> (i * 16)) & 0xffffu;
-    //printf ("%x; ", to_print);
-    flare_number_to_chars (p + (n / 2) - (i * 2) + 1, to_print, 2);
+    const size_t plus = n - (i * 2) - 2; //(n / 2) - (i * 2) + 1;
+    char *mod_p = p + plus;
+    //const uintptr_t mod_p_u = (uintptr_t)mod_p;
+    //printf (
+    //  "%x; %lu; %lx\n",
+    //  to_print,
+    //  plus,
+    //  mod_p_u
+    //);
+    flare_number_to_chars (mod_p, to_print, 2);
+    //switch (n)
+    //{
+    //  case 2:
+    //  {
+    //  }
+    //    break;
+    //  case 4:
+    //  {
+    //  }
+    //    break;
+    //  case 6:
+    //  {
+    //  }
+    //    break;
+    //}
   }
   //printf("\n");
 }
@@ -573,7 +597,12 @@ move_cl_insn (
 static void
 add_fixed_size_cl_insn (const flare_cl_insn_t *cl_insn)
 {
-  char *p = frag_more (have_plp_insn_length (cl_insn->have_plp));
+  const unsigned length = have_plp_insn_length (cl_insn->have_plp);
+  //printf
+  //  ("add_fixed_size_cl_insn: %u %lx\n",
+  //  length,
+  //  cl_insn->data);
+  char *p = frag_more (length);
   move_cl_insn (cl_insn, frag_now, p - frag_now->fr_literal);
 }
 static void
@@ -862,13 +891,17 @@ flare_enc_temp_insn_index (flare_temp_t rc_ind)
   //opc_info = flare_opci_list_lookup ("index")->opc_info;
 
   opc_info = &flare_opc_info_g4[FLARE_G4_OP_ENUM_INDEX_RA];
+  //printf
+  //  ("flare_enc_temp_insn_index(): %u\n", (unsigned)rc_ind);
 
-  return flare_enc_temp_insn_non_pre_lpre
+  const uint32_t ret = flare_enc_temp_insn_non_pre_lpre
     (opc_info, /* opc_info */
     rc_ind, /* ra_ind */
     0, /* rb_ind */
     0, /* simm */
     0 /* fw */);
+  //printf("flare_enc_temp_insn_index(): enc insn: %x\n", ret);
+  return ret;
 }
 /* -------- */
 /* Helper function for `flare_fix_sym_handler ()`. */
@@ -4061,6 +4094,8 @@ md_assemble (char *str)
   {
     flare_cl_insn_t cl_insn;
     expressionS *temp_ex = NULL;
+    //printf
+    //  ("pd.have_index\n");
 
     memset (&cl_insn, 0, sizeof (cl_insn));
 

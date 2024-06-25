@@ -22,6 +22,10 @@
 #ifndef _FLARE_OPC_DECLS_H_
 #define _FLARE_OPC_DECLS_H_
 
+#ifndef FLARE_CLANGD
+#include "flare.h"
+#endif
+
 //static inline flare_enc_info_t
 //flare_build_enc_info (flare_temp_t bitsize, flare_temp_t bitpos)
 //{
@@ -184,6 +188,20 @@ static const flare_enc_info_t
     FLARE_G7_ICRELOAD_S5_BITPOS,
     FLARE_G7_ICRELOAD_S5_RSMASK,
     FLARE_G7_ICRELOAD_S5_MASK},
+  //flare_enc_info_g7_icflush = 
+  //  {
+  //    FLARE_G7_ICF
+  //  },
+  flare_enc_info_g7_icflush_subgrp =
+    {FLARE_G7_ICFLUSH_SUBGRP_BITSIZE,
+    FLARE_G7_ICFLUSH_SUBGRP_BITPOS,
+    FLARE_G7_ICFLUSH_SUBGRP_RSMASK,
+    FLARE_G7_ICFLUSH_SUBGRP_MASK},
+  flare_enc_info_g7_icflush_fullgrp =
+    {FLARE_G7_ICFLUSH_FULLGRP_BITSIZE,
+    FLARE_G7_ICFLUSH_FULLGRP_BITPOS,
+    FLARE_G7_ICFLUSH_FULLGRP_RSMASK,
+    FLARE_G7_ICFLUSH_FULLGRP_MASK},
   /* -------- */
   flare_enc_info_ra_ind =
     {FLARE_RA_IND_BITSIZE,
@@ -933,6 +951,24 @@ static const flare_opc_info_t
   {&flare_grp_info_g7_icreload,
     FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RC_S5_JUSTADDR,
     {"icreload", "icreload"}, {"icreload.nr", "icreload.nr"}},
+  /* -------- */
+};
+static const flare_grp_info_t flare_grp_info_g7_icflush =
+{
+  .grp=&flare_enc_info_grp_16,
+  .grp_value=FLARE_G7_GRP_VALUE,
+
+  .subgrp=&flare_enc_info_g7_icflush_subgrp,
+  .subgrp_value=FLARE_G7_ICRELOAD_SUBGRP_VALUE,
+};
+static const flare_opc_info_t
+  flare_opc_info_g7_icflush[FLARE_G7_ICFLUSH_OPC_INFO_LIM] =
+{
+  /* -------- */
+  /* icflush */
+  {&flare_grp_info_g7_icflush,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OPC_INFO_NULL_OP,
+    {"icflush", "icflush"}, {"icflush.nr", "icflush.nr"}},
   /* -------- */
 };
 /* -------- */

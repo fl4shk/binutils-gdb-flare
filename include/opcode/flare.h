@@ -271,6 +271,32 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 #define FLARE_G7_ICRELOAD_G0_LPRE_S27_MASK \
   (FLARE_ENC_MASK (G7_ICRELOAD_G0_LPRE_S27))
 /* -------- */
+/* `cmpxchg` and `xchg` subgrp */
+#define FLARE_G0_ATOMIC_SUBGRP_BITSIZE (4ull)
+#define FLARE_G0_ATOMIC_SUBGRP_BITPOS \
+  (FLARE_GRP_16_BITPOS - FLARE_G0_ATOMIC_SUBGRP_BITSIZE)
+#define FLARE_G0_ATOMIC_SUBGRP_RSMASK \
+  (FLARE_ENC_RSMASK (G0_ATOMIC_SUBGRP)) 
+#define FLARE_G0_ATOMIC_SUBGRP_MASK \
+  (FLARE_ENC_MASK (G0_ATOMIC_SUBGRP))
+
+/* `cmpxchg` and `xchg` full group */
+#define FLARE_G0_ATOMIC_FULLGRP_BITSIZE \
+  (FLARE_GRP_BITSIZE + FLARE_G0_ATOMIC_SUBGRP_BITSIZE)
+#define FLARE_G0_ATOMIC_FULLGRP_BITPOS \
+  (FLARE_G0_ATOMIC_SUBGRP_BITPOS)
+#define FLARE_G0_ATOMIC_FULLGRP_RSMASK \
+  (FLARE_ENC_RSMASK (G0_ATOMIC_FULLGRP))
+#define FLARE_G0_ATOMIC_FULLGRP_MASK \
+  (FLARE_ENC_MASK (G0_ATOMIC_FULLGRP))
+
+/* `cmpxchg` and `xchg`-specific group values */
+#define FLARE_G0_ATOMIC_SUBGRP_VALUE (0xcull)
+#define FLARE_G0_ATOMIC_FULLGRP_VALUE \
+  (FLARE_FULLGRP_VALUE(G0_ATOMIC_SUBGRP, \
+    FLARE_G0_GRP_VALUE, \
+    FLARE_G0_ATOMIC_SUBGRP_VALUE))
+/* -------- */
 /* simm5, for when part of an instruction from groups 1, 5, or 6 */
 #define FLARE_G1G5G6_I5_BITSIZE (5ull)
 #define FLARE_G1G5G6_I5_BITPOS (8ull)
@@ -575,6 +601,33 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
     FLARE_G7_ICRELOAD_SUBGRP_VALUE))
 
 /* -------- */
+
+#define FLARE_G7_ICFLUSH_SUBGRP_BITSIZE (5ull)
+#define FLARE_G7_ICFLUSH_SUBGRP_BITPOS \
+  (FLARE_GRP_16_BITPOS - FLARE_G7_ICFLUSH_SUBGRP_BITSIZE)
+#define FLARE_G7_ICFLUSH_SUBGRP_RSMASK \
+  (FLARE_ENC_RSMASK (G7_ICFLUSH_SUBGRP))
+#define FLARE_G7_ICFLUSH_SUBGRP_MASK \
+  (FLARE_ENC_MASK (G7_ICFLUSH_SUBGRP))
+
+#define FLARE_G7_ICFLUSH_FULLGRP_BITSIZE \
+  (FLARE_GRP_BITSIZE + FLARE_G7_ICFLUSH_SUBGRP_BITSIZE)
+#define FLARE_G7_ICFLUSH_FULLGRP_BITPOS \
+  (FLARE_G7_ICFLUSH_SUBGRP_BITPOS)
+#define FLARE_G7_ICFLUSH_FULLGRP_RSMASK \
+  (FLARE_ENC_RSMASK (G7_ICFLUSH_FULLGRP))
+#define FLARE_G7_ICFLUSH_FULLGRP_MASK \
+  (FLARE_ENC_MASK (G7_ICFLUSH_FULLGRP))
+
+/* Constant fields of Group 7 the `icflush` instruction */
+#define FLARE_G7_ICFLUSH_SUBGRP_VALUE (0xeull)
+#define FLARE_G7_ICFLUSH_FULLGRP_VALUE \
+  (FLARE_FULLGRP_VALUE(G7_ICFLUSH_SUBGRP, \
+    FLARE_G7_GRP_VALUE, \
+    FLARE_G7_ICFLUSH_SUBGRP_VALUE))
+
+/* -------- */
+
 /* encoding of rA */
 #define FLARE_RA_IND_BITSIZE (4ull)
 #define FLARE_RA_IND_BITPOS (0ull)
@@ -760,6 +813,10 @@ typedef enum flare_oparg_t
   FLARE_OA_NONE,
   FLARE_OA_PRE,
   FLARE_OA_LPRE,
+  //FLARE_OA_RA_RC_RB_CMPXCHG_LOCK,
+  FLARE_OA_RA_RC_RB_CMPXCHG,
+  //FLARE_OA_RA_RB_XCHG_LOCK,
+  FLARE_OA_RA_RB_XCHG,
   FLARE_OA_RA_S5,
   FLARE_OA_RA_PC_S5,
   FLARE_OA_RA_SP_S5,
@@ -864,10 +921,12 @@ typedef struct flare_dasm_info_t
     grp,
     ra_ind,
     rb_ind,
-    fw,
+    rc_ind,
+    fwl,
     g7_aluopbh_subgrp,
     g7_sprldst_subgrp,
-    g7_icreload_subgrp;
+    g7_icreload_subgrp,
+    g7_icflush_subgrp;
   bfd_byte buffer[2];
   flare_dasm_info_rd16_func rd16_func;
 } flare_dasm_info_t;
@@ -944,7 +1003,7 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //} flare_relax_general_t;
 
 
-#define FLARE_OPC_INFO_NULL_OP (-1ull)
+#define FLARE_OPC_INFO_NULL_OP ((-1ll))
 //#define FLARE_OPC_INFO_PSEUDO_OP (-2ull)
 
 #define FLARE_G0_OPC_INFO_LIM (2ull)
@@ -988,6 +1047,8 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 #define FLARE_G7_ICRELOAD_OPC_INFO_LIM (4ull)
 //extern const flare_opc_info_t
 //  flare_opc_info_g7_icreload[FLARE_G7_ICRELOAD_OPC_INFO_LIM];
+
+#define FLARE_G7_ICFLUSH_OPC_INFO_LIM (1ull)
 
 /* This is definitely excessive, but it should work fine */
 #define FLARE_MAX_UNIQUE_OPCI_NAMES (512ull)

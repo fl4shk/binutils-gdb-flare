@@ -25,9 +25,15 @@
 #define STATIC_TABLE
 #define DEFINE_TABLE
 
+#ifndef FLARE_CLANGD
+#include "../include/opcode/flare.h"
+#include "../include/opcode/flare-opc-decls.h"
+#include "../include/opcode/flare-dasm-info-funcs.h"
+#else
 #include "opcode/flare.h"
 #include "opcode/flare-opc-decls.h"
 #include "opcode/flare-dasm-info-funcs.h"
+#endif
 #include "disassemble.h"
 
 static fprintf_ftype fpr;
@@ -113,13 +119,30 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_NONE:
     {
       fpr (stream, "%s",
-        args->opc_info->names[args->fw]);
+        args->opc_info->names[args->fwl]);
+    }
+      break;
+    case FLARE_OA_RA_RC_RB_CMPXCHG:
+    {
+      fpr (stream, "%s\t[%s], %s, %s",
+	args->opc_info->names[args->fwl],
+	gprs[args->ra_ind].name,
+	gprs[args->rc_ind].name,
+	gprs[args->rb_ind].name);
+    }
+      break;
+    case FLARE_OA_RA_RB_XCHG:
+    {
+      fpr (stream, "%s\t[%s], %s",
+	args->opc_info->names[args->fwl],
+	gprs[args->ra_ind].name,
+	gprs[args->rb_ind].name);
     }
       break;
     case FLARE_OA_RA_S5:
     {
       fpr (stream, "%s\t%s, #%i%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         (signed) args->simm,
         //do_snprintf_insn_flare_maybe_pre_lpre
@@ -130,7 +153,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_RA_PC_S5:
     {
       fpr (stream, "%s\t%s, pc, #%i%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         (signed) args->simm,
         do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -139,7 +162,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_RA_SP_S5:
     {
       fpr (stream, "%s\t%s, sp, #%i%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         (signed) args->simm,
         do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -148,7 +171,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_RA_FP_S5:
     {
       fpr (stream, "%s\t%s, fp, #%i%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         (signed) args->simm,
         do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -159,7 +182,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       if (args->length == 2)
       {
         fpr (stream, "%s\t%s, #%u%s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           (unsigned) flare_zero_extend (args->simm,
             flare_enc_info_g1g5g6_i5.bitsize),
@@ -168,7 +191,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, #%i%s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           (signed) args->simm,
           do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -180,7 +203,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       if (args->length == 2)
       {
         fpr (stream, "%s\t#%u%s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           (unsigned) flare_zero_extend (args->simm,
             flare_enc_info_g1g5g6_i5.bitsize),
           do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -188,7 +211,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t#%i%s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           (signed) args->simm,
           do_snprintf_insn_flare_maybe_pre_lpre (args));
       }
@@ -206,7 +229,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name);
       }
     }
@@ -223,7 +246,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -241,7 +264,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, sp, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -259,7 +282,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, fp, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -268,7 +291,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_PCREL_S9:
     {
       fpr (stream, "%s\t%i%s",
-        args->opc_info->names[args->fw], (signed) args->simm,
+        args->opc_info->names[args->fwl], (signed) args->simm,
         do_snprintf_insn_flare_maybe_pre_lpre (args));
     }
       break;
@@ -284,7 +307,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s",
-          args->opc_info->names[args->fw], "ira");
+          args->opc_info->names[args->fwl], "ira");
       }
     }
       break;
@@ -300,7 +323,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           sprs[args->rb_ind].name);
       }
@@ -318,7 +341,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           sprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -339,7 +362,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           sprs[args->ra_ind].name,
           sprs[args->rb_ind].name);
       }
@@ -356,7 +379,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\tpc, %s",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->rb_ind].name);
       }
     }
@@ -373,7 +396,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, [%s]",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           gprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -391,7 +414,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, [%s]",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           sprs[args->ra_ind].name,
           gprs[args->rb_ind].name);
       }
@@ -409,7 +432,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       else
       {
         fpr (stream, "%s\t%s, [%s]",
-          args->opc_info->names[args->fw],
+          args->opc_info->names[args->fwl],
           sprs[args->ra_ind].name,
           sprs[args->rb_ind].name);
       }
@@ -420,7 +443,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_RA_RB_S5_LDST:
     {
       fpr (stream, "%s\t%s, [%s, #%i]%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         gprs[args->rb_ind].name,
         (signed) args->simm,
@@ -430,7 +453,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
     case FLARE_OA_RA_S5_JUSTADDR:
     {
       fpr (stream, "%s\t[%s, #%i]%s",
-        args->opc_info->names[args->fw],
+        args->opc_info->names[args->fwl],
         gprs[args->ra_ind].name,
         (signed) args->simm,
         do_snprintf_insn_flare_maybe_pre_lpre (args));
@@ -442,7 +465,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       fpr (stream, "bad (grp 0x%x; oparg 0x%x; opcode 0x%x; name %s)",
         (unsigned) args->grp, (unsigned) args->opc_info->oparg,
         (unsigned) args->opc_info->opcode,
-        args->opc_info->names[args->fw]);
+        args->opc_info->names[args->fwl]);
       break;
     /* -------- */
   }
@@ -474,7 +497,7 @@ print_insn_flare (bfd_vma addr, struct disassemble_info *info)
   //  grp,
   //  ra_ind,
   //  rb_ind,
-  //  fw = 0;
+  //  fwl = 0;
 
   loc_addr = addr;
   loc_info = info;

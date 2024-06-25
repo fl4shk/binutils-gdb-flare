@@ -24,6 +24,11 @@
 #ifndef _FLARE_DASM_INFO_FUNCS_H_
 #define _FLARE_DASM_INFO_FUNCS_H_
 
+#ifndef FLARE_CLANGD
+#include "flare.h"
+#include "flare-opc-decls.h"
+#endif
+
 static inline void
 flare_dasm_info_ctor (flare_dasm_info_t *self,
   flare_dasm_info_rd16_func rd16_func)
@@ -153,7 +158,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }
@@ -167,7 +172,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         //  self->iword)];
         [flare_get_insn_field_ei (&flare_enc_info_g2_op, self->iword)];
 
-      self->fw
+      self->fwl
         //= GET_INSN_FIELD (FLARE_G2_F_MASK, FLARE_G2_F_BITPOS,
         //  self->iword);
         = flare_get_insn_field_ei (&flare_enc_info_g2_f, self->iword);
@@ -179,7 +184,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }
@@ -227,7 +232,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }
@@ -248,7 +253,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }
@@ -290,7 +295,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
     }
       break;
@@ -331,7 +336,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }
@@ -359,7 +364,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         self->opc_info = &flare_opc_info_g7_aluopbh
           [flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_op,
             self->iword)];
-        self->fw = flare_get_insn_field_ei
+        self->fwl = flare_get_insn_field_ei
           (&flare_enc_info_g7_aluopbh_w, self->iword);
       }
       else if (self->g7_sprldst_subgrp == FLARE_G7_SPRLDST_SUBGRP_VALUE)
@@ -409,7 +414,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       //  self->grp,
       //  self->ra_ind,
       //  self->rb_ind,
-      //  self->fw,
+      //  self->fwl,
       //  self->length);
       /* -------- */
     }

@@ -296,6 +296,14 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
   (FLARE_FULLGRP_VALUE(G0_ATOMIC_SUBGRP, \
     FLARE_G0_GRP_VALUE, \
     FLARE_G0_ATOMIC_SUBGRP_VALUE))
+
+/* the `lock` field of group 0 atomic instructions */
+#define FLARE_G0_ATOMIC_L_BITSIZE (1ull)
+#define FLARE_G0_ATOMIC_L_BITPOS (8ull)
+#define FLARE_G0_ATOMIC_L_RSMASK \
+  (FLARE_ENC_RSMASK (G0_ATOMIC_L))
+#define FLARE_G0_ATOMIC_L_MASK \
+  (FLARE_ENC_MASK (G0_ATOMIC_L))
 /* -------- */
 /* simm5, for when part of an instruction from groups 1, 5, or 6 */
 #define FLARE_G1G5G6_I5_BITSIZE (5ull)
@@ -337,7 +345,7 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 /* the `grp` field of group 2 instructions */
 #define FLARE_G2_GRP_VALUE (0x2ull)
 
-/* the `flag` field of group 1 instructions */
+/* the `flag` field of group 2 instructions */
 #define FLARE_G2_F_BITSIZE (1ull)
 #define FLARE_G2_F_BITPOS (12ull)
 #define FLARE_G2_F_RSMASK \
@@ -458,7 +466,7 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 #define FLARE_G4_OP_ENUM_CPY_RA_SB (0x1cull)
 #define FLARE_G4_OP_ENUM_CPY_SA_RB (0x1dull)
 #define FLARE_G4_OP_ENUM_CPY_SA_SB (0x1eull)
-#define FLARE_G4_OP_ENUM_INDEX_RA (0x1full)
+#define FLARE_G4_OP_ENUM_INDEX_RA_RB (0x1full)
 /* -------- */
 /* the `grp` field of group 5 instructions */
 #define FLARE_G5_GRP_VALUE (0x5ull)
@@ -813,10 +821,10 @@ typedef enum flare_oparg_t
   FLARE_OA_NONE,
   FLARE_OA_PRE,
   FLARE_OA_LPRE,
-  //FLARE_OA_RA_RC_RB_CMPXCHG_LOCK,
-  FLARE_OA_RA_RC_RB_CMPXCHG,
-  //FLARE_OA_RA_RB_XCHG_LOCK,
   FLARE_OA_RA_RB_XCHG,
+  FLARE_OA_RA_RB_XCHG_LOCK,
+  FLARE_OA_RA_RC_RB_CMPXCHG,
+  FLARE_OA_RA_RC_RB_CMPXCHG_LOCK,
   FLARE_OA_RA_S5,
   FLARE_OA_RA_PC_S5,
   FLARE_OA_RA_SP_S5,
@@ -846,6 +854,8 @@ typedef enum flare_oparg_t
   FLARE_OA_RA_RB_CPY64,
   FLARE_OA_SA_RB_LDST,
   FLARE_OA_SA_SB_LDST,
+  FLARE_OA_SA_RB_RC_LDST,
+  FLARE_OA_SA_SB_RC_LDST,
   FLARE_OA_RA_S5_JUSTADDR,
   FLARE_OA_RA_JUSTADDR,
   FLARE_OA_RA_RC_JUSTADDR,
@@ -913,7 +923,11 @@ typedef struct flare_dasm_info_t
     status;
   bool
     grp_decode_err: 1,
-    g7_subgrp_decode_err: 1;
+    g7_subgrp_decode_err: 1,
+    //have_index_have_ra_ind: 1, // true for `rA`, false for `rB`
+    //have_index_have_rb_ind: 1,
+    have_index: 1;
+    //have_icreload: 1;
   const flare_opc_info_t *opc_info;
   flare_temp_t
     iword,
@@ -921,8 +935,10 @@ typedef struct flare_dasm_info_t
     grp,
     ra_ind,
     rb_ind,
+    index_ra_ind,
     rc_ind,
-    fwl,
+    //icreload_ra_ind,
+    fw,
     g7_aluopbh_subgrp,
     g7_sprldst_subgrp,
     g7_icreload_subgrp,
@@ -1003,10 +1019,10 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //} flare_relax_general_t;
 
 
-#define FLARE_OPC_INFO_NULL_OP ((-1ll))
+#define FLARE_OPC_INFO_NULL_OP ((flare_oparg_t)(-1ll))
 //#define FLARE_OPC_INFO_PSEUDO_OP (-2ull)
 
-#define FLARE_G0_OPC_INFO_LIM (2ull)
+#define FLARE_G0_OPC_INFO_LIM (6ull)
 //extern const flare_opc_info_t
 //  flare_opc_info_g0[FLARE_G0_OPC_INFO_LIM];
 
@@ -1040,7 +1056,7 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //extern const flare_opc_info_t
 //  flare_opc_info_g7_aluopbh[FLARE_G7_ALUOPBH_OPC_INFO_LIM];
 
-#define FLARE_G7_SPRLDST_OPC_INFO_LIM (4ull)
+#define FLARE_G7_SPRLDST_OPC_INFO_LIM (8ull)
 //extern const flare_opc_info_t
 //  flare_opc_info_g7_sprldst[FLARE_G7_SPRLDST_OPC_INFO_LIM];
 
@@ -1095,6 +1111,27 @@ flare_enc_temp_insn_g0_lpre_s23 (flare_temp_t simm23)
     FLARE_G0_LPRE_FULLGRP_BITPOS, &ret, FLARE_G0_LPRE_FULLGRP_VALUE);
   flare_set_insn_field_p (FLARE_G0_LPRE_S23_MASK,
     FLARE_G0_LPRE_S23_BITPOS, &ret, simm23);
+  return ret;
+}
+static inline flare_temp_t
+flare_enc_temp_insn_g0_atomic (//flare_temp_t op,
+			      flare_temp_t ra_ind,
+			      flare_temp_t rb_ind,
+			      flare_temp_t l)
+{
+  flare_temp_t ret = 0;
+  flare_set_insn_field_p (FLARE_GRP_16_MASK, FLARE_GRP_16_BITPOS,
+    &ret, FLARE_G0_GRP_VALUE);
+  flare_set_insn_field_p
+    (FLARE_G0_ATOMIC_SUBGRP_MASK, FLARE_G0_ATOMIC_SUBGRP_BITPOS,
+    &ret, FLARE_G0_ATOMIC_SUBGRP_VALUE);
+  flare_set_insn_field_p (FLARE_RA_IND_MASK, FLARE_RA_IND_BITPOS, 
+    &ret, ra_ind);
+  flare_set_insn_field_p (FLARE_RB_IND_MASK, FLARE_RB_IND_BITPOS, 
+    &ret, rb_ind);
+  flare_set_insn_field_p
+    (FLARE_G0_ATOMIC_L_MASK, FLARE_G0_ATOMIC_L_BITPOS, 
+    &ret, l);
   return ret;
 }
 /* -------- */
@@ -1289,6 +1326,15 @@ flare_enc_temp_insn_g7_icreload (flare_temp_t ra_ind,
     simm5);
   flare_set_insn_field_p (FLARE_RA_IND_MASK, FLARE_RA_IND_BITPOS,
     &ret, ra_ind);
+  return ret;
+}
+static inline flare_temp_t
+flare_enc_temp_insn_g7_icflush (void)
+{
+  flare_temp_t ret = 0;
+  flare_set_insn_field_p (FLARE_G7_ICFLUSH_FULLGRP_MASK,
+    FLARE_G7_ICFLUSH_FULLGRP_BITPOS, &ret,
+    FLARE_G7_ICFLUSH_FULLGRP_VALUE);
   return ret;
 }
 /* -------- */

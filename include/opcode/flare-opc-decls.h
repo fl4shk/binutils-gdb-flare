@@ -100,6 +100,23 @@ static const flare_enc_info_t
     FLARE_G0_LPRE_S23_RSMASK,
     FLARE_G0_LPRE_S23_MASK},
   /* -------- */
+  flare_enc_info_g0_atomic_subgrp =
+    {FLARE_G0_ATOMIC_SUBGRP_BITSIZE, 
+    FLARE_G0_ATOMIC_SUBGRP_BITPOS,
+    FLARE_G0_ATOMIC_SUBGRP_RSMASK,
+    FLARE_G0_ATOMIC_SUBGRP_MASK},
+
+  flare_enc_info_g0_atomic_fullgrp =
+    {FLARE_G0_ATOMIC_FULLGRP_BITSIZE,
+    FLARE_G0_ATOMIC_FULLGRP_BITPOS,
+    FLARE_G0_ATOMIC_FULLGRP_RSMASK,
+    FLARE_G0_ATOMIC_FULLGRP_MASK},
+  flare_enc_info_g0_atomic_l =
+    {FLARE_G0_ATOMIC_L_BITSIZE,
+    FLARE_G0_ATOMIC_L_BITPOS,
+    FLARE_G0_ATOMIC_L_RSMASK,
+    FLARE_G0_ATOMIC_L_MASK},
+  /* -------- */
   flare_enc_info_g1g5g6_i5 =
     {FLARE_G1G5G6_I5_BITSIZE,
     FLARE_G1G5G6_I5_BITPOS,
@@ -232,6 +249,13 @@ static const flare_grp_info_t flare_grp_info_g0_lpre =
   .subgrp=&flare_enc_info_g0_lpre_subgrp,
   .subgrp_value=FLARE_G0_LPRE_SUBGRP_VALUE,
 };
+static const flare_grp_info_t flare_grp_info_g0_atomic = {
+  .grp=&flare_enc_info_grp_16,
+  .grp_value=FLARE_G0_GRP_VALUE,
+
+  .subgrp=&flare_enc_info_g0_atomic_subgrp,
+  .subgrp_value=FLARE_G0_ATOMIC_SUBGRP_VALUE,
+};
 static const flare_opc_info_t
   flare_opc_info_g0[FLARE_G0_OPC_INFO_LIM] =
 {
@@ -244,6 +268,27 @@ static const flare_opc_info_t
   {&flare_grp_info_g0_lpre,
     FLARE_OPC_INFO_NULL_OP, FLARE_OA_LPRE,
     {"lpre", "lpre"}, {"lpre.nr", "lpre.nr"}},
+
+  /* xchg rA, rB */
+  {&flare_grp_info_g0_atomic,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_XCHG,
+    {"xchg", "xchg"}, {"xchg.nr", "xchg.nr"}},
+
+  /* xchg.l [rA], rB */
+  {&flare_grp_info_g0_atomic,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_XCHG_LOCK,
+    {"xchg.l", "xchg.l"}, {"xchg.l.nr", "xchg.l.nr"}},
+
+  /* cmpxchg [rA], rC, rB */
+  {&flare_grp_info_g0_atomic,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RC_RB_CMPXCHG,
+    {"cmpxchg", "cmpxchg"}, {"cmpxchg.nr", "cmpxchg.nr"}},
+
+  /* cmpxchg.l [rA], rC, rB */
+  {&flare_grp_info_g0_atomic,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RC_RB_CMPXCHG_LOCK,
+    {"cmpxchg.l", "cmpxchg.l"}, {"cmpxchg.l.nr", "cmpxchg.l.nr"}},
+
 };
 
 static const flare_grp_info_t flare_grp_info_g1 =
@@ -713,7 +758,7 @@ static const flare_opc_info_t
   //  {"bad", "bad"}, {"bad.nr", "bad.nr"}},
   /* index rA */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_INDEX_RA, FLARE_OA_RA,
+    FLARE_G4_OP_ENUM_INDEX_RA_RB, FLARE_OA_RA_RB,
     {"index", "index"}, {"index.nr", "index.nr"}},
   /* -------- */
   /* Following are some pseudo instructions. */
@@ -917,6 +962,26 @@ static const flare_opc_info_t
     FLARE_G7_SPRLDST_OP_ENUM_STR_SA_SB, FLARE_OA_SA_SB_LDST,
     {"str", "str"}, {"str.nr", "str.nr"}},
   /* -------- */
+  /* ldr sA, [rB, rC] */
+  {&flare_grp_info_g7_sprldst,
+    FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_RB, FLARE_OA_SA_RB_RC_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+
+  /* ldr sA, [sB, rC] */
+  {&flare_grp_info_g7_sprldst,
+    FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_SB, FLARE_OA_SA_SB_RC_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+
+  /* str sA, [rB, rC] */
+  {&flare_grp_info_g7_sprldst,
+    FLARE_G7_SPRLDST_OP_ENUM_STR_SA_RB, FLARE_OA_SA_RB_RC_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
+
+  /* str sA, [sB, rC] */
+  {&flare_grp_info_g7_sprldst,
+    FLARE_G7_SPRLDST_OP_ENUM_STR_SA_SB, FLARE_OA_SA_SB_RC_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
+  /* -------- */
 };
 /* -------- */
 static const flare_grp_info_t flare_grp_info_g7_icreload =
@@ -959,7 +1024,7 @@ static const flare_grp_info_t flare_grp_info_g7_icflush =
   .grp_value=FLARE_G7_GRP_VALUE,
 
   .subgrp=&flare_enc_info_g7_icflush_subgrp,
-  .subgrp_value=FLARE_G7_ICRELOAD_SUBGRP_VALUE,
+  .subgrp_value=FLARE_G7_ICFLUSH_SUBGRP_VALUE,
 };
 static const flare_opc_info_t
   flare_opc_info_g7_icflush[FLARE_G7_ICFLUSH_OPC_INFO_LIM] =
@@ -967,7 +1032,7 @@ static const flare_opc_info_t
   /* -------- */
   /* icflush */
   {&flare_grp_info_g7_icflush,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OPC_INFO_NULL_OP,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_NONE,
     {"icflush", "icflush"}, {"icflush.nr", "icflush.nr"}},
   /* -------- */
 };

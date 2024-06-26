@@ -19,15 +19,16 @@
    with GAS; see the file COPYING.  If not, write to the Free Software
    Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-#include "as.h"
+#include "../as.h"
 #include "subsegs.h"
 #include "safe-ctype.h"
 #include "dwarf2dbg.h"
 #include "dw2gencfi.h"
 #include "opcode/flare.h"
-#include "elf/flare.h"
-#include "opcode/flare-opc-decls.h"
-#include "opcode/flare-relax-reloc-lookup.h"
+#include "../../include/elf/flare.h"
+#include "../../include/opcode/flare.h"
+#include "../../include/opcode/flare-opc-decls.h"
+#include "../../include/opcode/flare-relax-reloc-lookup.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -529,7 +530,7 @@ typedef struct flare_parse_data_t
     prefix_insn,
     insn,
     simm,
-    fw;
+    fwl;
   const flare_reg_t
     *reg_a,
     *reg_b,
@@ -821,16 +822,19 @@ flare_enc_temp_insn_non_pre_lpre
   flare_temp_t ra_ind,
   flare_temp_t rb_ind,
   flare_temp_t simm,
-  flare_temp_t fw)
+  flare_temp_t fwl)
 {
   switch (opc_info->grp_info->grp_value)
   {
+    case FLARE_G0_GRP_VALUE:
+      return flare_enc_temp_insn_g0_atomic
+        (ra_ind, rb_ind, fwl);
     case FLARE_G1_GRP_VALUE:
       return flare_enc_temp_insn_g1
         (opc_info->opcode, ra_ind, simm);
     case FLARE_G2_GRP_VALUE:
       return flare_enc_temp_insn_g2
-        (opc_info->opcode, fw, ra_ind, rb_ind);
+        (opc_info->opcode, fwl, ra_ind, rb_ind);
     case FLARE_G3_GRP_VALUE:
       return flare_enc_temp_insn_g3
         (opc_info->opcode, simm);
@@ -856,7 +860,7 @@ flare_enc_temp_insn_non_pre_lpre
         == &flare_enc_info_g7_aluopbh_subgrp)
       {
         return flare_enc_temp_insn_g7_aluopbh
-          (opc_info->opcode, fw, ra_ind, rb_ind);
+          (opc_info->opcode, fwl, ra_ind, rb_ind);
       }
       else if (opc_info->grp_info->subgrp
         == &flare_enc_info_g7_sprldst_subgrp)
@@ -870,6 +874,11 @@ flare_enc_temp_insn_non_pre_lpre
         return flare_enc_temp_insn_g7_icreload
           (ra_ind, simm);
       }
+      else if (opc_info->grp_info->subgrp
+        == &flare_enc_info_g7_icflush_subgrp)
+      {
+        return flare_enc_temp_insn_g7_icflush ();
+      }
       else
       {
         abort ();
@@ -881,7 +890,7 @@ flare_enc_temp_insn_non_pre_lpre
   }
 }
 static flare_temp_t
-flare_enc_temp_insn_index (flare_temp_t rc_ind)
+flare_enc_temp_insn_index (flare_temp_t rb_ind, flare_temp_t rc_ind)
 {
   const flare_opc_info_t
     *opc_info;
@@ -890,16 +899,16 @@ flare_enc_temp_insn_index (flare_temp_t rc_ind)
     `opc_info` in `flare_opci_list_hash`. */
   //opc_info = flare_opci_list_lookup ("index")->opc_info;
 
-  opc_info = &flare_opc_info_g4[FLARE_G4_OP_ENUM_INDEX_RA];
+  opc_info = &flare_opc_info_g4[FLARE_G4_OP_ENUM_INDEX_RA_RB];
   //printf
   //  ("flare_enc_temp_insn_index(): %u\n", (unsigned)rc_ind);
 
   const uint32_t ret = flare_enc_temp_insn_non_pre_lpre
     (opc_info, /* opc_info */
-    rc_ind, /* ra_ind */
-    0, /* rb_ind */
+    rb_ind, /* ra_ind */
+    rc_ind, /* rb_ind */
     0, /* simm */
-    0 /* fw */);
+    0 /* fwl */);
   //printf("flare_enc_temp_insn_index(): enc insn: %x\n", ret);
   return ret;
 }
@@ -2242,7 +2251,7 @@ md_begin (void)
     count++<FLARE_G4_OPC_INFO_LIM;
     ++opc_info)
   {
-    if (opc_info->opcode != FLARE_G4_OP_ENUM_INDEX_RA)
+    if (opc_info->opcode != FLARE_G4_OP_ENUM_INDEX_RA_RB)
     {
       flare_opci_v2d_and_index_hash_append (opc_info, false, 0);
       flare_opci_v2d_and_index_hash_append (opc_info, true, 0);
@@ -2288,6 +2297,13 @@ md_begin (void)
 
   for (count=0, opc_info=flare_opc_info_g7_icreload;
     count++<FLARE_G7_ICRELOAD_OPC_INFO_LIM;
+    ++opc_info)
+  {
+    flare_opci_v2d_and_index_hash_append (opc_info, false, 0);
+    flare_opci_v2d_and_index_hash_append (opc_info, true, 0);
+  }
+  for (count=0, opc_info=flare_opc_info_g7_icflush;
+    count++<FLARE_G7_ICFLUSH_OPC_INFO_LIM;
     ++opc_info)
   {
     flare_opci_v2d_and_index_hash_append (opc_info, false, 0);
@@ -3151,10 +3167,22 @@ flare_assemble_post_parse_worker (flare_parse_data_t *pd,
   }
   pd->insn = flare_enc_temp_insn_non_pre_lpre
     (pd->opc_info,
-    (pd->reg_a != NULL ? pd->reg_a->index : 0x0),
-    (pd->reg_b != NULL ? pd->reg_b->index : 0x0),
+    (
+    //  !pd->have_index 
+    //  ? 
+      (pd->reg_a != NULL ? pd->reg_a->index : 0x0)
+    //  : 0x0
+    ),
+    //(pd->reg_b != NULL ? pd->reg_b->index : 0x0),
+    (
+      (!pd->have_index 
+      || pd->opc_info->grp_info == &flare_grp_info_g0_atomic)
+      ? 
+      (pd->reg_b != NULL ? pd->reg_b->index : 0x0)
+      : 0x0
+    ),
     pd->simm,
-    pd->fw);
+    pd->fwl);
   cl_insn.data
     = (((pd->prefix_insn & 0xffffffffull) << FLARE_ONE_EXT_BITPOS)
       | (pd->insn & 0xffffull));
@@ -3389,11 +3417,16 @@ md_assemble (char *str)
     //    FLARE_OPC_INFO_NAME_MAX_LEN),
     //  (unsigned) pd.no_relax);
     some_names = !pd.no_relax ? pd.opc_info->names : pd.opc_info->nr_names;
-    pd.fw = (flare_temp_t) (
+    pd.fwl = (flare_temp_t) (
+      //(
+      //  pd.opc_info->grp_info == &flare_grp_info_g0_atomic
+      //  && strncmp (some_names[0], op_name,
+      //    FLARE_OPC_INFO_NAME_MAX_LEN) 
+      //) || 
       (
         pd.opc_info->grp_info == &flare_grp_info_g2
-          && strncmp (some_names[1], op_name,
-            FLARE_OPC_INFO_NAME_MAX_LEN) == 0
+        && strncmp (some_names[1], op_name,
+          FLARE_OPC_INFO_NAME_MAX_LEN) == 0
       ) || (
         pd.opc_info->grp_info == &flare_grp_info_g7_aluopbh
         && strncmp (some_names[1], op_name,
@@ -3403,6 +3436,10 @@ md_assemble (char *str)
 
     switch (pd.opc_info->oparg)
     {
+      //case FLARE_OA_BAD:
+      //{
+      //}
+      //  break;
       case FLARE_OA_NONE:
       {
         FLARE_SKIP_ISSPACE ();
@@ -3418,6 +3455,96 @@ md_assemble (char *str)
       //{
       //}
       //  break;
+      case FLARE_OA_RA_RB_XCHG:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        FLARE_PARSE_GPR (reg_a);
+        FLARE_PARSE_COMMA ();
+        FLARE_PARSE_GPR (reg_b);
+
+        pd.parse_good = true;
+      }
+        break;
+      case FLARE_OA_RA_RB_XCHG_LOCK:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_GPR (reg_a);
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_COMMA ();
+        FLARE_PARSE_GPR (reg_b);
+        pd.parse_good = true;
+        pd.fwl = true;
+      }
+        break;
+      case FLARE_OA_RA_RC_RB_CMPXCHG:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_GPR (reg_a);
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_COMMA ();
+
+        FLARE_PARSE_GPR (reg_c);
+
+        FLARE_PARSE_COMMA ();
+        FLARE_PARSE_GPR (reg_b);
+
+        pd.parse_good = true;
+        pd.have_index = true;
+      }
+      case FLARE_OA_RA_RC_RB_CMPXCHG_LOCK:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_GPR (reg_a);
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_COMMA ();
+
+        FLARE_PARSE_GPR (reg_c);
+
+        FLARE_PARSE_COMMA ();
+        FLARE_PARSE_GPR (reg_b);
+
+        pd.parse_good = true;
+        pd.have_index = true;
+        pd.fwl = true;
+      }
+        break;
       case FLARE_OA_RA_S5:
       {
         //char *where;
@@ -3942,6 +4069,62 @@ md_assemble (char *str)
 
         pd.parse_good = true;
       }
+        break;
+      case FLARE_OA_SA_RB_RC_LDST:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        FLARE_PARSE_SPR (reg_a);
+        FLARE_PARSE_COMMA ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_GPR (reg_b);
+        FLARE_PARSE_COMMA ();
+        FLARE_PARSE_GPR (reg_c);
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.parse_good = true;
+        pd.have_index = true;
+      }
+        break;
+      case FLARE_OA_SA_SB_RC_LDST:
+      {
+        FLARE_SKIP_ISSPACE ();
+
+        FLARE_PARSE_SPR (reg_a);
+        FLARE_PARSE_COMMA ();
+
+        if (*op_end != '[')
+        {
+          break;
+        }
+        ++op_end;
+
+        FLARE_PARSE_SPR (reg_b);
+        FLARE_PARSE_COMMA ();
+
+        FLARE_PARSE_GPR (reg_c);
+
+        if (*op_end != ']')
+        {
+          break;
+        }
+        ++op_end;
+
+        pd.parse_good = true;
+        pd.have_index = true;
+      }
+        break;
       case FLARE_OA_RA_S5_JUSTADDR:
       {
         FLARE_SKIP_ISSPACE ();
@@ -4102,7 +4285,19 @@ md_assemble (char *str)
     cl_insn.have_plp = FLARE_HAVE_PLP_NEITHER;
     cl_insn.reloc = BFD_RELOC_UNUSED;
     cl_insn.data = flare_enc_temp_insn_index
-      (pd.reg_c != NULL ? pd.reg_c->index : 0x0ull);
+      (
+        //(
+        //  pd.reg_a != NULL
+        //  ? pd.reg_a->index
+        //  : pd.reg_b->index
+        //),
+        (
+          (pd.opc_info->grp_info == &flare_grp_info_g0_atomic)
+          ? (pd.reg_b != NULL ? pd.reg_b->index : 0x0ull)
+          : 0x0ull
+        ),
+        pd.reg_c != NULL ? pd.reg_c->index : 0x0ull
+      );
     flare_relax_insn_ctor (&cl_insn.relax_insn, &cl_insn);
     append_cl_insn (&cl_insn, temp_ex);
     //pd.p = frag_more (2);

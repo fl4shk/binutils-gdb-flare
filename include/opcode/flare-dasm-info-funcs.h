@@ -24,10 +24,10 @@
 #ifndef _FLARE_DASM_INFO_FUNCS_H_
 #define _FLARE_DASM_INFO_FUNCS_H_
 
-#ifndef FLARE_CLANGD
-#include "flare.h"
-#include "flare-opc-decls.h"
-#endif
+//#ifndef FLARE_CLANGD
+//#include "flare.h"
+//#include "flare-opc-decls.h"
+//#endif
 
 static inline void
 flare_dasm_info_ctor (flare_dasm_info_t *self,
@@ -63,6 +63,34 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     return;
   }
   self->iword = bfd_getl16 (self->buffer);
+
+  if ((flare_get_insn_field_ei
+      (&flare_enc_info_grp_16, self->iword)
+      == FLARE_G4_GRP_VALUE
+    )
+    && (flare_get_insn_field_ei
+      (&flare_enc_info_g4_op, self->iword)
+      == FLARE_G4_OP_ENUM_INDEX_RA_RB))
+  {
+    self->length += 2;
+    if ((self->status = self->rd16_func (self)))
+    {
+      return;
+    }
+    //printf ("testificate\n");
+    //self->iword = (self->iword << FLARE_ONE_EXT_BITPOS)
+    //  | bfd_getl16 (self->buffer);
+    self->have_index = true;
+    //self->icreload_ra_ind = flare_get_insn_field_ei
+    //  (&flare_enc_info_ra_ind, self->iword);
+    self->index_ra_ind = flare_get_insn_field_ei
+      (&flare_enc_info_ra_ind, self->iword);
+    //self->rb_ind = flare_get_insn_field_ei
+    //  (&flare_enc_info_rb_ind, self->iword);
+    self->rc_ind = flare_get_insn_field_ei 
+      (&flare_enc_info_rb_ind, self->iword);
+    self->iword = bfd_getl16 (self->buffer);
+  }
 
   if (flare_get_insn_field_ei
     (&flare_enc_info_g0_pre_fullgrp, self->iword)
@@ -111,13 +139,33 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     //= GET_INSN_FIELD (flare_enc_info_ra_ind.mask,
     //  flare_enc_info_ra_ind.bitpos, self->iword);
     = flare_get_insn_field_ei (&flare_enc_info_ra_ind, self->iword);
-  self->rb_ind
-    //= GET_INSN_FIELD (flare_enc_info_rb_ind.mask,
-    //  flare_enc_info_rb_ind.bitpos, self->iword);
-    = flare_get_insn_field_ei (&flare_enc_info_rb_ind, self->iword);
+  //if (!self->have_index)
+  {
+    self->rb_ind
+      //= GET_INSN_FIELD (flare_enc_info_rb_ind.mask,
+      //  flare_enc_info_rb_ind.bitpos, self->iword);
+      = flare_get_insn_field_ei (&flare_enc_info_rb_ind, self->iword);
+  }
 
   switch (self->grp)
   {
+    case FLARE_G0_GRP_VALUE:
+    {
+      //if (self->length == 2)
+      //{
+      //}
+      self->simm = 0;
+      const flare_temp_t l = flare_get_insn_field_ei
+        (&flare_enc_info_g0_atomic_l, self->iword);
+      self->opc_info = &flare_opc_info_g0[
+        //l + 2
+        // we have `cmpxchg` when `have_index` == true
+        l + (2 * self->have_index) + 2
+      ];
+      //self->opc_info = &flare_opc_info_g0
+      //  [];
+    }
+      break;
     /* -------- */
     case FLARE_G1_GRP_VALUE:
     {
@@ -172,7 +220,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         //  self->iword)];
         [flare_get_insn_field_ei (&flare_enc_info_g2_op, self->iword)];
 
-      self->fwl
+      self->fw
         //= GET_INSN_FIELD (FLARE_G2_F_MASK, FLARE_G2_F_BITPOS,
         //  self->iword);
         = flare_get_insn_field_ei (&flare_enc_info_g2_f, self->iword);
@@ -353,6 +401,8 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         (&flare_enc_info_g7_sprldst_subgrp, self->iword);
       self->g7_icreload_subgrp = flare_get_insn_field_ei
         (&flare_enc_info_g7_icreload_subgrp, self->iword);
+      self->g7_icflush_subgrp = flare_get_insn_field_ei
+        (&flare_enc_info_g7_icflush_subgrp, self->iword);
       //if (self->g7_aluopbh_subgrp != FLARE_G7_ALUOPBH_SUBGRP_VALUE
       //  && self->g7_sprldst_subgrp != FLARE_G7_SPRLDST_SUBGRP_VALUE
       //  && self->g7_icreload_subgrp != FLARE_G7_ICRELOAD_SUBGRP_VALUE)
@@ -364,7 +414,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         self->opc_info = &flare_opc_info_g7_aluopbh
           [flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_op,
             self->iword)];
-        self->fwl = flare_get_insn_field_ei
+        self->fw = flare_get_insn_field_ei
           (&flare_enc_info_g7_aluopbh_w, self->iword);
       }
       else if (self->g7_sprldst_subgrp == FLARE_G7_SPRLDST_SUBGRP_VALUE)
@@ -402,6 +452,12 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             flare_enc_info_g7_icreload_s5.bitsize
               + flare_enc_info_g0_lpre_s27.bitsize);
         }
+      }
+      else if (
+        self->g7_icflush_subgrp == FLARE_G7_ICFLUSH_SUBGRP_VALUE
+      )
+      {
+        self->opc_info = &flare_opc_info_g7_icflush[0];
       }
       else
       {

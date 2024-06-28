@@ -26,13 +26,13 @@
 #define DEFINE_TABLE
 
 //#ifndef FLARE_CLANGD
-#include "../include/opcode/flare.h"
-#include "../include/opcode/flare-opc-decls.h"
-#include "../include/opcode/flare-dasm-info-funcs.h"
+//#include "../include/opcode/flare.h"
+//#include "../include/opcode/flare-opc-decls.h"
+//#include "../include/opcode/flare-dasm-info-funcs.h"
 //#else
-//#include "opcode/flare.h"
-//#include "opcode/flare-opc-decls.h"
-//#include "opcode/flare-dasm-info-funcs.h"
+#include "opcode/flare.h"
+#include "opcode/flare-opc-decls.h"
+#include "opcode/flare-dasm-info-funcs.h"
 //#endif
 #include "disassemble.h"
 

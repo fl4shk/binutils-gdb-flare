@@ -22,7 +22,7 @@
 #ifndef _FLARE_OPC_DECLS_H_
 #define _FLARE_OPC_DECLS_H_
 
-#ifndef FLARE_CLANGD
+#ifdef FLARE_CLANGD
 #include "flare.h"
 #endif
 

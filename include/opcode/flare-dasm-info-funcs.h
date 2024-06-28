@@ -24,10 +24,11 @@
 #ifndef _FLARE_DASM_INFO_FUNCS_H_
 #define _FLARE_DASM_INFO_FUNCS_H_
 
-//#ifndef FLARE_CLANGD
-//#include "flare.h"
-//#include "flare-opc-decls.h"
-//#endif
+#ifdef FLARE_CLANGD
+#include <stdio.h>
+#include "flare.h"
+#include "flare-opc-decls.h"
+#endif
 
 static inline void
 flare_dasm_info_ctor (flare_dasm_info_t *self,
@@ -147,6 +148,10 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       = flare_get_insn_field_ei (&flare_enc_info_rb_ind, self->iword);
   }
 
+  const size_t temp_length = (
+    self->length - (self->have_index * 2ull)
+  );
+
   switch (self->grp)
   {
     case FLARE_G0_GRP_VALUE:
@@ -170,7 +175,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     case FLARE_G1_GRP_VALUE:
     {
       /* -------- */
-      if (self->length == 2)
+      if (temp_length == 2)
       {
         self->simm
           //= GET_INSN_FIELD (FLARE_G1G5G6_S5_MASK,
@@ -179,14 +184,14 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             (&flare_enc_info_g1g5g6_i5, self->iword),
             flare_enc_info_g1g5g6_i5.bitsize);
       }
-      else if (self->length == 4) /* `pre` */
+      else if (temp_length == 4) /* `pre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s17
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
           flare_enc_info_g1g5g6_i5.bitsize
             + flare_enc_info_g0_pre_s12.bitsize);
       }
-      else if (self->length == 6) /* `lpre` */
+      else if (temp_length == 6) /* `lpre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s32
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
@@ -241,7 +246,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     case FLARE_G3_GRP_VALUE:
     {
       /* -------- */
-      if (self->length == 2)
+      if (temp_length == 2)
       {
         self->simm
           //= GET_INSN_FIELD (FLARE_G1G5G6_S5_MASK,
@@ -250,7 +255,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             (&flare_enc_info_g3_s9, self->iword),
             flare_enc_info_g3_s9.bitsize);
       }
-      else if (self->length == 4) /* `pre` */
+      else if (temp_length == 4) /* `pre` */
       {
         self->simm = flare_sign_extend (flare_get_g3_s21
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
@@ -260,7 +265,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
         //  "testificate: %lu\n",
         //  self->simm);
       }
-      else if (self->length == 6) /* `lpre` */
+      else if (temp_length == 6) /* `lpre` */
       {
         self->simm = flare_sign_extend (flare_get_g3_s32
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
@@ -310,7 +315,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     case FLARE_G5_GRP_VALUE:
     {
       /* -------- */
-      if (self->length == 2)
+      if (temp_length == 2)
       {
         self->simm
           //= GET_INSN_FIELD (FLARE_G1G5G6_S5_MASK,
@@ -319,14 +324,14 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             (&flare_enc_info_g1g5g6_i5, self->iword),
             flare_enc_info_g1g5g6_i5.bitsize);
       }
-      else if (self->length == 4) /* `pre` */
+      else if (temp_length == 4) /* `pre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s17
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
           flare_enc_info_g1g5g6_i5.bitsize
             + flare_enc_info_g0_pre_s12.bitsize);
       }
-      else if (self->length == 6) /* `lpre` */
+      else if (temp_length == 6) /* `lpre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s32
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
@@ -351,7 +356,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
     case FLARE_G6_GRP_VALUE:
     {
       /* -------- */
-      if (self->length == 2)
+      if (temp_length == 2)
       {
         self->simm
           //= GET_INSN_FIELD (FLARE_G1G5G6_S5_MASK,
@@ -360,14 +365,14 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             (&flare_enc_info_g1g5g6_i5, self->iword),
             flare_enc_info_g1g5g6_i5.bitsize);
       }
-      else if (self->length == 4) /* `pre` */
+      else if (temp_length == 4) /* `pre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s17
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
           flare_enc_info_g1g5g6_i5.bitsize
             + flare_enc_info_g0_pre_s12.bitsize);
       }
-      else if (self->length == 6) /* `lpre` */
+      else if (temp_length == 6) /* `lpre` */
       {
         self->simm = flare_sign_extend (flare_get_g1g5g6_s32
           ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
@@ -429,7 +434,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       {
         self->opc_info = &flare_opc_info_g7_icreload[0];
 
-        if (self->length == 2)
+        if (temp_length == 2)
         {
           self->simm
             //= GET_INSN_FIELD (FLARE_G1G5G6_S5_MASK,
@@ -437,15 +442,17 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
             = flare_sign_extend (flare_get_insn_field_ei 
               (&flare_enc_info_g7_icreload_s5, self->iword),
               flare_enc_info_g7_icreload_s5.bitsize);
+          //printf
+	  //  ("self->simm: %lx\n", self->simm);
         }
-        else if (self->length == 4) /* `pre` */
+        else if (temp_length == 4) /* `pre` */
         {
           self->simm = flare_sign_extend (flare_get_g7_icreload_s17
             ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
             flare_enc_info_g7_icreload_s5.bitsize
               + flare_enc_info_g0_pre_s12.bitsize);
         }
-        else if (self->length == 6) /* `lpre` */
+        else if (temp_length == 6) /* `lpre` */
         {
           self->simm = flare_sign_extend (flare_get_g7_icreload_s32
             ((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),

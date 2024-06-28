@@ -1819,10 +1819,10 @@ md_apply_fix (fixS *fixP,
           + flare_have_plp_distance
             (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
         tmp.prefix_insn = (
-	  //bfd_getb32 (tmp.buf + tmp.lpre_offs)
-	  (bfd_getl16 (tmp.buf + tmp.lpre_offs) << 16)
-	  | bfd_getl16 (tmp.buf + tmp.lpre_offs + 2)
-	);
+          //bfd_getb32 (tmp.buf + tmp.lpre_offs)
+          (bfd_getl16 (tmp.buf + tmp.lpre_offs) << 16)
+          | bfd_getl16 (tmp.buf + tmp.lpre_offs + 2)
+        );
         tmp.insn = bfd_getl16 (tmp.buf + tmp.insn_offs);
         if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5
           || fixP->fx_r_type
@@ -1847,9 +1847,9 @@ md_apply_fix (fixS *fixP,
         }
         //bfd_putb32 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
         bfd_putl16 (
-	  (tmp.prefix_insn >> 16) & 0xffffu,
-	  tmp.buf + tmp.lpre_offs
-	);
+          (tmp.prefix_insn >> 16) & 0xffffu,
+          tmp.buf + tmp.lpre_offs
+        );
         bfd_putl16 (tmp.prefix_insn & 0xffffu, tmp.buf + tmp.lpre_offs);
         bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
         //if (fixP->fx_addsy == NULL)
@@ -3168,18 +3168,20 @@ flare_assemble_post_parse_worker (flare_parse_data_t *pd,
   pd->insn = flare_enc_temp_insn_non_pre_lpre
     (pd->opc_info,
     (
-    //  !pd->have_index 
-    //  ? 
-      (pd->reg_a != NULL ? pd->reg_a->index : 0x0)
-    //  : 0x0
+      (
+	pd->have_index 
+	&& pd->opc_info->grp_info == &flare_grp_info_g7_icreload
+      ) ? (
+	0x0ull
+      ) : (pd->reg_a != NULL ? pd->reg_a->index : 0x0)
     ),
     //(pd->reg_b != NULL ? pd->reg_b->index : 0x0),
     (
       (!pd->have_index 
       || pd->opc_info->grp_info == &flare_grp_info_g0_atomic)
       ? 
-      (pd->reg_b != NULL ? pd->reg_b->index : 0x0)
-      : 0x0
+      (pd->reg_b != NULL ? pd->reg_b->index : 0x0ull)
+      : 0x0ull
     ),
     pd->simm,
     pd->fwl);
@@ -4294,7 +4296,11 @@ md_assemble (char *str)
         (
           (pd.opc_info->grp_info == &flare_grp_info_g0_atomic)
           ? (pd.reg_b != NULL ? pd.reg_b->index : 0x0ull)
-          : 0x0ull
+          : (
+            (pd.opc_info->grp_info == &flare_grp_info_g7_icreload)
+            ? (pd.reg_a != NULL ? pd.reg_a->index : 0x0ull)
+            : 0x0ull
+          ) 
         ),
         pd.reg_c != NULL ? pd.reg_c->index : 0x0ull
       );

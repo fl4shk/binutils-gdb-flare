@@ -510,6 +510,16 @@ flare_cl_insn_vec_delete (void)
   free (flare_cl_insn_vec);
 }
 
+typedef enum flare_have_index_kind_t {
+  FLARE_HIDX_KIND_NO_INDEX,
+  FLARE_HIDX_KIND_ATOMIC,
+  FLARE_HIDX_KIND_LDST,
+  FLARE_HIDX_KIND_DIVMOD,
+  FLARE_HIDX_KIND_LMUL,
+  FLARE_HIDX_KIND_DIVMOD64,
+  FLARE_HIDX_KIND_JUSTADDR,
+} flare_have_index_kind_t;
+
 typedef struct flare_parse_data_t
 {
   //char
@@ -534,12 +544,14 @@ typedef struct flare_parse_data_t
   const flare_reg_t
     *reg_a,
     *reg_b,
-    *reg_c;
+    *reg_c,
+    *reg_d;
   //size_t
   //  nlen;
   //  //nbytes;
+  flare_have_index_kind_t have_index_kind;
   bool
-    have_index : 1,
+    //have_index : 1,
     have_imm : 1,
     is_small_imm_unsigned: 1,
     is_g7_icreload: 1,
@@ -3165,26 +3177,81 @@ flare_assemble_post_parse_worker (flare_parse_data_t *pd,
     pd->prefix_insn = flare_enc_temp_insn_lpre_rshift (pd->opc_info,
       pd->simm);
   }
+  const flare_temp_t
+    my_reg_a = pd->reg_a != NULL ? pd->reg_a->index : 0x0,
+    my_reg_b = pd->reg_b != NULL ? pd->reg_b->index : 0x0;
+  flare_temp_t 
+    my_reg_0 = 0x0u,
+    my_reg_1 = 0x0u; 
+  switch (pd->have_index_kind)
+  {
+    case FLARE_HIDX_KIND_NO_INDEX:
+    {
+      my_reg_0 = my_reg_a;
+      my_reg_1 = my_reg_b;
+    }
+      break;
+    case FLARE_HIDX_KIND_ATOMIC:
+    {
+      my_reg_0 = my_reg_a;
+      my_reg_1 = my_reg_b;
+    }
+      break;
+    case FLARE_HIDX_KIND_LDST:
+    {
+      my_reg_0 = my_reg_a;
+    }
+      break;
+    case FLARE_HIDX_KIND_DIVMOD:
+    {
+      my_reg_0 = my_reg_a;
+    }
+      break;
+    case FLARE_HIDX_KIND_LMUL:
+    {
+      my_reg_0 = my_reg_a;
+      my_reg_1 = my_reg_b;
+    }
+      break;
+    case FLARE_HIDX_KIND_DIVMOD64:
+    {
+      my_reg_0 = my_reg_a;
+      my_reg_1 = my_reg_b;
+    }
+      break;
+    case FLARE_HIDX_KIND_JUSTADDR:
+    {
+      my_reg_0 = 0x0ull;
+      my_reg_1 = 0x0ull;
+    }
+      break;
+  }
   pd->insn = flare_enc_temp_insn_non_pre_lpre
     (pd->opc_info,
-    (
-      (
-	pd->have_index 
-	&& pd->opc_info->grp_info == &flare_grp_info_g7_icreload
-      ) ? (
-	0x0ull
-      ) : (pd->reg_a != NULL ? pd->reg_a->index : 0x0)
-    ),
-    //(pd->reg_b != NULL ? pd->reg_b->index : 0x0),
-    (
-      (!pd->have_index 
-      || pd->opc_info->grp_info == &flare_grp_info_g0_atomic)
-      ? 
-      (pd->reg_b != NULL ? pd->reg_b->index : 0x0ull)
-      : 0x0ull
-    ),
+    my_reg_0,
+    my_reg_1,
     pd->simm,
     pd->fwl);
+  //pd->insn = flare_enc_temp_insn_non_pre_lpre
+  //  (pd->opc_info,
+  //  (
+  //    (
+  //      pd->have_index 
+  //      && pd->opc_info->grp_info == &flare_grp_info_g7_icreload
+  //    ) ? (
+  //      0x0ull
+  //    ) : (pd->reg_a != NULL ? pd->reg_a->index : 0x0)
+  //  ),
+  //  //(pd->reg_b != NULL ? pd->reg_b->index : 0x0),
+  //  (
+  //    (!pd->have_index 
+  //    || pd->opc_info->grp_info == &flare_grp_info_g0_atomic)
+  //    ? 
+  //    (pd->reg_b != NULL ? pd->reg_b->index : 0x0ull)
+  //    : 0x0ull
+  //  ),
+  //  pd->simm,
+  //  pd->fwl);
   cl_insn.data
     = (((pd->prefix_insn & 0xffffffffull) << FLARE_ONE_EXT_BITPOS)
       | (pd->insn & 0xffffull));
@@ -3418,6 +3485,7 @@ md_assemble (char *str)
     //  strncmp (pd.opc_info->names[1], op_name,
     //    FLARE_OPC_INFO_NAME_MAX_LEN),
     //  (unsigned) pd.no_relax);
+    pd.have_index_kind = FLARE_HIDX_KIND_NO_INDEX;
     some_names = !pd.no_relax ? pd.opc_info->names : pd.opc_info->nr_names;
     pd.fwl = (flare_temp_t) (
       //(
@@ -3516,7 +3584,8 @@ md_assemble (char *str)
         FLARE_PARSE_GPR (reg_b);
 
         pd.parse_good = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_ATOMIC; 
       }
       case FLARE_OA_RA_RC_RB_CMPXCHG_LOCK:
       {
@@ -3543,7 +3612,8 @@ md_assemble (char *str)
         FLARE_PARSE_GPR (reg_b);
 
         pd.parse_good = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_ATOMIC; 
         pd.fwl = true;
       }
         break;
@@ -3788,6 +3858,49 @@ md_assemble (char *str)
         pd.parse_good = true;
       }
         break;
+      case FLARE_OA_RA_RB_RC_DIVMOD:
+      {
+	FLARE_SKIP_ISSPACE ();
+	FLARE_PARSE_GPR (reg_a);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_b);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_c);
+	pd.parse_good = true;
+	//pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_DIVMOD; 
+      }
+	break;
+      case FLARE_OA_RC_RD_RA_RB_LMUL:
+      {
+	FLARE_SKIP_ISSPACE ();
+	FLARE_PARSE_GPR (reg_c);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_d);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_a);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_b);
+	pd.parse_good = true;
+	//pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_LMUL; 
+      }
+	break;
+      case FLARE_OA_RA_RB_RC_RD_DIVMOD64:
+      {
+	FLARE_SKIP_ISSPACE ();
+	FLARE_PARSE_GPR (reg_a);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_b);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_c);
+	FLARE_PARSE_COMMA ();
+	FLARE_PARSE_GPR (reg_d);
+	pd.parse_good = true;
+	//pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_DIVMOD64; 
+      }
+	break;
       case FLARE_OA_RA_IMPLICIT_SP:
       {
         FLARE_SKIP_ISSPACE ();
@@ -3896,7 +4009,8 @@ md_assemble (char *str)
         //pd.ex.X_add_number = 0x0;
 
         pd.parse_good = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+	pd.have_index_kind = FLARE_HIDX_KIND_LDST;
         //pd.have_imm = true;
       }
         break;
@@ -3929,7 +4043,8 @@ md_assemble (char *str)
 
         pd.parse_good = true;
         pd.have_imm = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+	pd.have_index_kind = FLARE_HIDX_KIND_LDST;
       }
         break;
       case FLARE_OA_RA_RB_S5_LDST:
@@ -3987,7 +4102,8 @@ md_assemble (char *str)
         }
         ++op_end;
 
-        pd.have_index = true;
+        //pd.have_index = true;
+	pd.have_index_kind = FLARE_HIDX_KIND_LDST;
         pd.have_imm = true;
         pd.parse_good = true;
       }
@@ -4096,7 +4212,8 @@ md_assemble (char *str)
         ++op_end;
 
         pd.parse_good = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+	pd.have_index_kind = FLARE_HIDX_KIND_LDST;
       }
         break;
       case FLARE_OA_SA_SB_RC_LDST:
@@ -4124,7 +4241,8 @@ md_assemble (char *str)
         ++op_end;
 
         pd.parse_good = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+	pd.have_index_kind = FLARE_HIDX_KIND_LDST;
       }
         break;
       case FLARE_OA_RA_S5_JUSTADDR:
@@ -4204,7 +4322,8 @@ md_assemble (char *str)
 
         pd.have_imm = true;
         pd.is_g7_icreload = true;
-        pd.have_index = true;
+        //pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_JUSTADDR;
         pd.parse_good = true;
       }
         break;
@@ -4230,7 +4349,8 @@ md_assemble (char *str)
         }
         ++op_end;
 
-        pd.have_index = true;
+        //pd.have_index = true;
+        pd.have_index_kind = FLARE_HIDX_KIND_JUSTADDR;
         pd.have_imm = true;
         pd.is_g7_icreload = true;
         pd.parse_good = true;
@@ -4275,7 +4395,7 @@ md_assemble (char *str)
     return;
   }
   /* -------- */
-  if (pd.have_index)
+  if (pd.have_index_kind != FLARE_HIDX_KIND_NO_INDEX)
   {
     flare_cl_insn_t cl_insn;
     expressionS *temp_ex = NULL;
@@ -4286,24 +4406,79 @@ md_assemble (char *str)
 
     cl_insn.have_plp = FLARE_HAVE_PLP_NEITHER;
     cl_insn.reloc = BFD_RELOC_UNUSED;
-    cl_insn.data = flare_enc_temp_insn_index
-      (
-        //(
-        //  pd.reg_a != NULL
-        //  ? pd.reg_a->index
-        //  : pd.reg_b->index
-        //),
-        (
-          (pd.opc_info->grp_info == &flare_grp_info_g0_atomic)
-          ? (pd.reg_b != NULL ? pd.reg_b->index : 0x0ull)
-          : (
-            (pd.opc_info->grp_info == &flare_grp_info_g7_icreload)
-            ? (pd.reg_a != NULL ? pd.reg_a->index : 0x0ull)
-            : 0x0ull
-          ) 
-        ),
-        pd.reg_c != NULL ? pd.reg_c->index : 0x0ull
-      );
+    const flare_temp_t
+      my_reg_a = pd.reg_a != NULL ? pd.reg_a->index : 0x0ull,
+      my_reg_b = pd.reg_b != NULL ? pd.reg_b->index : 0x0ull,
+      my_reg_c = pd.reg_c != NULL ? pd.reg_c->index : 0x0ull,
+      my_reg_d = pd.reg_d != NULL ? pd.reg_d->index : 0x0ull;
+    flare_temp_t
+      my_reg_0 = 0,
+      my_reg_1 = 0;
+    switch (pd.have_index_kind)
+    {
+      case FLARE_HIDX_KIND_ATOMIC:
+      {
+	//my_reg_0
+	my_reg_0 = my_reg_c;
+      }
+	break;
+      case FLARE_HIDX_KIND_LDST:
+      {
+	my_reg_0 = my_reg_b;
+	my_reg_1 = my_reg_c;
+      }
+	break;
+      case FLARE_HIDX_KIND_DIVMOD:
+      {
+	my_reg_0 = my_reg_c;
+      }
+	break;
+      case FLARE_HIDX_KIND_LMUL:
+      {
+	my_reg_0 = my_reg_c;
+	my_reg_1 = my_reg_d;
+      }
+	break;
+      case FLARE_HIDX_KIND_DIVMOD64:
+      {
+	my_reg_0 = my_reg_c;
+	my_reg_1 = my_reg_d;
+      }
+	break;
+      case FLARE_HIDX_KIND_JUSTADDR:
+      {
+	//my_reg_0 = pd.reg_a != NULL ? pd.reg_a->index : 0x0ull;
+	my_reg_0 = my_reg_a;
+	my_reg_1 = my_reg_c;
+      }
+	break;
+    }
+    cl_insn.data = flare_enc_temp_insn_index(
+      my_reg_0,
+      my_reg_1
+    );
+    //cl_insn.data = flare_enc_temp_insn_index
+    //  (
+    //    //(
+    //    //  pd.reg_a != NULL
+    //    //  ? pd.reg_a->index
+    //    //  : pd.reg_b->index
+    //    //),
+    //    (
+    //      (pd.opc_info->grp_info == &flare_grp_info_g0_atomic)
+    //      //(
+    //      //  //pd.have_index_kind != FLARE_HIDX_KIND_ATOMIC
+    //      //  //&& pd.have_index_kind == FLARE_HIDX_KIND_ATOMIC
+    //      //)
+    //	    ? (pd.reg_b != NULL ? pd.reg_b->index : 0x0ull)
+    //      : (
+    //        (pd.opc_info->grp_info == &flare_grp_info_g7_icreload)
+    //        ? (pd.reg_a != NULL ? pd.reg_a->index : 0x0ull)
+    //        : 0x0ull
+    //      ) 
+    //    ),
+    //    pd.reg_c != NULL ? pd.reg_c->index : 0x0ull
+    //  );
     flare_relax_insn_ctor (&cl_insn.relax_insn, &cl_insn);
     append_cl_insn (&cl_insn, temp_ex);
     //pd.p = frag_more (2);

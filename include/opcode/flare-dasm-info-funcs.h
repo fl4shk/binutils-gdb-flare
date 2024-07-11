@@ -88,7 +88,7 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       (&flare_enc_info_ra_ind, self->iword);
     //self->rb_ind = flare_get_insn_field_ei
     //  (&flare_enc_info_rb_ind, self->iword);
-    self->rc_ind = flare_get_insn_field_ei 
+    self->index_rb_ind = flare_get_insn_field_ei 
       (&flare_enc_info_rb_ind, self->iword);
     self->iword = bfd_getl16 (self->buffer);
   }

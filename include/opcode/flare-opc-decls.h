@@ -665,17 +665,16 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB,
     {"sdiv", "sdiv"}, {"sdiv.nr", "sdiv.nr"}},
 
-  /* umod rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UMOD_RA_RB, FLARE_OA_RA_RB,
-    {"umod", "umod"}, {"umod.nr", "umod.nr"}},
+  ///* umod rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_UMOD_RA_RB, FLARE_OA_RA_RB,
+  //  {"umod", "umod"}, {"umod.nr", "umod.nr"}},
 
-  /* smod rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SMOD_RA_RB, FLARE_OA_RA_RB,
-    {"smod", "smod"}, {"smod.nr", "smod.nr"}},
+  ///* smod rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_SMOD_RA_RB, FLARE_OA_RA_RB,
+  //  {"smod", "smod"}, {"smod.nr", "smod.nr"}},
 
-  /* -------- */
 
   /* lumul rA, rB */
   {&flare_grp_info_g4,
@@ -687,6 +686,9 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_LSMUL_RA_RB, FLARE_OA_RA_RB,
     {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
 
+
+  /* -------- */
+
   /* udiv64 rA, rB */
   {&flare_grp_info_g4,
     FLARE_G4_OP_ENUM_UDIV64_RA_RB, FLARE_OA_RA_RB,
@@ -697,15 +699,15 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB,
     {"sdiv64", "sdiv64"}, {"sdiv64.nr", "sdiv64.nr"}},
   /* -------- */
-  /* umod64 rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UMOD64_RA_RB, FLARE_OA_RA_RB,
-    {"umod64", "umod64"}, {"umod64.nr", "umod64.nr"}},
+  ///* umod64 rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_UMOD64_RA_RB, FLARE_OA_RA_RB,
+  //  {"umod64", "umod64"}, {"umod64.nr", "umod64.nr"}},
 
-  /* smod64 rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SMOD64_RA_RB, FLARE_OA_RA_RB,
-    {"smod64", "smod64"}, {"smod64.nr", "smod64.nr"}},
+  ///* smod64 rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_SMOD64_RA_RB, FLARE_OA_RA_RB,
+  //  {"smod64", "smod64"}, {"smod64.nr", "smod64.nr"}},
 
   /* ldub rA, [rB] */
   {&flare_grp_info_g4,
@@ -822,6 +824,35 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_RC_LDST,
     {"sth", "sth"}, {"sth.nr", "sth.nr"}},
   /* -------- */
+  /* udivmod rA, rB, rC */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_UDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
+    {"udivmod", "udivmod"}, {"udivmod.nr", "udivmod.nr"}},
+
+  /* sdivmod rA, rB, rC */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
+    {"sdivmod", "sdivmod"}, {"sdivmod.nr", "sdivmod.nr"}},
+
+  /* lumul rC, rD, rA, rB */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LUMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
+    {"lumul", "lumul"}, {"lumul.nr", "lumul.nr"}},
+
+  /* lsmul rC, rD, rA, rB */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LSMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
+    {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
+
+  /* udivmod64 rA, rB, rC, rD */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_UDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
+    {"udivmod64", "udivmod64"}, {"udivmod64.nr", "udivmod64.nr"}},
+
+  /* sdivmod64 rA, rB, rC, rD */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
+    {"sdivmod64", "sdivmod64"}, {"sdivmod64.nr", "sdivmod64.nr"}},
 };
 static const flare_grp_info_t flare_grp_info_g5 =
 {

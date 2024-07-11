@@ -494,7 +494,8 @@ sim_engine_run (SIM_DESC sd,
   bool have_index_insn, have_pre_insn, have_lpre_insn;
   flare_temp_t
     index_insn, prefix_insn, insn,
-    grp, subgrp, ra_ind, rb_ind, rc_ind, simm, uimm, fw,
+    grp, subgrp, ra_ind, rb_ind, index_ra_ind, index_rb_ind,
+    simm, uimm, fwl,
     nbytes;
   const flare_opc_info_t
     *opc_info;
@@ -511,7 +512,8 @@ sim_engine_run (SIM_DESC sd,
     have_pre_insn = false;
     have_lpre_insn = false;
     index_insn = prefix_insn = insn = 0x0;
-    grp = subgrp = ra_ind = rb_ind = rc_ind = simm = uimm = fw = 0x0;
+    grp = subgrp = ra_ind = rb_ind = index_ra_ind = index_rb_ind = 0x0ull;
+    simm = uimm = fwl = 0x0ull;
     nbytes = 0x0;
     opc_info = (const flare_opc_info_t *) NULL;
 
@@ -526,12 +528,12 @@ sim_engine_run (SIM_DESC sd,
       flare_get_insn_field_ei (&flare_enc_info_grp_16, index_insn)
         == FLARE_G4_GRP_VALUE
       && flare_get_insn_field_ei (&flare_enc_info_g4_op, index_insn)
-        == FLARE_G4_OP_ENUM_INDEX_RA
+        == FLARE_G4_OP_ENUM_INDEX_RA_RB
       ))
     )
     {
       nbytes += 2;
-      rc_ind = flare_get_insn_field_ei
+      index_rb_ind = flare_get_insn_field_ei
         (&flare_enc_info_ra_ind, index_insn);
       prefix_insn = insn
         = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
@@ -646,7 +648,7 @@ sim_engine_run (SIM_DESC sd,
         {
           case FLARE_G1_OP_ENUM_ADD_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub 
               (32u, /* bits */
@@ -661,7 +663,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G1_OP_ENUM_ADD_RA_PC_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub 
               (32u, /* bits */
@@ -676,7 +678,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G1_OP_ENUM_ADD_RA_SP_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub 
               (32u, /* bits */
@@ -691,7 +693,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G1_OP_ENUM_ADD_RA_FP_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub 
               (32u, /* bits */
@@ -706,7 +708,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G1_OP_ENUM_CMP_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*ra = 
             (void)flare_sim_add_sub 
@@ -722,63 +724,63 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G1_OP_ENUM_CPY_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = simm;
           }
             break;
           case FLARE_G1_OP_ENUM_LSL_RA_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (uint32_t) (*ra) << (uint32_t) uimm;
           }
             break;
           case FLARE_G1_OP_ENUM_LSR_RA_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (uint32_t) (*ra) >> (uint32_t) uimm;
           }
             break;
           case FLARE_G1_OP_ENUM_ASR_RA_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) (*ra) >> (uint32_t) uimm;
           }
             break;
           case FLARE_G1_OP_ENUM_AND_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra &= simm;
           }
             break;
           case FLARE_G1_OP_ENUM_ORR_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra |= simm;
           }
             break;
           case FLARE_G1_OP_ENUM_XOR_RA_S5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra ^= simm;
           }
             break;
           case FLARE_G1_OP_ENUM_ZE_RA_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) flare_zero_extend (*ra, uimm);
           }
             break;
           case FLARE_G1_OP_ENUM_SE_RA_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) flare_sign_extend (*ra, uimm);
           }
@@ -786,7 +788,7 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G1_OP_ENUM_SWI_RA_S5:
           case FLARE_G1_OP_ENUM_SWI_U5:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ity = 0x1;
             *sty
@@ -955,20 +957,20 @@ sim_engine_run (SIM_DESC sd,
 
         opc_info = &flare_opc_info_g2
           [flare_get_insn_field_ei (&flare_enc_info_g2_op, insn)];
-        fw = flare_get_insn_field_ei (&flare_enc_info_g2_f, insn);
+        fwl = flare_get_insn_field_ei (&flare_enc_info_g2_f, insn);
 
         switch (opc_info->opcode)
         {
           case FLARE_G2_OP_ENUM_ADD_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               false, /* with_carry_in */
               false /* do_sub */
               );
@@ -976,14 +978,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_SUB_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               false, /* with_carry_in */
               true /* do_sub */
               );
@@ -991,14 +993,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_ADD_RA_SP_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               sp, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               false, /* with_carry_in */
               false /* do_sub */
               );
@@ -1006,14 +1008,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_ADD_RA_FP_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               fp, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               false, /* with_carry_in */
               false /* do_sub */
               );
@@ -1021,7 +1023,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_CMP_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*ra = 
             (void)flare_sim_add_sub
@@ -1037,11 +1039,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_CPY_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1049,11 +1051,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_LSL_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (uint32_t) (*ra) << (uint32_t) rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1061,10 +1063,10 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_LSR_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (uint32_t) (*ra) >> (uint32_t) rb;
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1072,11 +1074,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_ASR_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (*ra) >> (uint32_t) rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1084,11 +1086,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_AND_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra &= rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1096,11 +1098,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_ORR_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra |= rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1108,11 +1110,11 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_XOR_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra ^= rb;
 
-            if (fw)
+            if (fwl)
             {
               flare_sim_set_flags_zn (32u, *ra, flags);
             }
@@ -1120,14 +1122,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_ADC_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               true, /* with_carry_in */
               false /* do_sub */
               );
@@ -1135,14 +1137,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_SBC_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sim_add_sub
               (32u, /* bits */
               *ra, /* operand_a */
               rb, /* operand_b */
               temp_flags_in, /* flags_in */
-              fw ? flags : NULL, /* flags out */
+              fwl ? flags : NULL, /* flags out */
               true, /* with_carry_in */
               true /* do_sub */
               );
@@ -1150,7 +1152,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G2_OP_ENUM_CMPBC_RA_RB:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             (void) flare_sim_add_sub
               (32u, /* bits */
@@ -1221,7 +1223,7 @@ sim_engine_run (SIM_DESC sd,
             int32_t
               *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *lr = pc + nbytes;
             pc += simm & ~0x1ull;
@@ -1229,14 +1231,14 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BRA_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             //printf ("simm: %i\n", (int) simm);
             pc += simm & ~0x1ull;
           }
             break;
           case FLARE_G3_OP_ENUM_BEQ_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1245,7 +1247,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BNE_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (!flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1254,7 +1256,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BMI_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_n)
             {
               pc += simm & ~0x1ull;
@@ -1263,7 +1265,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BPL_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (!flags_n)
             {
               pc += simm & ~0x1ull;
@@ -1272,7 +1274,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BVS_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_v)
             {
               pc += simm & ~0x1ull;
@@ -1281,7 +1283,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BVC_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (!flags_v)
             {
               pc += simm & ~0x1ull;
@@ -1290,7 +1292,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BGEU_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_c)
             {
               pc += simm & ~0x1ull;
@@ -1299,7 +1301,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BLTU_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (!flags_c)
             {
               pc += simm & ~0x1ull;
@@ -1308,7 +1310,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BGTU_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_c && !flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1317,7 +1319,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BLEU_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (!flags_c || flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1326,7 +1328,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BGES_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_n == flags_v)
             {
               pc += simm & ~0x1ull;
@@ -1335,7 +1337,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BLTS_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_n != flags_v)
             {
               pc += simm & ~0x1ull;
@@ -1344,7 +1346,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BGTS_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_n == flags_v && !flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1353,7 +1355,7 @@ sim_engine_run (SIM_DESC sd,
             break;
           case FLARE_G3_OP_ENUM_BLES_PCREL_S9:
           {
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             if (flags_n != flags_v || flags_z)
             {
               pc += simm & ~0x1ull;
@@ -1382,7 +1384,7 @@ sim_engine_run (SIM_DESC sd,
               ra = cpu.gprs[ra_ind],
               *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *lr = pc + nbytes;
 
@@ -1396,7 +1398,7 @@ sim_engine_run (SIM_DESC sd,
             int32_t
               ra = cpu.gprs[ra_ind];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             pc = ra;
           }
@@ -1406,7 +1408,7 @@ sim_engine_run (SIM_DESC sd,
             int32_t
               ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             pc = ira;
           }
@@ -1417,7 +1419,7 @@ sim_engine_run (SIM_DESC sd,
               *ie = &cpu.sprs[FLARE_SPR_ENUM_IE],
               ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ie |= 0x1;
             pc = ira;
@@ -1428,7 +1430,7 @@ sim_engine_run (SIM_DESC sd,
             int32_t
               *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ie |= 0x1;
           }
@@ -1438,7 +1440,7 @@ sim_engine_run (SIM_DESC sd,
             int32_t
               *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ie &= ~0x1;
           }
@@ -1449,7 +1451,7 @@ sim_engine_run (SIM_DESC sd,
               *ra = &cpu.sprs[ra_ind],
               *rb = &cpu.gprs[rb_ind];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             wr32 (scpu, opc, *rb, *ra);
             *rb -= sizeof (*ra);
           }
@@ -1462,7 +1464,7 @@ sim_engine_run (SIM_DESC sd,
                 *sa = &cpu.sprs[ra_ind],
                 *rb = &cpu.gprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
               wr32 (scpu, opc, *rb, *sa);
               *rb -= sizeof (*sa);
             }
@@ -1480,7 +1482,7 @@ sim_engine_run (SIM_DESC sd,
               *ra = &cpu.sprs[ra_ind],
               *rb = &cpu.gprs[rb_ind];
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
             *rb += sizeof (*ra);
             *ra = rd32 (scpu, opc, *rb);
           }
@@ -1493,7 +1495,7 @@ sim_engine_run (SIM_DESC sd,
                 *sa = &cpu.sprs[ra_ind],
                 *rb = &cpu.gprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
               *rb += sizeof (*sa);
               *sa = rd32 (scpu, opc, *rb);
             }
@@ -1512,7 +1514,7 @@ sim_engine_run (SIM_DESC sd,
               int32_t
                 *rb = &cpu.gprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
               *rb += sizeof (pc);
               pc = rd32 (scpu, opc, *rb);
             }
@@ -1536,7 +1538,7 @@ sim_engine_run (SIM_DESC sd,
 
             lhs *= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = lhs;
           }
@@ -1553,7 +1555,7 @@ sim_engine_run (SIM_DESC sd,
 
             lhs /= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = lhs;
           }
@@ -1570,7 +1572,7 @@ sim_engine_run (SIM_DESC sd,
 
             lhs /= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) lhs;
           }
@@ -1588,7 +1590,7 @@ sim_engine_run (SIM_DESC sd,
 
             lhs %= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) lhs;
           }
@@ -1605,7 +1607,7 @@ sim_engine_run (SIM_DESC sd,
 
             lhs %= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = lhs;
           }
@@ -1623,7 +1625,7 @@ sim_engine_run (SIM_DESC sd,
               rb_signext = flare_zero_extend (rb, 32u),
               lhs = ra_signext * rb_signext;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *r0 = (int32_t) (lhs >> 32u);
             *r1 = (int32_t) lhs;
@@ -1642,7 +1644,7 @@ sim_engine_run (SIM_DESC sd,
               rb_signext = flare_sign_extend (rb, 32u),
               lhs = ra_signext * rb_signext;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *r0 = (int32_t) (lhs >> 32u);
             *r1 = (int32_t) lhs;
@@ -1669,7 +1671,7 @@ sim_engine_run (SIM_DESC sd,
               rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
             lhs /= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*r0 = (int32_t) (lhs >> 32u);
             //*r1 = (int32_t) lhs;
@@ -1698,7 +1700,7 @@ sim_engine_run (SIM_DESC sd,
               rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
             lhs /= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*r0 = (int32_t) (lhs >> 32u);
             //*r1 = (int32_t) lhs;
@@ -1721,7 +1723,7 @@ sim_engine_run (SIM_DESC sd,
             //    | flare_zero_extend (rb, 32u));
             //lhs %= rhs;
 
-            //FLARE_TRACE_INSN (opc_info->names[fw]);
+            //FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*r0 = (int32_t) (lhs >> 32u);
             //*r1 = (int32_t) lhs;
@@ -1744,7 +1746,7 @@ sim_engine_run (SIM_DESC sd,
               rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
             lhs %= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             //*r0 = (int32_t) (lhs >> 32u);
             //*r1 = (int32_t) lhs;
@@ -1765,7 +1767,7 @@ sim_engine_run (SIM_DESC sd,
               rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
             lhs %= rhs;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = (int32_t) (lhs >> 32u);
             *ra_p_1 = (int32_t) lhs;
@@ -1774,15 +1776,29 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G4_OP_ENUM_LDUB_RA_RB:
           {
             int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              //*ra = (
+	      //  !have_index_insn
+	      //  ? &cpu.gprs[ra_ind] : &cpu.grps[index_ra_ind]
+	      //),
+              //rb = cpu.gprs[rb_ind],
+              *ra = (
+		//!have_index_insn
+		//? 
+		&cpu.gprs[ra_ind]
+		//: &cpu.gprs[index_ra_ind]
+	      ),
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_zero_extend (rd8u (scpu, opc, addr), 8u);
           }
@@ -1790,15 +1806,24 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G4_OP_ENUM_LDSB_RA_RB:
           {
             int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              *ra = (
+		//!have_index_insn
+		//? 
+		&cpu.gprs[ra_ind]
+		//: &cpu.gprs[index_ra_ind]
+	      ),
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sign_extend (rd8s (scpu, opc, addr), 8u);
           }
@@ -1806,15 +1831,30 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G4_OP_ENUM_LDUH_RA_RB:
           {
             int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              //*ra = &cpu.gprs[ra_ind],
+              //*ra = (
+	      //  !have_index_insn
+	      //  ? &cpu.gprs[ra_ind] : &cpu.grps[index_ra_ind]
+	      //),
+              //rb = cpu.gprs[rb_ind],
+              *ra = (
+		//!have_index_insn
+		//? 
+		&cpu.gprs[ra_ind]
+		//: &cpu.gprs[index_ra_ind]
+	      ),
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_zero_extend (rd16u (scpu, opc, addr), 16u);
           }
@@ -1822,15 +1862,30 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G4_OP_ENUM_LDSH_RA_RB:
           {
             int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              //*ra = &cpu.gprs[ra_ind],
+              //*ra = (
+	      //  !have_index_insn
+	      //  ? &cpu.gprs[ra_ind] : &cpu.grps[index_ra_ind]
+	      //),
+              //rb = cpu.gprs[rb_ind],
+              *ra = (
+		//!have_index_insn
+		//? 
+		&cpu.gprs[ra_ind]
+		//: &cpu.gprs[index_ra_ind]
+	      ),
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             *ra = flare_sign_extend (rd16s (scpu, opc, addr), 16u);
           }
@@ -1838,15 +1893,30 @@ sim_engine_run (SIM_DESC sd,
           case FLARE_G4_OP_ENUM_STB_RA_RB:
           {
             int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              //ra = cpu.gprs[ra_ind],
+              //*ra = (
+	      //  !have_index_insn
+	      //  ? &cpu.gprs[ra_ind] : &cpu.grps[index_ra_ind]
+	      //),
+              //rb = cpu.gprs[rb_ind],
+              *ra = (
+		//!have_index_insn
+		//? 
+		&cpu.gprs[ra_ind]
+		//: &cpu.gprs[index_ra_ind]
+	      ),
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             wr8 (scpu, opc, addr, ra);
           }
@@ -1855,14 +1925,19 @@ sim_engine_run (SIM_DESC sd,
           {
             int32_t
               ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+              //rb = cpu.gprs[rb_ind],
+              rb = (
+		!have_index_insn
+		? cpu.gprs[rb_ind]
+		: cpu.gprs[index_ra_ind]
+	      ),
+              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
             uint32_t
               addr = 0;
 
             addr = rb + rc;
 
-            FLARE_TRACE_INSN (opc_info->names[fw]);
+            FLARE_TRACE_INSN (opc_info->names[fwl]);
 
             wr16 (scpu, opc, addr, ra);
           }
@@ -1875,7 +1950,7 @@ sim_engine_run (SIM_DESC sd,
                 *ra = &cpu.gprs[ra_ind],
                 sb = cpu.sprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               *ra = sb;
             }
@@ -1895,7 +1970,7 @@ sim_engine_run (SIM_DESC sd,
                 *sa = &cpu.sprs[ra_ind],
                 rb = cpu.gprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               *sa = rb;
             }
@@ -1916,7 +1991,7 @@ sim_engine_run (SIM_DESC sd,
                 *sa = &cpu.sprs[ra_ind],
                 sb = cpu.gprs[rb_ind];
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               *sa = sb;
             }
@@ -1928,7 +2003,7 @@ sim_engine_run (SIM_DESC sd,
             }
           }
             break;
-          case FLARE_G4_OP_ENUM_INDEX_RA:
+          case FLARE_G4_OP_ENUM_INDEX_RA_RB:
           //case FLARE_G4_OP_ENUM_RESERVED_31:
           default:
           {
@@ -1943,8 +2018,13 @@ sim_engine_run (SIM_DESC sd,
       {
         int32_t
           *ra = &cpu.gprs[ra_ind],
-          rb = cpu.gprs[rb_ind],
-          rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+          //rb = cpu.gprs[rb_ind],
+          rb = (
+	    !have_index_insn
+	    ? cpu.gprs[rb_ind]
+	    : cpu.gprs[index_ra_ind]
+	  ),
+          rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
         uint32_t
           addr = 0;
 
@@ -1967,7 +2047,7 @@ sim_engine_run (SIM_DESC sd,
 
         addr = rb + rc + simm;
 
-        FLARE_TRACE_INSN (opc_info->names[fw]);
+        FLARE_TRACE_INSN (opc_info->names[fwl]);
 
         *ra = rd32 (scpu, opc, addr);
       }
@@ -1976,8 +2056,13 @@ sim_engine_run (SIM_DESC sd,
       {
         int32_t
           ra = cpu.gprs[ra_ind],
-          rb = cpu.gprs[rb_ind],
-          rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+          //rb = cpu.gprs[rb_ind],
+          rb = (
+	    !have_index_insn
+	    ? cpu.gprs[rb_ind]
+	    : cpu.gprs[index_ra_ind]
+	  ),
+          rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
         uint32_t
           addr = 0;
 
@@ -1999,7 +2084,7 @@ sim_engine_run (SIM_DESC sd,
 
         addr = rb + rc + simm;
 
-        FLARE_TRACE_INSN (opc_info->names[fw]);
+        FLARE_TRACE_INSN (opc_info->names[fwl]);
 
         wr32 (scpu, opc, addr, ra);
       }
@@ -2013,13 +2098,13 @@ sim_engine_run (SIM_DESC sd,
           opc_info = &flare_opc_info_g7_aluopbh
             [flare_get_insn_field_ei
               (&flare_enc_info_g7_aluopbh_op, insn)];
-          fw = flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_w,
+          fwl = flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_w,
             insn);
           switch (opc_info->opcode)
           {
             case FLARE_G7_ALUOPBH_OP_ENUM_CMP_RA_RB:
             {
-              if (fw == FLARE_G7_ALUOPBH_W_ENUM_8)
+              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
               {
                 int32_t
                   ra = cpu.gprs[ra_ind],
@@ -2027,7 +2112,7 @@ sim_engine_run (SIM_DESC sd,
                   temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
                   *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 (void) flare_sim_add_sub
                   (8u, /* bits */
@@ -2039,7 +2124,7 @@ sim_engine_run (SIM_DESC sd,
                   true /* do_sub */
                   );
               }
-              else if (fw == FLARE_G7_ALUOPBH_W_ENUM_16)
+              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
               {
                 int32_t
                   ra = cpu.gprs[ra_ind],
@@ -2047,7 +2132,7 @@ sim_engine_run (SIM_DESC sd,
                   temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
                   *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 (void) flare_sim_add_sub
                   (16u, /* bits */
@@ -2069,23 +2154,23 @@ sim_engine_run (SIM_DESC sd,
               break;
             case FLARE_G7_ALUOPBH_OP_ENUM_LSR_RA_RB:
             {
-              if (fw == FLARE_G7_ALUOPBH_W_ENUM_8)
+              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
               {
                 uint8_t ra = (uint8_t) (cpu.gprs[ra_ind] & 0xff);
                 uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
                 ra >>= rb;
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 cpu.gprs[ra_ind] = (flare_temp_t) ra;
               }
-              else if (fw == FLARE_G7_ALUOPBH_W_ENUM_16)
+              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
               {
                 uint16_t ra = (uint16_t) (cpu.gprs[ra_ind] & 0xffff);
                 uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
                 ra >>= rb;
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 cpu.gprs[ra_ind] = (flare_temp_t) ra;
               }
@@ -2099,24 +2184,24 @@ sim_engine_run (SIM_DESC sd,
               break;
             case FLARE_G7_ALUOPBH_OP_ENUM_ASR_RA_RB:
             {
-              if (fw == FLARE_G7_ALUOPBH_W_ENUM_8)
+              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
               {
                 int8_t ra = cpu.gprs[ra_ind] & 0xff;
                 uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
                 ra >>= rb;
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 cpu.gprs[ra_ind] = flare_sign_extend
                   ((flare_temp_t) ra, 8ull);
               }
-              else if (fw == FLARE_G7_ALUOPBH_W_ENUM_16)
+              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
               {
                 int16_t ra = cpu.gprs[ra_ind] & 0xffff;
                 uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
                 ra >>= rb;
 
-                FLARE_TRACE_INSN (opc_info->names[fw]);
+                FLARE_TRACE_INSN (opc_info->names[fwl]);
 
                 cpu.gprs[ra_ind] = flare_sign_extend
                   ((flare_temp_t) ra, 16ull);
@@ -2154,7 +2239,7 @@ sim_engine_run (SIM_DESC sd,
                 rb = cpu.gprs[rb_ind];
               uint32_t addr = (uint32_t)rb;
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               *sa = rd32 (scpu, opc, addr);
             }
@@ -2166,7 +2251,7 @@ sim_engine_run (SIM_DESC sd,
                 sb = cpu.sprs[rb_ind];
               uint32_t addr = (uint32_t)sb;
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               *sa = rd32 (scpu, opc, addr);
             }
@@ -2178,7 +2263,7 @@ sim_engine_run (SIM_DESC sd,
                 rb = cpu.gprs[rb_ind];
               uint32_t addr = (uint32_t)rb;
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               wr32 (scpu, opc, addr, sa);
             }
@@ -2190,7 +2275,7 @@ sim_engine_run (SIM_DESC sd,
                 sb = cpu.sprs[rb_ind];
               uint32_t addr = (uint32_t)sb;
 
-              FLARE_TRACE_INSN (opc_info->names[fw]);
+              FLARE_TRACE_INSN (opc_info->names[fwl]);
 
               wr32 (scpu, opc, addr, sa);
             }
@@ -2232,8 +2317,15 @@ sim_engine_run (SIM_DESC sd,
           //}
 
           //addr = ra + rc + simm;
-          FLARE_TRACE_INSN (opc_info->names[fw]);
+          FLARE_TRACE_INSN (opc_info->names[fwl]);
         }
+	else if ((subgrp == flare_get_insn_field_ei
+	  (&flare_enc_info_g7_icflush_subgrp, insn))
+	  == FLARE_G7_ICFLUSH_SUBGRP_VALUE)
+	{
+	  opc_info = &flare_opc_info_g7_icflush[0];
+	  FLARE_TRACE_INSN (opc_info->names[fwl]);
+	}
         else
         {
           FLARE_TRACE_INSN ("SIGILL_G7_SUBGRP");

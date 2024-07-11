@@ -448,25 +448,25 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 #define FLARE_G4_OP_ENUM_MUL_RA_RB (0xbull)
 #define FLARE_G4_OP_ENUM_UDIV_RA_RB (0xcull)
 #define FLARE_G4_OP_ENUM_SDIV_RA_RB (0xdull)
-#define FLARE_G4_OP_ENUM_UMOD_RA_RB (0xeull)
-#define FLARE_G4_OP_ENUM_SMOD_RA_RB (0xfull)
+//#define FLARE_G4_OP_ENUM_UMOD_RA_RB (0xeull)
+//#define FLARE_G4_OP_ENUM_SMOD_RA_RB (0xfull)
+#define FLARE_G4_OP_ENUM_LUMUL_RA_RB (0x0eull)
+#define FLARE_G4_OP_ENUM_LSMUL_RA_RB (0x0full)
 
-#define FLARE_G4_OP_ENUM_LUMUL_RA_RB (0x10ull)
-#define FLARE_G4_OP_ENUM_LSMUL_RA_RB (0x11ull)
-#define FLARE_G4_OP_ENUM_UDIV64_RA_RB (0x12ull)
-#define FLARE_G4_OP_ENUM_SDIV64_RA_RB (0x13ull)
-#define FLARE_G4_OP_ENUM_UMOD64_RA_RB (0x14ull)
-#define FLARE_G4_OP_ENUM_SMOD64_RA_RB (0x15ull)
-#define FLARE_G4_OP_ENUM_LDUB_RA_RB (0x16ull)
-#define FLARE_G4_OP_ENUM_LDSB_RA_RB (0x17ull)
-#define FLARE_G4_OP_ENUM_LDUH_RA_RB (0x18ull)
-#define FLARE_G4_OP_ENUM_LDSH_RA_RB (0x19ull)
-#define FLARE_G4_OP_ENUM_STB_RA_RB (0x1aull)
-#define FLARE_G4_OP_ENUM_STH_RA_RB (0x1bull)
-#define FLARE_G4_OP_ENUM_CPY_RA_SB (0x1cull)
-#define FLARE_G4_OP_ENUM_CPY_SA_RB (0x1dull)
-#define FLARE_G4_OP_ENUM_CPY_SA_SB (0x1eull)
-#define FLARE_G4_OP_ENUM_INDEX_RA_RB (0x1full)
+#define FLARE_G4_OP_ENUM_UDIV64_RA_RB (0x10ull)
+#define FLARE_G4_OP_ENUM_SDIV64_RA_RB (0x11ull)
+//#define FLARE_G4_OP_ENUM_UMOD64_RA_RB (0x14ull)
+//#define FLARE_G4_OP_ENUM_SMOD64_RA_RB (0x15ull)
+#define FLARE_G4_OP_ENUM_LDUB_RA_RB (0x12ull)
+#define FLARE_G4_OP_ENUM_LDSB_RA_RB (0x13ull)
+#define FLARE_G4_OP_ENUM_LDUH_RA_RB (0x14ull)
+#define FLARE_G4_OP_ENUM_LDSH_RA_RB (0x15ull)
+#define FLARE_G4_OP_ENUM_STB_RA_RB (0x16ull)
+#define FLARE_G4_OP_ENUM_STH_RA_RB (0x17ull)
+#define FLARE_G4_OP_ENUM_CPY_RA_SB (0x18ull)
+#define FLARE_G4_OP_ENUM_CPY_SA_RB (0x19ull)
+#define FLARE_G4_OP_ENUM_CPY_SA_SB (0x1aull)
+#define FLARE_G4_OP_ENUM_INDEX_RA_RB (0x1bull)
 /* -------- */
 /* the `grp` field of group 5 instructions */
 #define FLARE_G5_GRP_VALUE (0x5ull)
@@ -842,6 +842,9 @@ typedef enum flare_oparg_t
   FLARE_OA_SA_RB,
   FLARE_OA_SA_SB,
   FLARE_OA_PC_RB,
+  FLARE_OA_RA_RB_RC_DIVMOD,
+  FLARE_OA_RC_RD_RA_RB_LMUL,
+  FLARE_OA_RA_RB_RC_RD_DIVMOD64,
   FLARE_OA_RA_IMPLICIT_SP,
   FLARE_OA_SA_IMPLICIT_SP,
   FLARE_OA_PC_IMPLICIT_SP,
@@ -936,7 +939,7 @@ typedef struct flare_dasm_info_t
     ra_ind,
     rb_ind,
     index_ra_ind,
-    rc_ind,
+    index_rb_ind,
     //icreload_ra_ind,
     fw,
     g7_aluopbh_subgrp,
@@ -1040,7 +1043,7 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //extern const flare_opc_info_t
 //  flare_opc_info_g3[FLARE_G3_OPC_INFO_LIM];
 
-#define FLARE_G4_OPC_INFO_LIM (32ull + 5ull + 6ull)
+#define FLARE_G4_OPC_INFO_LIM (32ull + 5ull + 6ull + 2ull)
 //extern const flare_opc_info_t
 //  flare_opc_info_g4[FLARE_G4_OPC_INFO_LIM];
 

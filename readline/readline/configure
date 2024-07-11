@@ -3923,7 +3923,6 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
 
 
 
-
 # If we're using gcc and the user hasn't specified CFLAGS, add -O2 to CFLAGS
 if test -n "$want_auto_cflags" ; then
 	AUTO_CFLAGS="-g ${GCC+-O2}"

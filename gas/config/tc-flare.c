@@ -1463,11 +1463,15 @@ md_apply_fix (fixS *fixP,
   tmp.buf = (bfd_byte *) (fixP->fx_frag->fr_literal + fixP->fx_where);
   //bool relaxable = false;
 
-  fprintf (stderr,
-    "md_apply_fix (): begin: %lx %lx; %lx; %u\n",
-    (long)(*valP), (long)fixP->fx_offset,
-    *(long *)tmp.buf,
-    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX);
+  //fprintf (stderr,
+  //  "md_apply_fix (): begin: %lx %lx; %lx; %u %u %u %u\n",
+  //  (long)(*valP), (long)fixP->fx_offset,
+  //  *(long *)tmp.buf,
+  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S5,
+  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S17,
+  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32,
+  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+  //  );
 
   //if (!fixP->fx_done)
   {
@@ -1762,13 +1766,13 @@ md_apply_fix (fixS *fixP,
             break;
           case BFD_RELOC_FLARE_G1G5G6_S32:
           case BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX:
-	    if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
-	    {
-	      fprintf (
-		stderr,
-		"\ntestificate\n"
-	      );
-	    }
+	    //if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
+	    //{
+	    //  fprintf (
+	    //    stderr,
+	    //    "\ntestificate\n"
+	    //  );
+	    //}
             fixP->fx_r_type = BFD_RELOC_FLARE_G1G5G6_S32_ADD32;
             fixP->fx_next->fx_r_type = BFD_RELOC_FLARE_G1G5G6_S32_SUB32;
             break;
@@ -1869,20 +1873,20 @@ md_apply_fix (fixS *fixP,
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
         {
-	  if (
-	    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
-	  )
-	  {
-	    fprintf (
-	      stderr,
-	      "md_apply_fix(): have "
-		"BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 0: "
-		"%lx %lx; %lx\n",
-	      tmp.prefix_insn,
-	      tmp.insn,
-	      (flare_temp_t)(*valP)
-	    );
-	  }
+	  //if (
+	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  //)
+	  //{
+	  //  fprintf (
+	  //    stderr,
+	  //    "md_apply_fix(): have "
+	  //      "BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 0: "
+	  //      "%lx %lx; %lx\n",
+	  //    tmp.prefix_insn,
+	  //    tmp.insn,
+	  //    (flare_temp_t)(*valP)
+	  //  );
+	  //}
           flare_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
             (flare_temp_t)(*valP));
 	  //fprintf (
@@ -1893,20 +1897,20 @@ md_apply_fix (fixS *fixP,
 	  //  tmp.insn,
 	  //  (flare_temp_t)(*valP)
 	  //);
-	  if (
-	    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
-	  )
-	  {
-	    fprintf (
-	      stderr,
-	      "md_apply_fix(): have "
-		"BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 1: "
-		"%lx %lx; %lx\n",
-	      tmp.prefix_insn,
-	      tmp.insn,
-	      (flare_temp_t)(*valP)
-	    );
-	  }
+	  //if (
+	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  //)
+	  //{
+	  //  fprintf (
+	  //    stderr,
+	  //    "md_apply_fix(): have "
+	  //      "BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 1: "
+	  //      "%lx %lx; %lx\n",
+	  //    tmp.prefix_insn,
+	  //    tmp.insn,
+	  //    (flare_temp_t)(*valP)
+	  //  );
+	  //}
           fixP->fx_addnumber = *valP = flare_get_g1g5g6_s32
             (tmp.prefix_insn, tmp.insn);
         }
@@ -2640,8 +2644,9 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
   cl_insn = self->cl_insn = flare_cl_insn_vec + fragP->fr_subtype;
   //fprintf (
   //  stderr,
-  //  "flare_relax_temp_ctor(): %lx\n",
-  //  cl_insn->data
+  //  "flare_relax_temp_ctor(): %lx %u\n",
+  //  cl_insn->data,
+  //  (uint32_t) update
   //);
   relax_insn = &cl_insn->relax_insn;
   // We're calling `flare_relax_insn_ctor ()` in `append_cl_insn ()`
@@ -2658,10 +2663,16 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
       //fragP->fr_symbol != NULL
       //&&
       S_IS_DEFINED (fragP->fr_symbol)
+      //&& S_IS_LOCAL (fragP->fr_symbol)
+      //&& S_IS_COMMON (fragP->fr_symbol)
+      //&& S_IS_FORWARD_REF (fragP->fr_symbol)
       //&& !S_IS_EXTERNAL (fragP->fr_symbol)
       && !S_IS_WEAK (fragP->fr_symbol)
       //flare_relaxable_symbol (fragP->fr_symbol)
       && sec == S_GET_SEGMENT (fragP->fr_symbol)
+      && relax_insn->is_pcrel
+      // only relax pc-relative symbol references in GAS since I couldn't
+      // get this working otherwise
     )
   )
   {
@@ -2708,6 +2719,10 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
       (!relax_insn->was_lpre && cl_insn->is_small_imm_unsigned))
     )
     {
+      //fprintf (stderr,
+      //  "relax_can_shrink_value outer: "
+      //  "self->value\n",
+      //);
       if ((self->rm_prefix = (
         !relax_insn->was_lpre
         || relax_can_shrink_value

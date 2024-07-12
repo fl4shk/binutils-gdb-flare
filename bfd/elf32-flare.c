@@ -336,8 +336,8 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      //(FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
-      (flare_temp_t)(-1ll),
+      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      //(flare_temp_t)(0ll),
       false),                   /* pcrel_offset */
   /* -------- */
   /* A relocation for the immediate value of an instruction in 
@@ -983,10 +983,6 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
                                   void *contents, bfd_vma address,
                                   bfd_vma relocation, bfd_vma addend)
 {
-  fprintf (
-    stderr,
-    "asdf\n"
-  );
   /* -------- */
   //reloc_howto_type *howto = reloc_entry->howto;
   //bfd_vma relocation;
@@ -1032,8 +1028,14 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
 
     fprintf (
       stderr,
-      "flare_elf_do_non_sub_imm_reloc: !pc_relative: %i\n",
-      (signed) relocation
+      "flare_elf_do_non_sub_imm_reloc: !pc_relative: "
+	"%i %lx; %u %u; %u %u\n",
+      (signed) relocation,
+      relocation,
+      howto->type == R_FLARE_G1G5G6_S5,
+      howto->type == R_FLARE_G1G5G6_S17,
+      howto->type == R_FLARE_G1G5G6_S32,
+      howto->type == R_FLARE_G1G5G6_S32_NO_RELAX
     );
 
     if (howto->type == R_FLARE_G1G5G6_U5
@@ -1077,11 +1079,16 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       fprintf (
 	stderr,
-        "debug: prefix_insn insn: %x %x\n",
+        "debug: prefix_insn insn; 0: %x %x\n",
         (unsigned)prefix_insn, (unsigned)insn
       );
       relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
       flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+      fprintf (
+	stderr,
+        "debug: prefix_insn insn; 1: %x %x\n",
+        (unsigned)prefix_insn, (unsigned)insn
+      );
       flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
@@ -1948,6 +1955,11 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
   elf_section_data (args->sec)->relocs = args->internal_relocs;
   elf_section_data (args->sec)-> this_hdr.contents = args->contents;
   args->symtab_hdr->contents = (unsigned char *) args->isymbuf;
+  fprintf (
+    stderr,
+    "flare_do_relax_prefix_innards(): %s",
+    args->howto->name
+  );
 
   if (args->was_lpre)
   {
@@ -1956,9 +1968,9 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
       const unsigned
         insn_dist = flare_have_plp_distance
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-      //printf ("flare_do_relax_prefix_innards: "
-      //  "was_lpre && rm_prefix: %s\n",
-      //  args->howto->name);
+      printf ("flare_do_relax_prefix_innards: "
+        "was_lpre && rm_prefix: %s\n",
+        args->howto->name);
 
       //if (args->is_pcrel)
       {
@@ -2194,6 +2206,10 @@ flare_do_relax_prefix (bfd *abfd,
 {
   reloc_howto_type *howto;
   howto = flare_lookup_howto (ELF32_R_TYPE (irel->r_info));
+  fprintf (
+    stderr,
+    "flare_do_relax_prefix(): begin\n"
+  );
 
   /* For simplicity of coding, we are going to modify the section
       contents, the section relocs, and the BFD symbol table.  We
@@ -2389,12 +2405,15 @@ flare_do_relax_prefix (bfd *abfd,
 
 /* Adapted from elf32-pru.c */
 static bool
-flare_elf_relax_section (bfd *abfd,
+_flare_elf_relax_section (bfd *abfd,
                           asection *sec,
                           struct bfd_link_info *link_info,
                           bool *again)
 {
-  //printf ("flare dbg: flare_elf_relax_section\n");
+  printf (
+    //stderr,
+    "flare dbg: flare_elf_relax_section\n"
+  );
   /* -------- */
   Elf_Internal_Shdr *symtab_hdr;
   Elf_Internal_Rela *internal_relocs;
@@ -2581,7 +2600,8 @@ flare_elf_relax_section (bfd *abfd,
 /* -------- */
 #define ELF_ARCH            bfd_arch_flare
 #define ELF_MACHINE_CODE    EM_FLARE_UNOFFICIAL
-#define ELF_MAXPAGESIZE     0x1
+#define ELF_MAXPAGESIZE     0x1000
+//#define ELF_COMMONPAGESIZE  0x1000
 
 #define TARGET_LITTLE_SYM    flare_elf32_vec
 #define TARGET_LITTLE_NAME   "elf32-flare"
@@ -2589,12 +2609,16 @@ flare_elf_relax_section (bfd *abfd,
 #define elf_info_to_howto_rel         NULL
 #define elf_info_to_howto             flare_elf_info_to_howto
 #define elf_backend_relocate_section  flare_elf_relocate_section
-#define bfd_elf32_bfd_relax_section   flare_elf_relax_section
+#define bfd_elf32_bfd_relax_section   _flare_elf_relax_section
 //#define elf_backend_gc_mark_hook      flare_elf_gc_mark_hook
 //#define elf_backend_check_relocs      flare_elf_check_relocs
 //
-#define elf_backend_can_gc_sections   1
-#define elf_backend_rela_normal       1
+
+#define elf_backend_collect		true
+#define elf_backend_type_change_ok	true
+#define elf_backend_can_gc_sections	true
+//#define elf_backend_can_gc_sections   true
+#define elf_backend_rela_normal       true
 
 #define elf_backend_default_execstack  0
 
@@ -2602,3 +2626,11 @@ flare_elf_relax_section (bfd *abfd,
 #define bfd_elf32_bfd_reloc_name_lookup flare_reloc_name_lookup
 
 #include "elf32-target.h"
+
+#undef TARGET_LITTLE_SYM
+#undef TARGET_LITTLE_NAME
+#undef TARGET_BIG_SYM
+#undef TARGET_BIG_NAME
+
+#undef ELF_MAXPAGESIZE
+//#undef ELF_COMMONPAGESIZE

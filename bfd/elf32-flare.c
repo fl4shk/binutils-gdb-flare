@@ -932,20 +932,20 @@ flare_elf_non_sub_imm_reloc (bfd *abfd,
                               bfd *output_bfd,
                               char **error_message)
 {
-  fprintf (
-    stderr,
-    "flare_elf_non_sub_imm_reloc(): begin\n"
-  );
+  //fprintf (
+  //  stderr,
+  //  "flare_elf_non_sub_imm_reloc(): begin\n"
+  //);
   if (output_bfd != NULL
     && (symbol->flags & BSF_SECTION_SYM) == 0
     && (!reloc_entry->howto->partial_inplace
     || reloc_entry->addend == 0))
   {
     reloc_entry->address += input_section->output_offset;
-    fprintf (
-      stderr,
-      "flare_elf_non_sub_imm_reloc(): return bfd_reloc_ok;\n"
-    );
+    //fprintf (
+    //  stderr,
+    //  "flare_elf_non_sub_imm_reloc(): return bfd_reloc_ok;\n"
+    //);
     return bfd_reloc_ok;
   }
   /* If this isn't a final relocation, then just use the generic
@@ -953,17 +953,17 @@ flare_elf_non_sub_imm_reloc (bfd *abfd,
   if (output_bfd != NULL)
   {
     //return bfd_reloc_continue;
-    fprintf (
-      stderr,
-      "flare_elf_non_sub_imm_reloc(): output_bfd != NULL;\n"
-    );
+    //fprintf (
+    //  stderr,
+    //  "flare_elf_non_sub_imm_reloc(): output_bfd != NULL;\n"
+    //);
     return bfd_elf_generic_reloc (abfd, reloc_entry, symbol, data,
       input_section, output_bfd, error_message);
   }
-  fprintf (
-    stderr,
-    "flare_elf_non_sub_imm_reloc(): final option;\n"
-  );
+  //fprintf (
+  //  stderr,
+  //  "flare_elf_non_sub_imm_reloc(): final option;\n"
+  //);
   return flare_elf_do_non_sub_imm_reloc
     (abfd, reloc_entry->howto,
     input_section,
@@ -1026,17 +1026,17 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       || howto->type == R_FLARE_G7_ICRELOAD_S32_NO_RELAX
     );
 
-    fprintf (
-      stderr,
-      "flare_elf_do_non_sub_imm_reloc: !pc_relative: "
-	"%i %lx; %u %u; %u %u\n",
-      (signed) relocation,
-      relocation,
-      howto->type == R_FLARE_G1G5G6_S5,
-      howto->type == R_FLARE_G1G5G6_S17,
-      howto->type == R_FLARE_G1G5G6_S32,
-      howto->type == R_FLARE_G1G5G6_S32_NO_RELAX
-    );
+    //fprintf (
+    //  stderr,
+    //  "flare_elf_do_non_sub_imm_reloc: !pc_relative: "
+    //    "%i %lx; %u %u; %u %u\n",
+    //  (signed) relocation,
+    //  relocation,
+    //  howto->type == R_FLARE_G1G5G6_S5,
+    //  howto->type == R_FLARE_G1G5G6_S17,
+    //  howto->type == R_FLARE_G1G5G6_S32,
+    //  howto->type == R_FLARE_G1G5G6_S32_NO_RELAX
+    //);
 
     if (howto->type == R_FLARE_G1G5G6_U5
       || howto->type == R_FLARE_G1G5G6_S5)
@@ -1077,18 +1077,18 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
       prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
-      fprintf (
-	stderr,
-        "debug: prefix_insn insn; 0: %x %x\n",
-        (unsigned)prefix_insn, (unsigned)insn
-      );
+      //fprintf (
+      //  stderr,
+      //  "debug: prefix_insn insn; 0: %x %x\n",
+      //  (unsigned)prefix_insn, (unsigned)insn
+      //);
       relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
       flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
-      fprintf (
-	stderr,
-        "debug: prefix_insn insn; 1: %x %x\n",
-        (unsigned)prefix_insn, (unsigned)insn
-      );
+      //fprintf (
+      //  stderr,
+      //  "debug: prefix_insn insn; 1: %x %x\n",
+      //  (unsigned)prefix_insn, (unsigned)insn
+      //);
       flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
@@ -1955,11 +1955,11 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
   elf_section_data (args->sec)->relocs = args->internal_relocs;
   elf_section_data (args->sec)-> this_hdr.contents = args->contents;
   args->symtab_hdr->contents = (unsigned char *) args->isymbuf;
-  fprintf (
-    stderr,
-    "flare_do_relax_prefix_innards(): %s",
-    args->howto->name
-  );
+  //fprintf (
+  //  stderr,
+  //  "flare_do_relax_prefix_innards(): %s",
+  //  args->howto->name
+  //);
 
   if (args->was_lpre)
   {
@@ -1968,9 +1968,9 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
       const unsigned
         insn_dist = flare_have_plp_distance
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
-      printf ("flare_do_relax_prefix_innards: "
-        "was_lpre && rm_prefix: %s\n",
-        args->howto->name);
+      //printf ("flare_do_relax_prefix_innards: "
+      //  "was_lpre && rm_prefix: %s\n",
+      //  args->howto->name);
 
       //if (args->is_pcrel)
       {
@@ -2206,10 +2206,10 @@ flare_do_relax_prefix (bfd *abfd,
 {
   reloc_howto_type *howto;
   howto = flare_lookup_howto (ELF32_R_TYPE (irel->r_info));
-  fprintf (
-    stderr,
-    "flare_do_relax_prefix(): begin\n"
-  );
+  //fprintf (
+  //  stderr,
+  //  "flare_do_relax_prefix(): begin\n"
+  //);
 
   /* For simplicity of coding, we are going to modify the section
       contents, the section relocs, and the BFD symbol table.  We
@@ -2410,10 +2410,10 @@ _flare_elf_relax_section (bfd *abfd,
                           struct bfd_link_info *link_info,
                           bool *again)
 {
-  printf (
-    //stderr,
-    "flare dbg: flare_elf_relax_section\n"
-  );
+  //printf (
+  //  //stderr,
+  //  "flare dbg: flare_elf_relax_section\n"
+  //);
   /* -------- */
   Elf_Internal_Shdr *symtab_hdr;
   Elf_Internal_Rela *internal_relocs;

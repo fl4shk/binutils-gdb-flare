@@ -674,7 +674,7 @@ add_fne_cl_insn (const flare_cl_insn_t *cl_insn,
   //if (!no_relax
   //  && cl_insn->relax_insn.have_imm
   //  && cl_insn->have_plp != FLARE_HAVE_PLP_NEITHER)
-  //if (!flare_cl_insn_no_relax (cl_insn))
+  if (!flare_cl_insn_no_relax (cl_insn))
   {
     frag_wane (frag_now);
     frag_new (0);
@@ -695,8 +695,9 @@ add_gas_relaxed_cl_insn
 
   flare_cl_insn_vec_append (cl_insn);
   //fprintf (stderr,
-  //  "add_gas_relaxed_cl_insn (): %u\n",
-  //  flare_cl_insn_vec_old_size);
+  //  "add_gas_relaxed_cl_insn (): %u; %lx\n",
+  //  flare_cl_insn_vec_old_size,
+  //  cl_insn->data);
 
   frag_var (rs_machine_dependent, max_chars, var,
     flare_cl_insn_vec_old_size, //subtype,
@@ -714,18 +715,29 @@ append_cl_insn (flare_cl_insn_t *cl_insn,
   //  relax_temp;
   flare_relax_insn_t *relax_insn;
   bool no_relax;
+  //fprintf (
+  //  stderr,
+  //  "append_cl_insn(): %u %u; %lx\n", 
+  //  cl_insn != NULL,
+  //  cl_insn->opc_info != NULL,
+  //  cl_insn != NULL ? cl_insn->data : (flare_temp_t)(-1ll)
+  //);
   relax_insn = &cl_insn->relax_insn;
-  fprintf (
-    stderr,
-    "append_cl_insn(): %lx %u %s %u; %u %u; %u\n",
-    cl_insn->data,
-    cl_insn->no_relax,
-    cl_insn->opc_info->nr_names[0],
-    cl_insn->opc_info->oparg == FLARE_OA_RA_S5,
-    relax_insn->was_lpre,
-    relax_insn->have_imm,
-    cl_insn->reloc == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
-  );
+  //fprintf (
+  //  stderr,
+  //  "append_cl_insn(): %lx %u %s %u; %u %u; %u\n",
+  //  cl_insn->data,
+  //  cl_insn->no_relax,
+  //  cl_insn->opc_info != NULL ? cl_insn->opc_info->nr_names[0] : "<none>",
+  //  (
+  //    cl_insn->opc_info != NULL
+  //    ? cl_insn->opc_info->oparg == FLARE_OA_RA_S5
+  //    : 2u
+  //  ),
+  //  relax_insn->was_lpre,
+  //  relax_insn->have_imm,
+  //  cl_insn->reloc == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+  //);
 
   no_relax = flare_cl_insn_no_relax (cl_insn);
 
@@ -805,8 +817,16 @@ flare_enc_temp_insn_lpre_rshift
     case FLARE_G1_GRP_VALUE:
     case FLARE_G5_GRP_VALUE:
     case FLARE_G6_GRP_VALUE:
-      return flare_enc_temp_insn_g0_lpre_s27
+    {
+      const flare_temp_t ret = flare_enc_temp_insn_g0_lpre_s27
         (simm >> FLARE_G1G5G6_I5_BITSIZE);
+      //fprintf (
+      //  stderr,
+      //  "flare_enc_temp_insn_lpre_rshift(): g1g5g6: %lx\n",
+      //  ret
+      //);
+      return ret;
+    }
     case FLARE_G3_GRP_VALUE:
       return flare_enc_temp_insn_g0_lpre_s23
         (simm >> FLARE_G3_S9_BITSIZE);
@@ -1874,17 +1894,19 @@ md_apply_fix (fixS *fixP,
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
         {
 	  //if (
-	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
+	  //  || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
 	  //)
 	  //{
 	  //  fprintf (
 	  //    stderr,
 	  //    "md_apply_fix(): have "
-	  //      "BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 0: "
-	  //      "%lx %lx; %lx\n",
+	  //      "BFD_RELOC_FLARE_G1G5G6_S32 or ...NO_RELAX 0: "
+	  //      "%lx %lx; %lx; %lx\n",
 	  //    tmp.prefix_insn,
 	  //    tmp.insn,
-	  //    (flare_temp_t)(*valP)
+	  //    (flare_temp_t)(*valP),
+	  //    *(flare_temp_t *)tmp.buf
 	  //  );
 	  //}
           flare_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
@@ -1897,22 +1919,46 @@ md_apply_fix (fixS *fixP,
 	  //  tmp.insn,
 	  //  (flare_temp_t)(*valP)
 	  //);
+          fixP->fx_addnumber = *valP = flare_get_g1g5g6_s32
+            (tmp.prefix_insn, tmp.insn);
+	  //bfd_putl16 ((tmp.prefix_insn >> 16) & 0xffffu, tmp.buf + 0ull);
+	  //bfd_putl16 (tmp.prefix_insn & 0xffffu, tmp.buf + 0ull);
+	  //bfd_putl32 (tmp.prefix_insn, tmp.buf);
+	  //bfd_putl16 (tmp.prefix_insn, tmp.buf + 2);
+	  //bfd_putl16 (tmp.prefix_insn >> 16, tmp.buf);
+	  //bfd_putl16 (tmp.insn, tmp.buf + 4ull);
+	  ////{
+	  ////  fprintf (
+	  ////    stderr,
+	  ////    "md_apply_fix(): have "
+	  ////      "BFD_RELOC_FLARE_G1G5G6_S32 or ...NO_RELAX 2: "
+	  ////      "%lx %lx; %lx; %lx\n",
+	  ////    tmp.prefix_insn,
+	  ////    tmp.insn,
+	  ////    (flare_temp_t)(*valP),
+	  ////    *(flare_temp_t *)tmp.buf
+	  ////  );
+	  ////}
 	  //if (
-	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  //  fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
+	  //  || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
 	  //)
 	  //{
 	  //  fprintf (
 	  //    stderr,
 	  //    "md_apply_fix(): have "
-	  //      "BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 1: "
-	  //      "%lx %lx; %lx\n",
+	  //      "BFD_RELOC_FLARE_G1G5G6_S32 or ...NO_RELAX 1: "
+	  //      "%lx %lx; %lx; %x %x %x\n",
 	  //    tmp.prefix_insn,
 	  //    tmp.insn,
-	  //    (flare_temp_t)(*valP)
+	  //    (flare_temp_t)(*valP),
+	  //    *(uint16_t *)(tmp.buf + 0),
+	  //    *(uint16_t *)(tmp.buf + 2),
+	  //    *(uint16_t *)(tmp.buf + 4)
 	  //  );
 	  //}
-          fixP->fx_addnumber = *valP = flare_get_g1g5g6_s32
-            (tmp.prefix_insn, tmp.insn);
+	  //fixP->fx_done = true;
+	  //fixP->fx_done = true;
         }
         else /* if (
           fixP->fx_r_type == BFD_RELOC_FLARE_G7_ICRELOAD_S32
@@ -1929,8 +1975,12 @@ md_apply_fix (fixS *fixP,
           (tmp.prefix_insn >> 16) & 0xffffu,
           tmp.buf + tmp.lpre_offs
         );
-        bfd_putl16 (tmp.prefix_insn & 0xffffu, tmp.buf + tmp.lpre_offs);
+        bfd_putl16 (
+	  tmp.prefix_insn & 0xffffu,
+	  tmp.buf + tmp.lpre_offs + 2
+	);
         bfd_putl16 (tmp.insn, tmp.buf + tmp.insn_offs);
+        //printf ("testificate\n");
         //if (fixP->fx_addsy == NULL)
         {
           fixP->fx_done = true;
@@ -2562,6 +2612,11 @@ flare_relax_insn_ctor (flare_relax_insn_t *self,
           self->target_bitsize
             = FLARE_G0_PRE_S12_BITSIZE + self->insn_bitsize;
           self->was_lpre = true;
+          //fprintf (
+	  //  stderr,
+	  //  "flare_relax_insn_ctor(): g1g5g6 lpre: %lx\n",
+	  //  cl_insn->data
+          //);
           break;
       }
       self->have_imm = true;
@@ -2644,7 +2699,7 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
   cl_insn = self->cl_insn = flare_cl_insn_vec + fragP->fr_subtype;
   //fprintf (
   //  stderr,
-  //  "flare_relax_temp_ctor(): %lx %u\n",
+  //  "flare_relax_temp_ctor(): begin %lx %u\n",
   //  cl_insn->data,
   //  (uint32_t) update
   //);
@@ -2679,6 +2734,11 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
     self->value
       = (fragP->fr_symbol ? S_GET_VALUE (fragP->fr_symbol) : 0)
         + fragP->fr_offset;
+    //fprintf (
+    //  stderr,
+    //  "flare_relax_temp_ctor(): main situation: %lx %lx\n",
+    //  self->value, fragP->fr_offset
+    //);
     //if (relax_insn->grp_value == FLARE_G3_GRP_VALUE)
     //if (!relax_insn->is_pcrel)
     //{
@@ -2882,6 +2942,12 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
       }
     }
   }
+  //fprintf (
+  //  stderr,
+  //  "flare_relax_temp_ctor(): end %lx %u\n",
+  //  cl_insn->data,
+  //  (uint32_t) update
+  //);
 }
 int
 md_estimate_size_before_relax (fragS *fragP,
@@ -3136,6 +3202,11 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
         whole_insn_length = fragP->fr_var;
         fixP = fix_new_exp (fragP, buf - (bfd_byte *) fragP->fr_literal,
           4, &exp, (int) relax_insn->is_pcrel, *reloc);
+        //fprintf (
+	//  stderr,
+	//  "NO_RELAX: %x\n",
+	//  *(uint32_t*)(buf - (bfd_byte *) fragP->fr_literal)
+        //);
       }
       else
       {
@@ -3156,6 +3227,12 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
       abort ();
       break;
   }
+
+  //fprintf (
+  //  stderr,
+  //  "md_convert_frag(): %lx\n",
+  //  *(flare_temp_t *)(buf)
+  //);
 
   buf += whole_insn_length;
 
@@ -3344,6 +3421,11 @@ flare_assemble_post_parse_worker (flare_parse_data_t *pd,
     = (((pd->prefix_insn & 0xffffffffull) << FLARE_ONE_EXT_BITPOS)
       | (pd->insn & 0xffffull));
 
+  //fprintf
+  //  (stderr,
+  //  "cl_insn.data: %lx\n",
+  //  cl_insn.data
+  //  );
   flare_relax_insn_ctor (&cl_insn.relax_insn, &cl_insn);
   append_cl_insn (&cl_insn, temp_ex);
 
@@ -4630,9 +4712,9 @@ md_assemble (char *str)
 arelent *
 tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 {
-  fprintf
-    (stderr,
-    "tc_gen_reloc(): begin\n");
+  //fprintf
+  //  (stderr,
+  //  "tc_gen_reloc(): begin\n");
   arelent *reloc = (arelent *) xmalloc (sizeof (arelent));
 
   reloc->sym_ptr_ptr = (asymbol **) xmalloc (sizeof (asymbol *));
@@ -4650,8 +4732,9 @@ tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixP)
       bfd_get_reloc_code_name (fixP->fx_r_type));
     return NULL;
   }
-  printf ("tc_gen_reloc: %s\n",
-    reloc->howto->name);
+  //fprintf (stderr,
+  //  "tc_gen_reloc: %s\n",
+  //  reloc->howto->name);
 
   return reloc;
 }

@@ -1,0 +1,2 @@
+-I./include
+-DFLARE_CLANGD

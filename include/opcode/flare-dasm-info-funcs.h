@@ -468,6 +468,11 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
       }
       else
       {
+	fprintf 
+	  (stderr,
+	  "invalid group 7 instruction subgroup! %lx\n",
+	  self->iword);
+	exit(1);
         break;
       }
       //do_print_insn_flare

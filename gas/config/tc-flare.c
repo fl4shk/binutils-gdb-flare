@@ -622,6 +622,12 @@ static void
 add_fne_cl_insn (const flare_cl_insn_t *cl_insn,
                 expressionS *address_expr)
 {
+  //if (flare_cl_insn_no_relax (cl_insn))
+  //{
+  //  fprintf (stderr,
+  //    "no_relax! %lx\n",
+  //    cl_insn->data);
+  //}
   char *p;
   //fixS *fixP;
   reloc_howto_type *howto;
@@ -668,11 +674,12 @@ add_fne_cl_insn (const flare_cl_insn_t *cl_insn,
   //if (!no_relax
   //  && cl_insn->relax_insn.have_imm
   //  && cl_insn->have_plp != FLARE_HAVE_PLP_NEITHER)
-  if (!flare_cl_insn_no_relax (cl_insn))
+  //if (!flare_cl_insn_no_relax (cl_insn))
   {
     frag_wane (frag_now);
     frag_new (0);
   }
+  //else
 }
 
 /* Idea borrowed from "tc-riscv.c": `add_relaxed_insn ()` */
@@ -707,8 +714,19 @@ append_cl_insn (flare_cl_insn_t *cl_insn,
   //  relax_temp;
   flare_relax_insn_t *relax_insn;
   bool no_relax;
-
   relax_insn = &cl_insn->relax_insn;
+  fprintf (
+    stderr,
+    "append_cl_insn(): %lx %u %s %u; %u %u; %u\n",
+    cl_insn->data,
+    cl_insn->no_relax,
+    cl_insn->opc_info->nr_names[0],
+    cl_insn->opc_info->oparg == FLARE_OA_RA_S5,
+    relax_insn->was_lpre,
+    relax_insn->have_imm,
+    cl_insn->reloc == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+  );
+
   no_relax = flare_cl_insn_no_relax (cl_insn);
 
   if (relax_insn->have_imm)
@@ -1445,9 +1463,11 @@ md_apply_fix (fixS *fixP,
   tmp.buf = (bfd_byte *) (fixP->fx_frag->fr_literal + fixP->fx_where);
   //bool relaxable = false;
 
-  //fprintf (stderr,
-  //  "md_apply_fix (): begin: %lx %lx\n",
-  //  (long)(*valP), (long)fixP->fx_offset);
+  fprintf (stderr,
+    "md_apply_fix (): begin: %lx %lx; %lx; %u\n",
+    (long)(*valP), (long)fixP->fx_offset,
+    *(long *)tmp.buf,
+    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX);
 
   //if (!fixP->fx_done)
   {
@@ -1742,6 +1762,13 @@ md_apply_fix (fixS *fixP,
             break;
           case BFD_RELOC_FLARE_G1G5G6_S32:
           case BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX:
+	    if (fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
+	    {
+	      fprintf (
+		stderr,
+		"\ntestificate\n"
+	      );
+	    }
             fixP->fx_r_type = BFD_RELOC_FLARE_G1G5G6_S32_ADD32;
             fixP->fx_next->fx_r_type = BFD_RELOC_FLARE_G1G5G6_S32_SUB32;
             break;
@@ -1842,8 +1869,44 @@ md_apply_fix (fixS *fixP,
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
           || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX)
         {
+	  if (
+	    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  )
+	  {
+	    fprintf (
+	      stderr,
+	      "md_apply_fix(): have "
+		"BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 0: "
+		"%lx %lx; %lx\n",
+	      tmp.prefix_insn,
+	      tmp.insn,
+	      (flare_temp_t)(*valP)
+	    );
+	  }
           flare_put_g1g5g6_s32 (&tmp.prefix_insn, &tmp.insn,
             (flare_temp_t)(*valP));
+	  //fprintf (
+	  //  stderr,
+	  //  "md_apply_fix(): have BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 1: "
+	  //    "%lx %lx; %lx\n",
+	  //  tmp.prefix_insn,
+	  //  tmp.insn,
+	  //  (flare_temp_t)(*valP)
+	  //);
+	  if (
+	    fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX
+	  )
+	  {
+	    fprintf (
+	      stderr,
+	      "md_apply_fix(): have "
+		"BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX 1: "
+		"%lx %lx; %lx\n",
+	      tmp.prefix_insn,
+	      tmp.insn,
+	      (flare_temp_t)(*valP)
+	    );
+	  }
           fixP->fx_addnumber = *valP = flare_get_g1g5g6_s32
             (tmp.prefix_insn, tmp.insn);
         }
@@ -2405,6 +2468,11 @@ have_relaxable_temp_insn (fragS *fragP)
   flare_temp_t grp_value;
 
   cl_insn = flare_cl_insn_vec + fragP->fr_subtype;
+  //fprintf (
+  //  stderr,
+  //  "have_relaxable_temp_insn(): %lx\n",
+  //  cl_insn->data
+  //);
 
   if (
     //!cl_insn->no_relax
@@ -2570,6 +2638,11 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
   memset (self, 0, sizeof (*self));
 
   cl_insn = self->cl_insn = flare_cl_insn_vec + fragP->fr_subtype;
+  //fprintf (
+  //  stderr,
+  //  "flare_relax_temp_ctor(): %lx\n",
+  //  cl_insn->data
+  //);
   relax_insn = &cl_insn->relax_insn;
   // We're calling `flare_relax_insn_ctor ()` in `append_cl_insn ()`
   //flare_relax_insn_ctor
@@ -4416,6 +4489,11 @@ md_assemble (char *str)
       my_reg_1 = 0;
     switch (pd.have_index_kind)
     {
+      case FLARE_HIDX_KIND_NO_INDEX:
+      {
+	gas_assert (false);
+      }
+	break;
       case FLARE_HIDX_KIND_ATOMIC:
       {
 	//my_reg_0
@@ -4537,6 +4615,9 @@ md_assemble (char *str)
 arelent *
 tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 {
+  fprintf
+    (stderr,
+    "tc_gen_reloc(): begin\n");
   arelent *reloc = (arelent *) xmalloc (sizeof (arelent));
 
   reloc->sym_ptr_ptr = (asymbol **) xmalloc (sizeof (asymbol *));
@@ -4554,8 +4635,8 @@ tc_gen_reloc (asection *section ATTRIBUTE_UNUSED, fixS *fixP)
       bfd_get_reloc_code_name (fixP->fx_r_type));
     return NULL;
   }
-  //printf ("tc_gen_reloc: %s\n",
-  //  reloc->howto->name);
+  printf ("tc_gen_reloc: %s\n",
+    reloc->howto->name);
 
   return reloc;
 }

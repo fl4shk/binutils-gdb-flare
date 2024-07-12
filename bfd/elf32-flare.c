@@ -336,7 +336,8 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      //(FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (flare_temp_t)(-1ll),
       false),                   /* pcrel_offset */
   /* -------- */
   /* A relocation for the immediate value of an instruction in 
@@ -931,12 +932,20 @@ flare_elf_non_sub_imm_reloc (bfd *abfd,
                               bfd *output_bfd,
                               char **error_message)
 {
+  fprintf (
+    stderr,
+    "flare_elf_non_sub_imm_reloc(): begin\n"
+  );
   if (output_bfd != NULL
     && (symbol->flags & BSF_SECTION_SYM) == 0
     && (!reloc_entry->howto->partial_inplace
     || reloc_entry->addend == 0))
   {
     reloc_entry->address += input_section->output_offset;
+    fprintf (
+      stderr,
+      "flare_elf_non_sub_imm_reloc(): return bfd_reloc_ok;\n"
+    );
     return bfd_reloc_ok;
   }
   /* If this isn't a final relocation, then just use the generic
@@ -944,9 +953,17 @@ flare_elf_non_sub_imm_reloc (bfd *abfd,
   if (output_bfd != NULL)
   {
     //return bfd_reloc_continue;
+    fprintf (
+      stderr,
+      "flare_elf_non_sub_imm_reloc(): output_bfd != NULL;\n"
+    );
     return bfd_elf_generic_reloc (abfd, reloc_entry, symbol, data,
       input_section, output_bfd, error_message);
   }
+  fprintf (
+    stderr,
+    "flare_elf_non_sub_imm_reloc(): final option;\n"
+  );
   return flare_elf_do_non_sub_imm_reloc
     (abfd, reloc_entry->howto,
     input_section,
@@ -966,6 +983,10 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
                                   void *contents, bfd_vma address,
                                   bfd_vma relocation, bfd_vma addend)
 {
+  fprintf (
+    stderr,
+    "asdf\n"
+  );
   /* -------- */
   //reloc_howto_type *howto = reloc_entry->howto;
   //bfd_vma relocation;
@@ -1009,8 +1030,11 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       || howto->type == R_FLARE_G7_ICRELOAD_S32_NO_RELAX
     );
 
-    //printf ("flare_elf_do_non_sub_imm_reloc: !pc_relative: %i\n",
-    //  (signed) relocation);
+    fprintf (
+      stderr,
+      "flare_elf_do_non_sub_imm_reloc: !pc_relative: %i\n",
+      (signed) relocation
+    );
 
     if (howto->type == R_FLARE_G1G5G6_U5
       || howto->type == R_FLARE_G1G5G6_S5)
@@ -1051,10 +1075,11 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
           (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
       prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
-      //printf (
-      //  "debug: prefix_insn insn: %x %x\n",
-      //  (unsigned)prefix_insn, (unsigned)insn
-      //);
+      fprintf (
+	stderr,
+        "debug: prefix_insn insn: %x %x\n",
+        (unsigned)prefix_insn, (unsigned)insn
+      );
       relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
       flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
       flare_put_insn_32 (input_bfd, prefix_insn, contents + address);

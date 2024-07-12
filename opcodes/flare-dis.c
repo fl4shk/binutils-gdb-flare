@@ -147,7 +147,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       fpr (stream, "%s\t[%s], %s, %s",
         args->opc_info->names[args->fw],
         gprs[args->ra_ind].name,
-        gprs[args->rc_ind].name,
+        gprs[args->index_ra_ind].name,
         gprs[args->rb_ind].name);
     }
       break;
@@ -156,7 +156,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
       fpr (stream, "%s\t[%s], %s, %s",
         args->opc_info->names[args->fw],
         gprs[args->ra_ind].name,
-        gprs[args->rc_ind].name,
+        gprs[args->index_ra_ind].name,
         gprs[args->rb_ind].name);
     }
       break;
@@ -424,7 +424,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
 	    args->opc_info->names[args->fw],
 	    gprs[args->ra_ind].name,
 	    gprs[args->index_ra_ind].name,
-	    gprs[args->rc_ind].name);
+	    gprs[args->index_rb_ind].name);
 	}
 	else
 	{
@@ -504,7 +504,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
 	  args->opc_info->names[args->fw],
 	  gprs[args->ra_ind].name,
 	  gprs[args->index_ra_ind].name,
-	  gprs[args->rc_ind].name,
+	  gprs[args->index_rb_ind].name,
 	  (signed) args->simm,
 	  do_snprintf_insn_flare_maybe_pre_lpre (args));
       }
@@ -526,7 +526,7 @@ do_print_insn_flare (flare_dasm_info_t *args)
 	fpr (stream, "%s\t[%s, %s, #%i]%s",
 	  args->opc_info->names[args->fw],
 	  gprs[args->index_ra_ind].name,
-	  gprs[args->rc_ind].name,
+	  gprs[args->index_rb_ind].name,
 	  (signed) args->simm,
 	  do_snprintf_insn_flare_maybe_pre_lpre (args));
       }

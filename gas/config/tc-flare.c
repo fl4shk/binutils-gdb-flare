@@ -843,8 +843,8 @@ flare_enc_temp_insn_lpre_rshift
     //}
     //case FLARE_G5_GRP_VALUE:
     {
-      const flare_temp_t ret = flare_enc_temp_insn_g0_lpre_s24
-        (simm >> FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE);
+      const flare_temp_t ret = flare_enc_temp_insn_g0_lpre_s25
+        (simm >> FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE);
       //fprintf (
       //  stderr,
       //  "flare_enc_temp_insn_lpre_rshift(): g1: %lx\n",
@@ -1555,7 +1555,7 @@ md_apply_fix (fixS *fixP,
     /* Just force these to become relocs */
     case BFD_RELOC_FLARE_G1_U5:
     case BFD_RELOC_FLARE_G1_S5:
-    case BFD_RELOC_FLARE_G5_INDEX_S8:
+    case BFD_RELOC_FLARE_G5_INDEX_S7:
     case BFD_RELOC_FLARE_G7_ICRELOAD_S5:
       ////tmp.buf = bfd_putl16 (bfd_getl16 (tmp.buf));
       if (fixP->fx_addsy == NULL
@@ -1572,13 +1572,13 @@ md_apply_fix (fixS *fixP,
           fixP->fx_addnumber = *valP = flare_get_insn_field_ei
             (&flare_enc_info_g1_i5, tmp.insn);
         }
-        else if (fixP->fx_r_type == BFD_RELOC_FLARE_G5_INDEX_S8)
+        else if (fixP->fx_r_type == BFD_RELOC_FLARE_G5_INDEX_S7)
         {
           flare_set_insn_field_ei_p
-            (&flare_enc_info_g5_index_ra_simm_s8, &tmp.insn,
+            (&flare_enc_info_g5_index_ra_simm_s7, &tmp.insn,
               (flare_temp_t)(*valP));
           fixP->fx_addnumber = *valP = flare_get_insn_field_ei
-            (&flare_enc_info_g5_index_ra_simm_s8, tmp.insn);
+            (&flare_enc_info_g5_index_ra_simm_s7, tmp.insn);
         }
         else /* if (fixP->fx_r_type == BFD_RELOC_FLARE_G7_ICRELOAD_S5) */
         {
@@ -1603,7 +1603,7 @@ md_apply_fix (fixS *fixP,
       break;
     case BFD_RELOC_FLARE_G1_S17_FOR_U5:
     case BFD_RELOC_FLARE_G1_S17:
-    case BFD_RELOC_FLARE_G5_INDEX_S20:
+    case BFD_RELOC_FLARE_G5_INDEX_S19:
     case BFD_RELOC_FLARE_G7_ICRELOAD_S17:
       if (fixP->fx_addsy == NULL
         //|| flare_relaxable_symbol (fixP->fx_addsy)
@@ -1623,11 +1623,11 @@ md_apply_fix (fixS *fixP,
           fixP->fx_addnumber = *valP = flare_get_g1_s17
             (tmp.prefix_insn, tmp.insn);
         }
-        else if (fixP->fx_r_type == BFD_RELOC_FLARE_G5_INDEX_S20)
+        else if (fixP->fx_r_type == BFD_RELOC_FLARE_G5_INDEX_S19)
         {
-          flare_put_g5_index_s20 (&tmp.prefix_insn, &tmp.insn,
+          flare_put_g5_index_s19 (&tmp.prefix_insn, &tmp.insn,
             (flare_temp_t)(*valP));
-          fixP->fx_addnumber = *valP = flare_get_g5_index_s20
+          fixP->fx_addnumber = *valP = flare_get_g5_index_s19
             (tmp.prefix_insn, tmp.insn);
         }
         else /* if (
@@ -2751,13 +2751,13 @@ flare_relax_insn_ctor (flare_relax_insn_t *self,
             break;
           case FLARE_HAVE_PLP_PRE:
             self->prefix_insn_bitsize = FLARE_G0_PRE_S12_BITSIZE;
-            self->insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE;
+            self->insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE;
             self->target_bitsize = self->insn_bitsize;
             break;
           case FLARE_HAVE_PLP_LPRE:
             self->prefix_insn_bitsize
-              = FLARE_G0_LPRE_S24_BITSIZE;
-            self->insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE;
+              = FLARE_G0_LPRE_S25_BITSIZE;
+            self->insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE;
             self->target_bitsize
               = FLARE_G0_PRE_S12_BITSIZE + self->insn_bitsize;
             self->was_lpre = true;
@@ -2987,7 +2987,7 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
 		      ) != FLARE_G5_GRP_VALUE
 		    )
 		    ? &flare_enc_info_g1_i5
-		    : &flare_enc_info_g5_index_ra_simm_s8
+		    : &flare_enc_info_g5_index_ra_simm_s7
 		  ),
                 &cl_insn->data,
                 self->value);
@@ -3021,7 +3021,7 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
 	      }
 	      else // g1 or g7 icreload
 	      {
-		flare_put_g5_index_s20 (&prefix_insn, &insn, self->value);
+		flare_put_g5_index_s19 (&prefix_insn, &insn, self->value);
 	      }
             }
             else // if (relax_insn->is_pcrel)
@@ -3051,7 +3051,7 @@ flare_relax_temp_ctor (flare_relax_temp_t *self,
 	    else // g1 or g7 icreload
 	    {
 	      (void) flare_set_insn_field_ei_p
-		(&flare_enc_info_g5_index_ra_simm_s8, &cl_insn->data,
+		(&flare_enc_info_g5_index_ra_simm_s7, &cl_insn->data,
 		self->value);
 	    }
           }
@@ -3170,8 +3170,8 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     gas_assert (fragP->fr_var == have_plp_insn_length (cl_insn->have_plp));
   }
   const bool have_g5_index_ra_simm = (
-    *reloc == BFD_RELOC_FLARE_G5_INDEX_S8
-    || *reloc == BFD_RELOC_FLARE_G5_INDEX_S20
+    *reloc == BFD_RELOC_FLARE_G5_INDEX_S7
+    || *reloc == BFD_RELOC_FLARE_G5_INDEX_S19
     || *reloc == BFD_RELOC_FLARE_G5_INDEX_S32
     || *reloc == BFD_RELOC_FLARE_G5_INDEX_S32_ADD32
     || *reloc == BFD_RELOC_FLARE_G5_INDEX_S32_SUB32
@@ -3184,7 +3184,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_FLARE_G1_U5:
     case BFD_RELOC_FLARE_G1_S5:
     case BFD_RELOC_FLARE_G3_S9_PCREL:
-    case BFD_RELOC_FLARE_G5_INDEX_S8:
+    case BFD_RELOC_FLARE_G5_INDEX_S7:
     case BFD_RELOC_FLARE_G7_ICRELOAD_S5:
       if (fragP->fr_var == have_plp_insn_length (FLARE_HAVE_PLP_NEITHER))
       {
@@ -3206,7 +3206,7 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_FLARE_G1_S17_FOR_U5:
     case BFD_RELOC_FLARE_G1_S17:
     case BFD_RELOC_FLARE_G3_S21_PCREL:
-    case BFD_RELOC_FLARE_G5_INDEX_S20:
+    case BFD_RELOC_FLARE_G5_INDEX_S19:
     case BFD_RELOC_FLARE_G7_ICRELOAD_S17:
       if (fragP->fr_var == have_plp_insn_length (FLARE_HAVE_PLP_NEITHER))
       {
@@ -4360,7 +4360,7 @@ md_assemble (char *str)
         pd.parse_good = true;
       }
         break;
-      //case FLARE_OA_RA_RB_S8_LDST_32:
+      //case FLARE_OA_RA_RB_S7_LDST_32:
       //{
       //  FLARE_SKIP_ISSPACE ();
 
@@ -4455,7 +4455,7 @@ md_assemble (char *str)
       //  pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_LDST;
       //}
       //  break;
-      case FLARE_OA_RA_RB_S8_LDST:
+      case FLARE_OA_RA_RB_S7_LDST:
       {
         FLARE_SKIP_ISSPACE ();
 
@@ -4484,7 +4484,7 @@ md_assemble (char *str)
 	pd.have_index_ra_simm = true;
       }
         break;
-      case FLARE_OA_RA_RB_RC_S8_LDST:
+      case FLARE_OA_RA_RB_RC_S7_LDST:
       {
         FLARE_SKIP_ISSPACE ();
 

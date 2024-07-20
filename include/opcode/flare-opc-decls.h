@@ -94,11 +94,11 @@ static const flare_enc_info_t
     FLARE_G0_LPRE_S27_BITPOS,
     FLARE_G0_LPRE_S27_RSMASK,
     FLARE_G0_LPRE_S27_MASK},
-  flare_enc_info_g0_lpre_s24 =
-    {FLARE_G0_LPRE_S24_BITSIZE,
-    FLARE_G0_LPRE_S24_BITPOS,
-    FLARE_G0_LPRE_S24_RSMASK,
-    FLARE_G0_LPRE_S24_MASK},
+  flare_enc_info_g0_lpre_s25 =
+    {FLARE_G0_LPRE_S25_BITSIZE,
+    FLARE_G0_LPRE_S25_BITPOS,
+    FLARE_G0_LPRE_S25_RSMASK,
+    FLARE_G0_LPRE_S25_MASK},
   flare_enc_info_g0_lpre_s23 =
     {FLARE_G0_LPRE_S23_BITSIZE,
     FLARE_G0_LPRE_S23_BITPOS,
@@ -181,11 +181,11 @@ static const flare_enc_info_t
     FLARE_G5_INDEX_RA_SIMM_FULLGRP_BITPOS,
     FLARE_G5_INDEX_RA_SIMM_FULLGRP_RSMASK,
     FLARE_G5_INDEX_RA_SIMM_FULLGRP_MASK},
-  flare_enc_info_g5_index_ra_simm_s8 =
-    {FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
-    FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
-    FLARE_G5_INDEX_RA_SIMM_S8_RSMASK,
-    FLARE_G5_INDEX_RA_SIMM_S8_MASK},
+  flare_enc_info_g5_index_ra_simm_s7 =
+    {FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE,
+    FLARE_G5_INDEX_RA_SIMM_S7_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_S7_RSMASK,
+    FLARE_G5_INDEX_RA_SIMM_S7_MASK},
   /* -------- */
   flare_enc_info_g7_aluopbh_subgrp =
     {FLARE_G7_ALUOPBH_SUBGRP_BITSIZE,
@@ -878,50 +878,50 @@ static const flare_opc_info_t
   /* -------- */
   /* ldub rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"ldub", "ldub"}, {"ldub.nr", "ldub.nr"}},
 
   /* ldsb rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"ldsb", "ldsb"}, {"ldsb.nr", "ldsb.nr"}},
 
   /* lduh rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"lduh", "lduh"}, {"lduh.nr", "lduh.nr"}},
 
   /* ldsh rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
   /* ldr rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
   /* -------- */
   /* ldub rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"ldub", "ldub"}, {"ldub.nr", "ldub.nr"}},
 
   /* ldsb rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"ldsb", "ldsb"}, {"ldsb.nr", "ldsb.nr"}},
 
   /* lduh rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"lduh", "lduh"}, {"lduh.nr", "lduh.nr"}},
 
   /* ldsh rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
   /* ldr rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
   /* -------- */
   /* stb rA, [rB, rC] */
@@ -941,32 +941,32 @@ static const flare_opc_info_t
   /* -------- */
   /* stb rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"stb", "stb"}, {"stb.nr", "stb.nr"}},
 
   /* sth rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"sth", "sth"}, {"sth.nr", "sth.nr"}},
 
   /* str rA, [rB, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_S7_LDST,
     {"str", "str"}, {"str.nr", "str.nr"}},
   /* -------- */
   /* stb rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"stb", "stb"}, {"stb.nr", "stb.nr"}},
 
   /* sth rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"sth", "sth"}, {"sth.nr", "sth.nr"}},
 
   /* str rA, [rB, rC, #simm] */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"str", "str"}, {"str.nr", "str.nr"}},
   /* -------- */
   /* udivmod rA, rB, rC */
@@ -1050,7 +1050,7 @@ static const flare_opc_info_t
 {
   /* index rA, rB */
   {&flare_grp_info_g5_index_ra_simm,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_S8,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_S7,
     {"index", "index"}, {"index.nr", "index.nr"}}
   ///* -------- */
   ///* ldr rA, [rB, #simm] */

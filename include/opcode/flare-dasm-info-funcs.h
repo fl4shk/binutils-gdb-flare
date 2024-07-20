@@ -189,22 +189,22 @@ flare_dasm_info_do_disassemble (flare_dasm_info_t *self)
 	//= GET_INSN_FIELD (FLARE_G1_S5_MASK,
 	//FLARE_G1_S5_BITPOS, self->iword);
 	= flare_sign_extend (flare_get_insn_field_ei 
-	  (&flare_enc_info_g5_index_ra_simm_s8, self->iword),
-	  flare_enc_info_g5_index_ra_simm_s8.bitsize);
+	  (&flare_enc_info_g5_index_ra_simm_s7, self->iword),
+	  flare_enc_info_g5_index_ra_simm_s7.bitsize);
     }
     else if (temp_length == 4) /* `pre` */
     {
-      self->simm = flare_sign_extend (flare_get_g5_index_s20
+      self->simm = flare_sign_extend (flare_get_g5_index_s19
 	((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
-	flare_enc_info_g5_index_ra_simm_s8.bitsize
+	flare_enc_info_g5_index_ra_simm_s7.bitsize
 	  + flare_enc_info_g0_pre_s12.bitsize);
     }
     else if (temp_length == 6) /* `lpre` */
     {
       self->simm = flare_sign_extend (flare_get_g5_index_s32
 	((self->iword >> FLARE_ONE_EXT_BITPOS), self->iword),
-	flare_enc_info_g5_index_ra_simm_s8.bitsize
-	  + flare_enc_info_g0_lpre_s24.bitsize);
+	flare_enc_info_g5_index_ra_simm_s7.bitsize
+	  + flare_enc_info_g0_lpre_s25.bitsize);
     }
     //printf (
     //  "self->simm: %lx\n",

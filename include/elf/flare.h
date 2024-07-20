@@ -62,8 +62,8 @@ START_RELOC_NUMBERS (elf_flare_reloc_type)
   //RELOC_NUMBER (R_FLARE_G3_S32_PCREL_SUB32, 21) /* local label sub */
   RELOC_NUMBER (R_FLARE_G3_S32_PCREL_NO_RELAX, 20) /* no relaxing */
   /* -------- */
-  RELOC_NUMBER (R_FLARE_G5_INDEX_S8, 21) /* no `pre`/`lpre` */
-  RELOC_NUMBER (R_FLARE_G5_INDEX_S20, 22) /* `pre` */
+  RELOC_NUMBER (R_FLARE_G5_INDEX_S7, 21) /* no `pre`/`lpre` */
+  RELOC_NUMBER (R_FLARE_G5_INDEX_S19, 22) /* `pre` */
   RELOC_NUMBER (R_FLARE_G5_INDEX_S32, 23) /* `lpre` */
   RELOC_NUMBER (R_FLARE_G5_INDEX_S32_ADD32, 24) /* local label sub */
   RELOC_NUMBER (R_FLARE_G5_INDEX_S32_SUB32, 25) /* local label sub */

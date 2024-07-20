@@ -60,8 +60,8 @@ flare_relax_reloc_tuple_g7_icreload =
 static const struct flare_relax_reloc_tuple
 flare_relax_reloc_tuple_g5_index_simm =
 {
-  {BFD_RELOC_FLARE_G5_INDEX_S8, R_FLARE_G5_INDEX_S8}, /* small */
-  {BFD_RELOC_FLARE_G5_INDEX_S20, R_FLARE_G5_INDEX_S20}, /* pre */
+  {BFD_RELOC_FLARE_G5_INDEX_S7, R_FLARE_G5_INDEX_S7}, /* small */
+  {BFD_RELOC_FLARE_G5_INDEX_S19, R_FLARE_G5_INDEX_S19}, /* pre */
   {BFD_RELOC_FLARE_G5_INDEX_S32, R_FLARE_G5_INDEX_S32}, /* lpre */
   {BFD_RELOC_FLARE_G5_INDEX_S32_NO_RELAX,
     R_FLARE_G5_INDEX_S32_NO_RELAX}, /* lpre_no_relax */

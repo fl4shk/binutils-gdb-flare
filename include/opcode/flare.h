@@ -263,13 +263,13 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 #define FLARE_G0_LPRE_S23_MASK \
   (FLARE_ENC_MASK (G0_LPRE_S23))
 
-/* `lpre` simm24, when used with an instruction from group 5 */
-#define FLARE_G0_LPRE_S24_BITSIZE (24ull)
-#define FLARE_G0_LPRE_S24_BITPOS (0ull)
-#define FLARE_G0_LPRE_S24_RSMASK \
-  (FLARE_ENC_RSMASK (G0_LPRE_S24))
-#define FLARE_G0_LPRE_S24_MASK \
-  (FLARE_ENC_MASK (G0_LPRE_S24))
+/* `lpre` simm25, when used with an instruction from group 5 */
+#define FLARE_G0_LPRE_S25_BITSIZE (25ull)
+#define FLARE_G0_LPRE_S25_BITPOS (0ull)
+#define FLARE_G0_LPRE_S25_RSMASK \
+  (FLARE_ENC_RSMASK (G0_LPRE_S25))
+#define FLARE_G0_LPRE_S25_MASK \
+  (FLARE_ENC_MASK (G0_LPRE_S25))
 
 /* `lpre` simm27, when used with an `icreload` instruction from group 7 */
 #define FLARE_G7_ICRELOAD_G0_LPRE_S27_BITSIZE (27ull)
@@ -540,12 +540,12 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
     FLARE_G5_INDEX_RA_SIMM_SUBGRP_VALUE))
 
 /* `index rA, #simm` simm8 */
-#define FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE (8ull)
-#define FLARE_G5_INDEX_RA_SIMM_S8_BITPOS (4ull)
-#define FLARE_G5_INDEX_RA_SIMM_S8_RSMASK \
-  (FLARE_ENC_RSMASK (G5_INDEX_RA_SIMM_S8))
-#define FLARE_G5_INDEX_RA_SIMM_S8_MASK \
-  (FLARE_ENC_MASK (G5_INDEX_RA_SIMM_S8))
+#define FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE (7ull)
+#define FLARE_G5_INDEX_RA_SIMM_S7_BITPOS (4ull)
+#define FLARE_G5_INDEX_RA_SIMM_S7_RSMASK \
+  (FLARE_ENC_RSMASK (G5_INDEX_RA_SIMM_S7))
+#define FLARE_G5_INDEX_RA_SIMM_S7_MASK \
+  (FLARE_ENC_MASK (G5_INDEX_RA_SIMM_S7))
 /* -------- */
 /* the `grp` field of group 6 instructions */
 #define FLARE_G6_GRP_VALUE (0x6ull)
@@ -740,8 +740,8 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
   (FLARE_G0_PRE_S12_MASK << FLARE_ONE_EXT_BITPOS)
 #define FLARE_G0_LPRE_S27_EXT_LSMASK \
   (FLARE_G0_LPRE_S27_MASK << FLARE_ONE_EXT_BITPOS)
-#define FLARE_G0_LPRE_S24_EXT_LSMASK \
-  (FLARE_G0_LPRE_S24_MASK << FLARE_ONE_EXT_BITPOS)
+#define FLARE_G0_LPRE_S25_EXT_LSMASK \
+  (FLARE_G0_LPRE_S25_MASK << FLARE_ONE_EXT_BITPOS)
 #define FLARE_G0_LPRE_S23_EXT_LSMASK \
   (FLARE_G0_LPRE_S23_MASK << FLARE_ONE_EXT_BITPOS)
 #define FLARE_G0_LPRE_S27_EXT_LSMASK_G7_ICRELOAD \
@@ -909,7 +909,7 @@ typedef enum flare_oparg_t
   FLARE_OA_RA_FP_S5,
   FLARE_OA_RA_U5,
   FLARE_OA_U5,
-  FLARE_OA_RA_S8,
+  FLARE_OA_RA_S7,
   FLARE_OA_RA,
   FLARE_OA_RA_RB,
   FLARE_OA_RA_SP_RB,
@@ -931,8 +931,8 @@ typedef enum flare_oparg_t
   //FLARE_OA_RA_RB_LDST_32,
   FLARE_OA_RA_RB_RC_LDST,
   //FLARE_OA_RA_RB_RC_LDST_32,
-  FLARE_OA_RA_RB_S8_LDST,
-  FLARE_OA_RA_RB_RC_S8_LDST,
+  FLARE_OA_RA_RB_S7_LDST,
+  FLARE_OA_RA_RB_RC_S7_LDST,
   FLARE_OA_RA_RB_CPY64,
   FLARE_OA_SA_RB_LDST,
   FLARE_OA_SA_SB_LDST,
@@ -1184,13 +1184,13 @@ flare_enc_temp_insn_g0_lpre_s27 (flare_temp_t simm27)
   return ret;
 }
 static inline flare_temp_t
-flare_enc_temp_insn_g0_lpre_s24 (flare_temp_t simm24)
+flare_enc_temp_insn_g0_lpre_s25 (flare_temp_t simm25)
 {
   flare_temp_t ret = 0;
   flare_set_insn_field_p (FLARE_G0_LPRE_FULLGRP_MASK,
     FLARE_G0_LPRE_FULLGRP_BITPOS, &ret, FLARE_G0_LPRE_FULLGRP_VALUE);
-  flare_set_insn_field_p (FLARE_G0_LPRE_S24_MASK,
-    FLARE_G0_LPRE_S24_BITPOS, &ret, simm24);
+  flare_set_insn_field_p (FLARE_G0_LPRE_S25_MASK,
+    FLARE_G0_LPRE_S25_BITPOS, &ret, simm25);
   return ret;
 }
 static inline flare_temp_t
@@ -1348,8 +1348,8 @@ flare_enc_temp_insn_g5_index_ra_rb (flare_temp_t ra_ind,
     &ret, rb_ind);
   //flare_set_insn_field_p (FLARE_G1_I5_MASK, 
   //  FLARE_G1_I5_BITPOS, &ret, simm5);
-  //flare_set_insn_field_p (FLARE_G5_INDEX_RA_SIMM_S8_MASK, 
-  //  FLARE_G5_INDEX_RA_SIMM_S8_BITPOS, &ret, simm8);
+  //flare_set_insn_field_p (FLARE_G5_INDEX_RA_SIMM_S7_MASK, 
+  //  FLARE_G5_INDEX_RA_SIMM_S7_BITPOS, &ret, simm8);
 
   return ret;
 }
@@ -1377,8 +1377,8 @@ flare_enc_temp_insn_g5_index_ra_simm (flare_temp_t ra_ind,
   //  &ret, rb_ind);
   //flare_set_insn_field_p (FLARE_G1_I5_MASK, 
   //  FLARE_G1_I5_BITPOS, &ret, simm5);
-  flare_set_insn_field_p (FLARE_G5_INDEX_RA_SIMM_S8_MASK, 
-    FLARE_G5_INDEX_RA_SIMM_S8_BITPOS, &ret, simm8);
+  flare_set_insn_field_p (FLARE_G5_INDEX_RA_SIMM_S7_MASK, 
+    FLARE_G5_INDEX_RA_SIMM_S7_BITPOS, &ret, simm8);
 
   return ret;
 }
@@ -1585,16 +1585,16 @@ flare_get_g3_s32 (flare_temp_t prefix_insn,
     insn);
 }
 static inline flare_temp_t
-flare_get_g5_index_s20 (flare_temp_t prefix_insn,
+flare_get_g5_index_s19 (flare_temp_t prefix_insn,
                     flare_temp_t insn)
 {
   return flare_get_ext_imm
     (FLARE_G0_PRE_S12_MASK,
     FLARE_G0_PRE_S12_BITPOS,
     prefix_insn,
-    FLARE_G5_INDEX_RA_SIMM_S8_MASK,
-    FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
-    FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_S7_MASK,
+    FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE,
+    FLARE_G5_INDEX_RA_SIMM_S7_BITPOS,
     insn);
 }
 
@@ -1603,12 +1603,12 @@ flare_get_g5_index_s32 (flare_temp_t prefix_insn,
                     flare_temp_t insn)
 {
   return flare_get_ext_imm
-    (FLARE_G0_LPRE_S24_MASK,
-    FLARE_G0_LPRE_S24_BITPOS,
+    (FLARE_G0_LPRE_S25_MASK,
+    FLARE_G0_LPRE_S25_BITPOS,
     prefix_insn,
-    FLARE_G5_INDEX_RA_SIMM_S8_MASK,
-    FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
-    FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_S7_MASK,
+    FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE,
+    FLARE_G5_INDEX_RA_SIMM_S7_BITPOS,
     insn);
 }
 
@@ -1746,16 +1746,16 @@ flare_put_g3_s32 (flare_temp_t *prefix_insn,
                       combined);
 }
 static inline void
-flare_put_g5_index_s20 (flare_temp_t *prefix_insn,
+flare_put_g5_index_s19 (flare_temp_t *prefix_insn,
                     flare_temp_t *insn,
                     flare_temp_t combined)
 {
   flare_put_ext_imm (FLARE_G0_PRE_S12_MASK,
                       FLARE_G0_PRE_S12_BITPOS,
                       prefix_insn,
-                      FLARE_G5_INDEX_RA_SIMM_S8_MASK,
-                      FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
-                      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
+                      FLARE_G5_INDEX_RA_SIMM_S7_MASK,
+                      FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE,
+                      FLARE_G5_INDEX_RA_SIMM_S7_BITPOS,
                       insn,
                       combined);
 }
@@ -1764,12 +1764,12 @@ flare_put_g5_index_s32 (flare_temp_t *prefix_insn,
                     flare_temp_t *insn,
                     flare_temp_t combined)
 {
-  flare_put_ext_imm (FLARE_G0_LPRE_S24_MASK,
-                      FLARE_G0_LPRE_S24_BITPOS,
+  flare_put_ext_imm (FLARE_G0_LPRE_S25_MASK,
+                      FLARE_G0_LPRE_S25_BITPOS,
                       prefix_insn,
-                      FLARE_G5_INDEX_RA_SIMM_S8_MASK,
-                      FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
-                      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
+                      FLARE_G5_INDEX_RA_SIMM_S7_MASK,
+                      FLARE_G5_INDEX_RA_SIMM_S7_BITSIZE,
+                      FLARE_G5_INDEX_RA_SIMM_S7_BITPOS,
                       insn,
                       combined);
 }

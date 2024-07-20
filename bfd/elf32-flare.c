@@ -146,197 +146,197 @@ static reloc_howto_type flare_elf_howto_table [] =
   /* -------- */
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 without `pre`/`lpre` */
-  HOWTO (R_FLARE_G1G5G6_U5,   /* type */
+  HOWTO (R_FLARE_G1_U5,   /* type */
       0,                        /* rightshift */
       1,                        /* size (0 = byte, 1 = short, 2 = long) */
       5,                        /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_unsigned, /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,    /* special_function */
-      "R_FLARE_G1G5G6_U5",    /* name */
+      "R_FLARE_G1_U5",    /* name */
       false,                    /* partial_inplace */
       0x0000,                   /* src_mask */
-      FLARE_G1G5G6_I5_MASK,   /* dst_mask */
+      FLARE_G1_I5_MASK,   /* dst_mask */
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 with `pre` */
-  HOWTO (R_FLARE_G1G5G6_S17_FOR_U5,  /* type */
+  HOWTO (R_FLARE_G1_S17_FOR_U5,  /* type */
       0,                        /* rightshift */
       2,                        /* size (0 = byte, 1 = short, 2 = long) */
       17,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S17_FOR_U5",   /* name */
+      "R_FLARE_G1_S17_FOR_U5",   /* name */
       false,                    /* partial_inplace */
       0x00000000,               /* src_mask */
       /* dst_mask */
-      (FLARE_G0_PRE_S12_EXT_LSMASK | FLARE_G1G5G6_I5_MASK), //0x0fff1f00,
+      (FLARE_G0_PRE_S12_EXT_LSMASK | FLARE_G1_I5_MASK), //0x0fff1f00,
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 with `lpre` */
-  HOWTO (R_FLARE_G1G5G6_S32_FOR_U5,  /* type */
+  HOWTO (R_FLARE_G1_S32_FOR_U5,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_FOR_U5",   /* name */
+      "R_FLARE_G1_S32_FOR_U5",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
 
-  HOWTO (R_FLARE_G1G5G6_S32_FOR_U5_ADD32,  /* type */
+  HOWTO (R_FLARE_G1_S32_FOR_U5_ADD32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_add_sub_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_FOR_U5_ADD32",   /* name */
+      "R_FLARE_G1_S32_FOR_U5_ADD32",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
-  HOWTO (R_FLARE_G1G5G6_S32_FOR_U5_SUB32,  /* type */
+  HOWTO (R_FLARE_G1_S32_FOR_U5_SUB32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_add_sub_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_FOR_U5_SUB32",   /* name */
+      "R_FLARE_G1_S32_FOR_U5_SUB32",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
 
-  HOWTO (R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX,  /* type */
+  HOWTO (R_FLARE_G1_S32_FOR_U5_NO_RELAX,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX",   /* name */
+      "R_FLARE_G1_S32_FOR_U5_NO_RELAX",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 without `pre`/`lpre` */
-  HOWTO (R_FLARE_G1G5G6_S5,   /* type */
+  HOWTO (R_FLARE_G1_S5,   /* type */
       0,                        /* rightshift */
       1,                        /* size (0 = byte, 1 = short, 2 = long) */
       5,                        /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_signed, /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,    /* special_function */
-      "R_FLARE_G1G5G6_S5",    /* name */
+      "R_FLARE_G1_S5",    /* name */
       false,                    /* partial_inplace */
       0x0000,                   /* src_mask */
-      FLARE_G1G5G6_I5_MASK,   /* dst_mask */
+      FLARE_G1_I5_MASK,   /* dst_mask */
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 with `pre` */
-  HOWTO (R_FLARE_G1G5G6_S17,  /* type */
+  HOWTO (R_FLARE_G1_S17,  /* type */
       0,                        /* rightshift */
       2,                        /* size (0 = byte, 1 = short, 2 = long) */
       17,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S17",   /* name */
+      "R_FLARE_G1_S17",   /* name */
       false,                    /* partial_inplace */
       0x00000000,               /* src_mask */
       /* dst_mask */
-      (FLARE_G0_PRE_S12_EXT_LSMASK | FLARE_G1G5G6_I5_MASK), //0x0fff1f00,
+      (FLARE_G0_PRE_S12_EXT_LSMASK | FLARE_G1_I5_MASK), //0x0fff1f00,
       false),                   /* pcrel_offset */
 
   /* A relocation for the immediate value of an instruction in 
   group 1, 5, or 6 with `lpre` */
-  HOWTO (R_FLARE_G1G5G6_S32,  /* type */
+  HOWTO (R_FLARE_G1_S32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32",   /* name */
+      "R_FLARE_G1_S32",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
 
-  HOWTO (R_FLARE_G1G5G6_S32_ADD32,  /* type */
+  HOWTO (R_FLARE_G1_S32_ADD32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_add_sub_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_ADD32",   /* name */
+      "R_FLARE_G1_S32_ADD32",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
-  HOWTO (R_FLARE_G1G5G6_S32_SUB32,  /* type */
+  HOWTO (R_FLARE_G1_S32_SUB32,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS,	/* bitpos */
+      FLARE_G1_I5_BITPOS,	/* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_add_sub_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_SUB32",   /* name */
+      "R_FLARE_G1_S32_SUB32",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       false),                   /* pcrel_offset */
 
-  HOWTO (R_FLARE_G1G5G6_S32_NO_RELAX,  /* type */
+  HOWTO (R_FLARE_G1_S32_NO_RELAX,  /* type */
       0,                        /* rightshift */
       4,                        /* size (0 = byte, 1 = short, 2 = long) */
       32,                       /* bitsize */
       false,                    /* pc_relative */
-      FLARE_G1G5G6_I5_BITPOS, /* bitpos */
+      FLARE_G1_I5_BITPOS, /* bitpos */
       complain_overflow_dont,   /* complain_on_overflow */
       flare_elf_non_sub_imm_reloc,  /* special_function */
-      "R_FLARE_G1G5G6_S32_NO_RELAX",   /* name */
+      "R_FLARE_G1_S32_NO_RELAX",   /* name */
       false,                    /* partial_inplace */
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff1f00, 
-      (FLARE_G0_LPRE_S27_EXT | FLARE_G1G5G6_I5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G1_I5_MASK),
       //(flare_temp_t)(0ll),
       false),                   /* pcrel_offset */
   /* -------- */
@@ -432,6 +432,102 @@ static reloc_howto_type flare_elf_howto_table [] =
       /* dst_mask */
       (FLARE_G0_LPRE_S23_EXT_LSMASK | FLARE_G3_S9_MASK),
       true),                     /* pcrel_offset */
+  /* -------- */
+
+  //HOWTO (, /* type */
+  //    1,                            /* rightshift */
+  //    2,                            /* size (0 = byte, 1 = short, 2 = long) */
+  //    8,                            /* bitsize */
+  //),
+  HOWTO (R_FLARE_G5_INDEX_S8,  /* type */
+      0,                          /* rightshift */
+      1,                          /* size (0 = byte, 1 = short, 2 = long) */
+      32,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_non_sub_imm_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S8",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      FLARE_G5_INDEX_RA_SIMM_S8_MASK,
+      false),                     /* pcrel_offset */
+  //R_FLARE_G5_INDEX_S20,
+  HOWTO (R_FLARE_G5_INDEX_S20,  /* type */
+      0,                          /* rightshift */
+      2,                          /* size (0 = byte, 1 = short, 2 = long) */
+      20,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_non_sub_imm_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S20",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      (FLARE_G0_PRE_S12_EXT_LSMASK | FLARE_G5_INDEX_RA_SIMM_S8_MASK),
+      false),                     /* pcrel_offset */
+  //R_FLARE_G5_INDEX_S32,
+  HOWTO (R_FLARE_G5_INDEX_S32,  /* type */
+      0,                          /* rightshift */
+      4,                          /* size (0 = byte, 1 = short, 2 = long) */
+      32,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_non_sub_imm_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S32",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      (FLARE_G0_LPRE_S24_EXT_LSMASK | FLARE_G5_INDEX_RA_SIMM_S8_MASK),
+      false),                     /* pcrel_offset */
+  //R_FLARE_G5_INDEX_S32_ADD32,
+  HOWTO (R_FLARE_G5_INDEX_S32_ADD32,  /* type */
+      0,                          /* rightshift */
+      4,                          /* size (0 = byte, 1 = short, 2 = long) */
+      32,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_add_sub_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S32_ADD32",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      (FLARE_G0_LPRE_S24_EXT_LSMASK | FLARE_G5_INDEX_RA_SIMM_S8_MASK),
+      false),                     /* pcrel_offset */
+  //R_FLARE_G5_INDEX_S32_SUB32,
+  HOWTO (R_FLARE_G5_INDEX_S32_SUB32,  /* type */
+      0,                          /* rightshift */
+      4,                          /* size (0 = byte, 1 = short, 2 = long) */
+      32,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_add_sub_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S32_SUB32",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      (FLARE_G0_LPRE_S24_EXT_LSMASK | FLARE_G5_INDEX_RA_SIMM_S8_MASK),
+      false),                     /* pcrel_offset */
+  //R_FLARE_G5_INDEX_S32_NO_RELAX,
+  HOWTO (R_FLARE_G5_INDEX_S32_NO_RELAX,  /* type */
+      0,                          /* rightshift */
+      4,                          /* size (0 = byte, 1 = short, 2 = long) */
+      32,                         /* bitsize */
+      false,                       /* pc_relative */
+      FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,       /* bitpos */
+      complain_overflow_dont,     /* complain_on_overflow */
+      flare_elf_non_sub_imm_reloc, /* special_function */
+      "R_FLARE_G5_INDEX_S32_NO_RELAX",   /* name */
+      false,                      /* partial_inplace */
+      0x0,                        /* src_mask */
+      /* dst_mask */
+      (FLARE_G0_LPRE_S24_EXT_LSMASK | FLARE_G5_INDEX_RA_SIMM_S8_MASK),
+      false),                     /* pcrel_offset */
 
   /* -------- */
   /* A relocation for the immediate value of the `icreload` instruction
@@ -482,7 +578,7 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff01f0, 
-      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G7_ICRELOAD_S5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK_G7_ICRELOAD | FLARE_G7_ICRELOAD_S5_MASK),
       false),                   /* pcrel_offset */
 
   HOWTO (R_FLARE_G7_ICRELOAD_S32_ADD32,  /* type */
@@ -498,7 +594,7 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff01f0, 
-      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G7_ICRELOAD_S5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK_G7_ICRELOAD | FLARE_G7_ICRELOAD_S5_MASK),
       false),                   /* pcrel_offset */
   HOWTO (R_FLARE_G7_ICRELOAD_S32_SUB32,  /* type */
       0,                        /* rightshift */
@@ -513,7 +609,7 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff01f0, 
-      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G7_ICRELOAD_S5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK_G7_ICRELOAD | FLARE_G7_ICRELOAD_S5_MASK),
       false),                   /* pcrel_offset */
 
   HOWTO (R_FLARE_G7_ICRELOAD_S32_NO_RELAX,  /* type */
@@ -529,7 +625,7 @@ static reloc_howto_type flare_elf_howto_table [] =
       0x0,                      /* src_mask */
       /* dst_mask */
       //(bfd_vma)0x07ffffff01f0, 
-      (FLARE_G0_LPRE_S27_EXT_LSMASK | FLARE_G7_ICRELOAD_S5_MASK),
+      (FLARE_G0_LPRE_S27_EXT_LSMASK_G7_ICRELOAD | FLARE_G7_ICRELOAD_S5_MASK),
       false),                   /* pcrel_offset */
   /* -------- */
   //HOWTO (R_FLARE_FDE_32_PCREL,    /* type */
@@ -771,22 +867,22 @@ static const struct flare_reloc_map flare_reloc_map [] =
   { BFD_RELOC_32, R_FLARE_32 },
   { BFD_RELOC_64, R_FLARE_64 },
   /* -------- */
-  { BFD_RELOC_FLARE_G1G5G6_U5, R_FLARE_G1G5G6_U5 },
-  { BFD_RELOC_FLARE_G1G5G6_S17_FOR_U5, R_FLARE_G1G5G6_S17_FOR_U5 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5, R_FLARE_G1G5G6_S32_FOR_U5 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_ADD32,
-    R_FLARE_G1G5G6_S32_FOR_U5_ADD32 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_SUB32,
-    R_FLARE_G1G5G6_S32_FOR_U5_SUB32 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX,
-    R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX },
+  { BFD_RELOC_FLARE_G1_U5, R_FLARE_G1_U5 },
+  { BFD_RELOC_FLARE_G1_S17_FOR_U5, R_FLARE_G1_S17_FOR_U5 },
+  { BFD_RELOC_FLARE_G1_S32_FOR_U5, R_FLARE_G1_S32_FOR_U5 },
+  { BFD_RELOC_FLARE_G1_S32_FOR_U5_ADD32,
+    R_FLARE_G1_S32_FOR_U5_ADD32 },
+  { BFD_RELOC_FLARE_G1_S32_FOR_U5_SUB32,
+    R_FLARE_G1_S32_FOR_U5_SUB32 },
+  { BFD_RELOC_FLARE_G1_S32_FOR_U5_NO_RELAX,
+    R_FLARE_G1_S32_FOR_U5_NO_RELAX },
 
-  { BFD_RELOC_FLARE_G1G5G6_S5, R_FLARE_G1G5G6_S5 },
-  { BFD_RELOC_FLARE_G1G5G6_S17, R_FLARE_G1G5G6_S17 },
-  { BFD_RELOC_FLARE_G1G5G6_S32, R_FLARE_G1G5G6_S32 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_ADD32, R_FLARE_G1G5G6_S32_ADD32 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_SUB32, R_FLARE_G1G5G6_S32_SUB32 },
-  { BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX, R_FLARE_G1G5G6_S32_NO_RELAX },
+  { BFD_RELOC_FLARE_G1_S5, R_FLARE_G1_S5 },
+  { BFD_RELOC_FLARE_G1_S17, R_FLARE_G1_S17 },
+  { BFD_RELOC_FLARE_G1_S32, R_FLARE_G1_S32 },
+  { BFD_RELOC_FLARE_G1_S32_ADD32, R_FLARE_G1_S32_ADD32 },
+  { BFD_RELOC_FLARE_G1_S32_SUB32, R_FLARE_G1_S32_SUB32 },
+  { BFD_RELOC_FLARE_G1_S32_NO_RELAX, R_FLARE_G1_S32_NO_RELAX },
   /* -------- */
   { BFD_RELOC_FLARE_G3_S9_PCREL, R_FLARE_G3_S9_PCREL },
   { BFD_RELOC_FLARE_G3_S21_PCREL, R_FLARE_G3_S21_PCREL },
@@ -795,6 +891,13 @@ static const struct flare_reloc_map flare_reloc_map [] =
   //{ BFD_RELOC_FLARE_G3_S32_PCREL_SUB32, R_FLARE_G3_S32_PCREL_SUB32 },
   { BFD_RELOC_FLARE_G3_S32_PCREL_NO_RELAX,
     R_FLARE_G3_S32_PCREL_NO_RELAX },
+  /* -------- */
+  { BFD_RELOC_FLARE_G5_INDEX_S8, R_FLARE_G5_INDEX_S8 },
+  { BFD_RELOC_FLARE_G5_INDEX_S20, R_FLARE_G5_INDEX_S20 },
+  { BFD_RELOC_FLARE_G5_INDEX_S32, R_FLARE_G5_INDEX_S32 },
+  { BFD_RELOC_FLARE_G5_INDEX_S32_ADD32, R_FLARE_G5_INDEX_S32_ADD32 },
+  { BFD_RELOC_FLARE_G5_INDEX_S32_SUB32, R_FLARE_G5_INDEX_S32_SUB32 },
+  { BFD_RELOC_FLARE_G5_INDEX_S32_NO_RELAX, R_FLARE_G5_INDEX_S32_NO_RELAX },
   /* -------- */
   { BFD_RELOC_FLARE_G7_ICRELOAD_S5, R_FLARE_G7_ICRELOAD_S5 },
   { BFD_RELOC_FLARE_G7_ICRELOAD_S17, R_FLARE_G7_ICRELOAD_S17 },
@@ -1012,18 +1115,26 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
   if (!howto->pc_relative)
   {
     BFD_ASSERT (
-      howto->type == R_FLARE_G1G5G6_U5
-      || howto->type == R_FLARE_G1G5G6_S17_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S32_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX
-      || howto->type == R_FLARE_G1G5G6_S5
-      || howto->type == R_FLARE_G1G5G6_S17
-      || howto->type == R_FLARE_G1G5G6_S32
-      || howto->type == R_FLARE_G1G5G6_S32_NO_RELAX
+      /* -------- */
+      howto->type == R_FLARE_G1_U5
+      || howto->type == R_FLARE_G1_S17_FOR_U5
+      || howto->type == R_FLARE_G1_S32_FOR_U5
+      || howto->type == R_FLARE_G1_S32_FOR_U5_NO_RELAX
+      || howto->type == R_FLARE_G1_S5
+      || howto->type == R_FLARE_G1_S17
+      || howto->type == R_FLARE_G1_S32
+      || howto->type == R_FLARE_G1_S32_NO_RELAX
+      /* -------- */
+      || howto->type == R_FLARE_G5_INDEX_S8
+      || howto->type == R_FLARE_G5_INDEX_S20
+      || howto->type == R_FLARE_G5_INDEX_S32
+      || howto->type == R_FLARE_G5_INDEX_S32_NO_RELAX
+      /* -------- */
       || howto->type == R_FLARE_G7_ICRELOAD_S5
       || howto->type == R_FLARE_G7_ICRELOAD_S17
       || howto->type == R_FLARE_G7_ICRELOAD_S32
       || howto->type == R_FLARE_G7_ICRELOAD_S32_NO_RELAX
+      /* -------- */
     );
 
     //fprintf (
@@ -1032,28 +1143,28 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     //    "%i %lx; %u %u; %u %u\n",
     //  (signed) relocation,
     //  relocation,
-    //  howto->type == R_FLARE_G1G5G6_S5,
-    //  howto->type == R_FLARE_G1G5G6_S17,
-    //  howto->type == R_FLARE_G1G5G6_S32,
-    //  howto->type == R_FLARE_G1G5G6_S32_NO_RELAX
+    //  howto->type == R_FLARE_G1_S5,
+    //  howto->type == R_FLARE_G1_S17,
+    //  howto->type == R_FLARE_G1_S32,
+    //  howto->type == R_FLARE_G1_S32_NO_RELAX
     //);
 
-    if (howto->type == R_FLARE_G1G5G6_U5
-      || howto->type == R_FLARE_G1G5G6_S5)
+    if (howto->type == R_FLARE_G1_U5
+      || howto->type == R_FLARE_G1_S5)
     {
       flare_temp_t val = 0;
       insn = bfd_get_16 (input_bfd, contents + address);
       val = flare_get_insn_field_ei
-        (&flare_enc_info_g1g5g6_i5, insn);
-      relocation += howto->type == R_FLARE_G1G5G6_S5
+        (&flare_enc_info_g1_i5, insn);
+      relocation += howto->type == R_FLARE_G1_S5
         ? flare_sign_extend
-          (val, FLARE_G1G5G6_I5_BITSIZE)
+          (val, FLARE_G1_I5_BITSIZE)
         : flare_zero_extend
-          (val, FLARE_G1G5G6_I5_BITSIZE);
+          (val, FLARE_G1_I5_BITSIZE);
       bfd_put_16 (input_bfd, insn, contents + address);
     }
-    else if (howto->type == R_FLARE_G1G5G6_S17_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S17)
+    else if (howto->type == R_FLARE_G1_S17_FOR_U5
+      || howto->type == R_FLARE_G1_S17)
     {
       const unsigned
         insn_dist = flare_have_plp_distance
@@ -1061,16 +1172,16 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       prefix_insn = bfd_get_16 (input_bfd, contents + address);
       insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
       relocation += flare_sign_extend
-        (flare_get_g1g5g6_s17 (prefix_insn, insn),
-        FLARE_G1G5G6_I5_BITSIZE + FLARE_G0_PRE_S12_BITSIZE);
-      flare_put_g1g5g6_s17 (&prefix_insn, &insn, relocation);
+        (flare_get_g1_s17 (prefix_insn, insn),
+        FLARE_G1_I5_BITSIZE + FLARE_G0_PRE_S12_BITSIZE);
+      flare_put_g1_s17 (&prefix_insn, &insn, relocation);
       bfd_put_16 (input_bfd, prefix_insn, contents + address);
       bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
     }
-    else if (howto->type == R_FLARE_G1G5G6_S32_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX
-      || howto->type == R_FLARE_G1G5G6_S32
-      || howto->type == R_FLARE_G1G5G6_S32_NO_RELAX)
+    else if (howto->type == R_FLARE_G1_S32_FOR_U5
+      || howto->type == R_FLARE_G1_S32_FOR_U5_NO_RELAX
+      || howto->type == R_FLARE_G1_S32
+      || howto->type == R_FLARE_G1_S32_NO_RELAX)
     {
       const unsigned
         insn_dist = flare_have_plp_distance
@@ -1082,8 +1193,55 @@ flare_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       //  "debug: prefix_insn insn; 0: %x %x\n",
       //  (unsigned)prefix_insn, (unsigned)insn
       //);
-      relocation += flare_get_g1g5g6_s32 (prefix_insn, insn);
-      flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+      relocation += flare_get_g1_s32 (prefix_insn, insn);
+      flare_put_g1_s32 (&prefix_insn, &insn, relocation);
+      //fprintf (
+      //  stderr,
+      //  "debug: prefix_insn insn; 1: %x %x\n",
+      //  (unsigned)prefix_insn, (unsigned)insn
+      //);
+      flare_put_insn_32 (input_bfd, prefix_insn, contents + address);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
+    }
+    else if (howto->type == R_FLARE_G5_INDEX_S8)
+    {
+      flare_temp_t val = 0;
+      insn = bfd_get_16 (input_bfd, contents + address);
+      val = flare_get_insn_field_ei
+        (&flare_enc_info_g5_index_ra_simm_s8, insn);
+      relocation += flare_sign_extend
+        (val, FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE);
+      bfd_put_16 (input_bfd, insn, contents + address);
+    }
+    else if (howto->type == R_FLARE_G5_INDEX_S20)
+    {
+      const unsigned
+        insn_dist = flare_have_plp_distance
+          (FLARE_HAVE_PLP_PRE, FLARE_HAVE_PLP_NEITHER);
+      prefix_insn = bfd_get_16 (input_bfd, contents + address);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
+      relocation += flare_sign_extend
+        (flare_get_g5_index_s20 (prefix_insn, insn),
+        FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE + FLARE_G0_PRE_S12_BITSIZE);
+      flare_put_g5_index_s20 (&prefix_insn, &insn, relocation);
+      bfd_put_16 (input_bfd, prefix_insn, contents + address);
+      bfd_put_16 (input_bfd, insn, contents + address + insn_dist);
+    }
+    else if (howto->type == R_FLARE_G5_INDEX_S32
+      || howto->type == R_FLARE_G5_INDEX_S32_NO_RELAX)
+    {
+      const unsigned
+        insn_dist = flare_have_plp_distance
+          (FLARE_HAVE_PLP_LPRE, FLARE_HAVE_PLP_NEITHER);
+      prefix_insn = flare_get_insn_32 (input_bfd, contents + address);
+      insn = bfd_get_16 (input_bfd, contents + address + insn_dist);
+      //fprintf (
+      //  stderr,
+      //  "debug: prefix_insn insn; 0: %x %x\n",
+      //  (unsigned)prefix_insn, (unsigned)insn
+      //);
+      relocation += flare_get_g5_index_s32 (prefix_insn, insn);
+      flare_put_g5_index_s32 (&prefix_insn, &insn, relocation);
       //fprintf (
       //  stderr,
       //  "debug: prefix_insn insn; 1: %x %x\n",
@@ -1289,12 +1447,14 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
 
   switch (howto->type)
   {
-    case R_FLARE_G1G5G6_S32_FOR_U5_ADD32:
-    case R_FLARE_G1G5G6_S32_FOR_U5_SUB32:
-    case R_FLARE_G1G5G6_S32_ADD32:
-    case R_FLARE_G1G5G6_S32_SUB32:
+    case R_FLARE_G1_S32_FOR_U5_ADD32:
+    case R_FLARE_G1_S32_FOR_U5_SUB32:
+    case R_FLARE_G1_S32_ADD32:
+    case R_FLARE_G1_S32_SUB32:
     //case R_FLARE_G3_S32_PCREL_ADD32:
     //case R_FLARE_G3_S32_PCREL_SUB32:
+    case R_FLARE_G5_INDEX_S32_ADD32:
+    case R_FLARE_G5_INDEX_S32_SUB32:
     case R_FLARE_G7_ICRELOAD_S32_ADD32:
     case R_FLARE_G7_ICRELOAD_S32_SUB32:
     {
@@ -1321,9 +1481,9 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
       //  (unsigned)insn
       //);
 
-      //relocation = (howto->type == R_FLARE_G1G5G6_S32_ADD32)
-      //  ? (relocation + flare_get_g1g5g6_s32 (prefix_insn, insn))
-      //  : (relocation - flare_get_g1g5g6_s32 (prefix_insn, insn));
+      //relocation = (howto->type == R_FLARE_G1_S32_ADD32)
+      //  ? (relocation + flare_get_g1_s32 (prefix_insn, insn))
+      //  : (relocation - flare_get_g1_s32 (prefix_insn, insn));
       //printf ("do add sub reloc 0: 0x%x; ; 0x%x 0x%x; %s\n",
       //  (unsigned) old_relocation,
       //  (unsigned) prefix_insn, (unsigned) insn,
@@ -1331,18 +1491,18 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
 
       switch (howto->type)
       {
-        case R_FLARE_G1G5G6_S32_FOR_U5_ADD32:
-        case R_FLARE_G1G5G6_S32_ADD32:
-          simm = flare_get_g1g5g6_s32 (prefix_insn, insn);
+        case R_FLARE_G1_S32_FOR_U5_ADD32:
+        case R_FLARE_G1_S32_ADD32:
+          simm = flare_get_g1_s32 (prefix_insn, insn);
           relocation += simm;
-          flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+          flare_put_g1_s32 (&prefix_insn, &insn, relocation);
           break;
-        case R_FLARE_G1G5G6_S32_FOR_U5_SUB32:
-        case R_FLARE_G1G5G6_S32_SUB32:
-          simm = flare_get_g1g5g6_s32 (prefix_insn, insn);
+        case R_FLARE_G1_S32_FOR_U5_SUB32:
+        case R_FLARE_G1_S32_SUB32:
+          simm = flare_get_g1_s32 (prefix_insn, insn);
           //relocation -= simm;
           relocation = simm - relocation;
-          flare_put_g1g5g6_s32 (&prefix_insn, &insn, relocation);
+          flare_put_g1_s32 (&prefix_insn, &insn, relocation);
           break;
         //case R_FLARE_G3_S32_PCREL_ADD32:
         //  simm = flare_get_g3_s32 (prefix_insn, insn);
@@ -1369,6 +1529,17 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
         //  }
         //  flare_put_g3_s32 (&prefix_insn, &insn, relocation);
         //  break;
+        case R_FLARE_G5_INDEX_S32_ADD32:
+          simm = flare_get_g5_index_s32 (prefix_insn, insn);
+          relocation += simm;
+          flare_put_g5_index_s32 (&prefix_insn, &insn, relocation);
+          break;
+        case R_FLARE_G5_INDEX_S32_SUB32:
+          simm = flare_get_g5_index_s32 (prefix_insn, insn);
+          //relocation -= simm;
+          relocation = simm - relocation;
+          flare_put_g5_index_s32 (&prefix_insn, &insn, relocation);
+          break;
         case R_FLARE_G7_ICRELOAD_S32_ADD32:
           simm = flare_get_g7_icreload_s32 (prefix_insn, insn);
           relocation += simm;
@@ -1423,7 +1594,7 @@ flare_elf_do_add_sub_reloc (bfd *input_bfd, reloc_howto_type *howto,
 
   //switch (howto->type)
   //{
-  //  case R_FLARE_G1G5G6_S32_ADD32:
+  //  case R_FLARE_G1_S32_ADD32:
   //  case R_FLARE_G3_S32_PCREL_ADD32:
   //  case R_FLARE_PSEUDO_ADD8:
   //  case R_FLARE_PSEUDO_ADD16:
@@ -1539,14 +1710,18 @@ flare_elf_relocate_section (bfd *output_bfd,
             rel->r_addend);
           break;
 
-        case R_FLARE_G1G5G6_U5:
-        case R_FLARE_G1G5G6_S17_FOR_U5:
-        case R_FLARE_G1G5G6_S32_FOR_U5:
-        case R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX:
-        case R_FLARE_G1G5G6_S5:
-        case R_FLARE_G1G5G6_S17:
-        case R_FLARE_G1G5G6_S32:
-        case R_FLARE_G1G5G6_S32_NO_RELAX:
+        case R_FLARE_G1_U5:
+        case R_FLARE_G1_S17_FOR_U5:
+        case R_FLARE_G1_S32_FOR_U5:
+        case R_FLARE_G1_S32_FOR_U5_NO_RELAX:
+        case R_FLARE_G1_S5:
+        case R_FLARE_G1_S17:
+        case R_FLARE_G1_S32:
+        case R_FLARE_G1_S32_NO_RELAX:
+        case R_FLARE_G5_INDEX_S8:
+        case R_FLARE_G5_INDEX_S20:
+        case R_FLARE_G5_INDEX_S32:
+        case R_FLARE_G5_INDEX_S32_NO_RELAX:
         case R_FLARE_G3_S9_PCREL:
         case R_FLARE_G3_S21_PCREL:
         case R_FLARE_G3_S32_PCREL:
@@ -1561,12 +1736,14 @@ flare_elf_relocate_section (bfd *output_bfd,
                 rel->r_addend);
           break;
 
-        case R_FLARE_G1G5G6_S32_FOR_U5_ADD32:
-        case R_FLARE_G1G5G6_S32_FOR_U5_SUB32:
-        case R_FLARE_G1G5G6_S32_ADD32:
-        case R_FLARE_G1G5G6_S32_SUB32:
+        case R_FLARE_G1_S32_FOR_U5_ADD32:
+        case R_FLARE_G1_S32_FOR_U5_SUB32:
+        case R_FLARE_G1_S32_ADD32:
+        case R_FLARE_G1_S32_SUB32:
         //case R_FLARE_G3_S32_PCREL_ADD32:
         //case R_FLARE_G3_S32_PCREL_SUB32:
+        case R_FLARE_G5_INDEX_S32_ADD32:
+        case R_FLARE_G5_INDEX_S32_SUB32:
         case R_FLARE_G7_ICRELOAD_S32_ADD32:
         case R_FLARE_G7_ICRELOAD_S32_SUB32:
         case R_FLARE_PSEUDO_ADD8:
@@ -1584,7 +1761,7 @@ flare_elf_relocate_section (bfd *output_bfd,
                 rel->r_addend);
           break;
 
-        //case R_FLARE_G1G5G6_S32_ADD32:
+        //case R_FLARE_G1_S32_ADD32:
         //case R_FLARE_G3_S32_PCREL_ADD32:
         //  r = bfd_reloc_ok;
         //  break;
@@ -1732,6 +1909,7 @@ typedef struct flare_relax_temp_t
   bool rm_prefix: 1;
   bool was_lpre: 1;
   bool is_small_imm_unsigned: 1;
+  bool is_g5_index: 1;
   bool is_g7_icreload: 1;
   flare_temp_t curr_bitsize;
   flare_temp_t target_bitsize;
@@ -1989,8 +2167,11 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
             (void) flare_set_insn_field_ei_p
               (
                 (!args->is_g7_icreload
-                  ? &flare_enc_info_g1g5g6_i5
-                  : &flare_enc_info_g7_icreload_s5),
+                  ? (
+                    !args->is_g5_index
+                    ? &flare_enc_info_g1_i5
+                    : &flare_enc_info_g5_index_ra_simm_s8
+                  ) : &flare_enc_info_g7_icreload_s5),
               &insn, simm);
           }
           else // if (args->is_pcrel)
@@ -2025,12 +2206,12 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
           // !args->is_g7_icreload 
           //  ? (
           //    !args->is_small_imm_unsigned
-          //    ? R_FLARE_G1G5G6_S5
-          //    : R_FLARE_G1G5G6_U5
+          //    ? R_FLARE_G1_S5
+          //    : R_FLARE_G1_U5
           //  ) : R_FLARE_G7_ICRELOAD_S5
           //) : R_FLARE_G3_S9_PCREL;
           flare_relax_reloc_lookup
-            (args->is_pcrel, args->is_g7_icreload,
+            (args->is_pcrel, args->is_g5_index, args->is_g7_icreload,
             args->is_small_imm_unsigned)->small.r_type);
     }
     else // if (!args->rm_prefix) // convert the `lpre` to a `pre`
@@ -2111,12 +2292,12 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
           //  !args->is_g7_icreload
           //  ? (
           //    !args->is_small_imm_unsigned
-          //    ? R_FLARE_G1G5G6_S17
-          //    : R_FLARE_G1G5G6_S17_FOR_U5
+          //    ? R_FLARE_G1_S17
+          //    : R_FLARE_G1_S17_FOR_U5
           //  ) : R_FLARE_G7_ICRELOAD_S17
           //) : R_FLARE_G3_S21_PCREL);
           flare_relax_reloc_lookup
-            (args->is_pcrel, args->is_g7_icreload,
+            (args->is_pcrel, args->is_g5_index,args->is_g7_icreload,
             args->is_small_imm_unsigned)->pre.r_type);
     }
   }
@@ -2146,8 +2327,11 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
           (void) flare_set_insn_field_ei_p
             (
               (!args->is_g7_icreload
-                ? &flare_enc_info_g1g5g6_i5
-                : &flare_enc_info_g7_icreload_s5),
+                ? (
+                  !args->is_g5_index
+                  ? &flare_enc_info_g1_i5
+                  : &flare_enc_info_g5_index_ra_simm_s8
+                ) : &flare_enc_info_g7_icreload_s5),
             &insn, simm);
         }
         else // if (args->is_pcrel)
@@ -2181,12 +2365,12 @@ flare_do_relax_prefix_innards (flare_relax_temp_t *args)
         //  !args->is_g7_icreload
         //  ? (
         //    !args->is_small_imm_unsigned
-        //    ? R_FLARE_G1G5G6_S5
-        //    : R_FLARE_G1G5G6_U5
+        //    ? R_FLARE_G1_S5
+        //    : R_FLARE_G1_U5
         //  ) : R_FLARE_G7_ICRELOAD_S5
         //) : R_FLARE_G3_S9_PCREL);
         flare_relax_reloc_lookup
-          (args->is_pcrel, args->is_g7_icreload,
+          (args->is_pcrel, args->is_g5_index, args->is_g7_icreload,
           args->is_small_imm_unsigned)->small.r_type);
   }
 
@@ -2224,11 +2408,15 @@ flare_do_relax_prefix (bfd *abfd,
   //{
   //}
   //else
-  if (howto->type == R_FLARE_G1G5G6_S17_FOR_U5
-    || howto->type == R_FLARE_G1G5G6_S32_FOR_U5
-    || howto->type == R_FLARE_G1G5G6_S17
-    || howto->type == R_FLARE_G1G5G6_S32
-    //|| howto->type == R_FLARE_G1G5G6_S32_SUB32
+  if (howto->type == R_FLARE_G1_S17_FOR_U5
+    || howto->type == R_FLARE_G1_S32_FOR_U5
+    || howto->type == R_FLARE_G1_S17
+    || howto->type == R_FLARE_G1_S32
+
+    || howto->type == R_FLARE_G5_INDEX_S20
+    || howto->type == R_FLARE_G5_INDEX_S32
+
+    //|| howto->type == R_FLARE_G1_S32_SUB32
     || howto->type == R_FLARE_G3_S21_PCREL
     || howto->type == R_FLARE_G3_S32_PCREL
     //|| howto->type == R_FLARE_G3_S32_PCREL_SUB32
@@ -2254,6 +2442,7 @@ flare_do_relax_prefix (bfd *abfd,
     bool
       was_lpre = false,
       is_small_imm_unsigned = false,
+      is_g5_index = false,
       is_g7_icreload = false;
     const unsigned
       shrink_one_unit_dist = flare_have_plp_distance
@@ -2274,30 +2463,49 @@ flare_do_relax_prefix (bfd *abfd,
       //+ 4;
       ;
 
-    if (howto->type == R_FLARE_G1G5G6_S17_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S17
+    if (howto->type == R_FLARE_G1_S17_FOR_U5
+      || howto->type == R_FLARE_G1_S17
       || howto->type == R_FLARE_G7_ICRELOAD_S17)
     {
-      is_small_imm_unsigned = (howto->type == R_FLARE_G1G5G6_S17_FOR_U5);
+      is_small_imm_unsigned = (howto->type == R_FLARE_G1_S17_FOR_U5);
       is_g7_icreload = (howto->type == R_FLARE_G7_ICRELOAD_S17);
       prefix_insn_bitsize = FLARE_G0_PRE_S12_BITSIZE;
-      insn_bitsize = FLARE_G1G5G6_I5_BITSIZE;
+      insn_bitsize = FLARE_G1_I5_BITSIZE;
       
       target_bitsize = insn_bitsize;
     }
     else if (
-      howto->type == R_FLARE_G1G5G6_S32_FOR_U5
-      || howto->type == R_FLARE_G1G5G6_S32
-      //|| howto->type == R_FLARE_G1G5G6_S32_SUB32
+      howto->type == R_FLARE_G1_S32_FOR_U5
+      || howto->type == R_FLARE_G1_S32
+      //|| howto->type == R_FLARE_G1_S32_SUB32
       || howto->type == R_FLARE_G7_ICRELOAD_S32
     )
     {
-      is_small_imm_unsigned = (howto->type == R_FLARE_G1G5G6_S32_FOR_U5);
+      is_small_imm_unsigned = (howto->type == R_FLARE_G1_S32_FOR_U5);
       is_g7_icreload = (howto->type == R_FLARE_G7_ICRELOAD_S32);
       was_lpre = true;
 
       prefix_insn_bitsize = FLARE_G0_LPRE_S27_BITSIZE;
-      insn_bitsize = FLARE_G1G5G6_I5_BITSIZE;
+      insn_bitsize = FLARE_G1_I5_BITSIZE;
+
+      target_bitsize = FLARE_G0_PRE_S12_BITSIZE + insn_bitsize;
+    }
+    else if (howto->type == R_FLARE_G5_INDEX_S20)
+    {
+      is_small_imm_unsigned = false;
+      is_g5_index = true;
+      prefix_insn_bitsize = FLARE_G0_PRE_S12_BITSIZE;
+      insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE;
+      target_bitsize = insn_bitsize;
+    }
+    else if (howto->type == R_FLARE_G5_INDEX_S32)
+    {
+      is_small_imm_unsigned = false;
+      is_g5_index = true;
+      was_lpre = true;
+
+      prefix_insn_bitsize = FLARE_G0_LPRE_S24_BITSIZE;
+      insn_bitsize = FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE;
 
       target_bitsize = FLARE_G0_PRE_S12_BITSIZE + insn_bitsize;
     }
@@ -2339,8 +2547,8 @@ flare_do_relax_prefix (bfd *abfd,
         //: gap,
       curr_bitsize, target_bitsize,
       !was_lpre && (
-        //howto->type >= R_FLARE_G1G5G6_U5
-        //&& howto->type <= R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX
+        //howto->type >= R_FLARE_G1_U5
+        //&& howto->type <= R_FLARE_G1_S32_FOR_U5_NO_RELAX
         is_small_imm_unsigned
       ))
     )
@@ -2364,6 +2572,7 @@ flare_do_relax_prefix (bfd *abfd,
         true, /* rm_prefix */
         was_lpre, /* was_lpre */
         is_small_imm_unsigned, /* is_small_imm_unsigned */
+        is_g5_index,  /* is_g5_index */
         is_g7_icreload, /* is_g7_icreload */
         curr_bitsize, /* curr_bitsize */
         target_bitsize, /* target_bitsize */
@@ -2380,14 +2589,15 @@ flare_do_relax_prefix (bfd *abfd,
         || relax_can_shrink_value 
           (!howto->pc_relative
             ? value
-            : gap - shrink_two_units_dist, 
+            : gap - shrink_two_units_dist, // value
             //: gap, 
-            prefix_insn_bitsize, insn_bitsize,
+            prefix_insn_bitsize, // curr_bitsize
+            insn_bitsize, // target_bitsize
             //(
-            //  howto->type >= R_FLARE_G1G5G6_U5
-            //  && howto->type <= R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX
+            //  howto->type >= R_FLARE_G1_U5
+            //  && howto->type <= R_FLARE_G1_S32_FOR_U5_NO_RELAX
             //)
-            is_small_imm_unsigned
+            is_small_imm_unsigned // have_small_imm_unsigned_target
             )
       );
 

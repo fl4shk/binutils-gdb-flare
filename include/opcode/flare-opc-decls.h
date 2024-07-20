@@ -94,6 +94,11 @@ static const flare_enc_info_t
     FLARE_G0_LPRE_S27_BITPOS,
     FLARE_G0_LPRE_S27_RSMASK,
     FLARE_G0_LPRE_S27_MASK},
+  flare_enc_info_g0_lpre_s24 =
+    {FLARE_G0_LPRE_S24_BITSIZE,
+    FLARE_G0_LPRE_S24_BITPOS,
+    FLARE_G0_LPRE_S24_RSMASK,
+    FLARE_G0_LPRE_S24_MASK},
   flare_enc_info_g0_lpre_s23 =
     {FLARE_G0_LPRE_S23_BITSIZE,
     FLARE_G0_LPRE_S23_BITPOS,
@@ -117,11 +122,11 @@ static const flare_enc_info_t
     FLARE_G0_ATOMIC_L_RSMASK,
     FLARE_G0_ATOMIC_L_MASK},
   /* -------- */
-  flare_enc_info_g1g5g6_i5 =
-    {FLARE_G1G5G6_I5_BITSIZE,
-    FLARE_G1G5G6_I5_BITPOS,
-    FLARE_G1G5G6_I5_RSMASK,
-    FLARE_G1G5G6_I5_MASK},
+  flare_enc_info_g1_i5 =
+    {FLARE_G1_I5_BITSIZE,
+    FLARE_G1_I5_BITPOS,
+    FLARE_G1_I5_RSMASK,
+    FLARE_G1_I5_MASK},
   flare_enc_info_g1_op =
     {FLARE_G1_OP_BITSIZE,
     FLARE_G1_OP_BITPOS,
@@ -152,6 +157,35 @@ static const flare_enc_info_t
     FLARE_G4_OP_BITPOS,
     FLARE_G4_OP_RSMASK,
     FLARE_G4_OP_MASK},
+  /* -------- */
+  flare_enc_info_g5_index_ra_rb_subgrp =
+    {FLARE_G5_INDEX_RA_RB_SUBGRP_BITSIZE, 
+    FLARE_G5_INDEX_RA_RB_SUBGRP_BITPOS,
+    FLARE_G5_INDEX_RA_RB_SUBGRP_RSMASK,
+    FLARE_G5_INDEX_RA_RB_SUBGRP_MASK},
+
+  flare_enc_info_g5_index_ra_rb_fullgrp =
+    {FLARE_G5_INDEX_RA_RB_FULLGRP_BITSIZE,
+    FLARE_G5_INDEX_RA_RB_FULLGRP_BITPOS,
+    FLARE_G5_INDEX_RA_RB_FULLGRP_RSMASK,
+    FLARE_G5_INDEX_RA_RB_FULLGRP_MASK},
+
+  flare_enc_info_g5_index_ra_simm_subgrp =
+    {FLARE_G5_INDEX_RA_SIMM_SUBGRP_BITSIZE, 
+    FLARE_G5_INDEX_RA_SIMM_SUBGRP_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_SUBGRP_RSMASK,
+    FLARE_G5_INDEX_RA_SIMM_SUBGRP_MASK},
+
+  flare_enc_info_g5_index_ra_simm_fullgrp =
+    {FLARE_G5_INDEX_RA_SIMM_FULLGRP_BITSIZE,
+    FLARE_G5_INDEX_RA_SIMM_FULLGRP_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_FULLGRP_RSMASK,
+    FLARE_G5_INDEX_RA_SIMM_FULLGRP_MASK},
+  flare_enc_info_g5_index_ra_simm_s8 =
+    {FLARE_G5_INDEX_RA_SIMM_S8_BITSIZE,
+    FLARE_G5_INDEX_RA_SIMM_S8_BITPOS,
+    FLARE_G5_INDEX_RA_SIMM_S8_RSMASK,
+    FLARE_G5_INDEX_RA_SIMM_S8_MASK},
   /* -------- */
   flare_enc_info_g7_aluopbh_subgrp =
     {FLARE_G7_ALUOPBH_SUBGRP_BITSIZE,
@@ -729,6 +763,16 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_LDST,
     {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
 
+  /* ldr rA, [rB] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+
+  /* future 64-bit load instruction: ldq rA, [rB] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_RESERVED_17, FLARE_OA_BAD,
+    {"bad", "bad"}, {"bad.nr", "bad.nr"}},
+  /* -------- */
   /* stb rA, [rB] */
   {&flare_grp_info_g4,
     FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_LDST,
@@ -738,6 +782,16 @@ static const flare_opc_info_t
   {&flare_grp_info_g4,
     FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_LDST,
     {"sth", "sth"}, {"sth.nr", "sth.nr"}},
+
+  /* str rA, [rB] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
+
+  /* future 64-bit store instruction: stq rA, [rB] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_RESERVED_1A, FLARE_OA_BAD,
+    {"bad", "bad"}, {"bad.nr", "bad.nr"}},
   /* -------- */
   /* cpy rA, sB */
   {&flare_grp_info_g4,
@@ -760,8 +814,11 @@ static const flare_opc_info_t
   //  {"bad", "bad"}, {"bad.nr", "bad.nr"}},
   /* index rA */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_INDEX_RA_RB, FLARE_OA_RA_RB,
-    {"index", "index"}, {"index.nr", "index.nr"}},
+    FLARE_G4_OP_ENUM_RESERVED_1E, FLARE_OA_BAD,
+    {"bad", "bad"}, {"bad.nr", "bad.nr"}},
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_RESERVED_1F, FLARE_OA_BAD,
+    {"bad", "bad"}, {"bad.nr", "bad.nr"}},
   /* -------- */
   /* Following are some pseudo instructions. */
   /* push rA
@@ -813,6 +870,59 @@ static const flare_opc_info_t
   {&flare_grp_info_g4,
     FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_RC_LDST,
     {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
+
+  /* ldr rA, [rB, rC] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_RC_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  /* -------- */
+  /* ldub rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"ldub", "ldub"}, {"ldub.nr", "ldub.nr"}},
+
+  /* ldsb rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"ldsb", "ldsb"}, {"ldsb.nr", "ldsb.nr"}},
+
+  /* lduh rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"lduh", "lduh"}, {"lduh.nr", "lduh.nr"}},
+
+  /* ldsh rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
+  /* ldr rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  /* -------- */
+  /* ldub rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDUB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"ldub", "ldub"}, {"ldub.nr", "ldub.nr"}},
+
+  /* ldsb rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDSB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"ldsb", "ldsb"}, {"ldsb.nr", "ldsb.nr"}},
+
+  /* lduh rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDUH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"lduh", "lduh"}, {"lduh.nr", "lduh.nr"}},
+
+  /* ldsh rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDSH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"ldsh", "ldsh"}, {"ldsh.nr", "ldsh.nr"}},
+  /* ldr rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_LDR_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
   /* -------- */
   /* stb rA, [rB, rC] */
   {&flare_grp_info_g4,
@@ -823,6 +933,41 @@ static const flare_opc_info_t
   {&flare_grp_info_g4,
     FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_RC_LDST,
     {"sth", "sth"}, {"sth.nr", "sth.nr"}},
+
+  /* str rA, [rB, rC] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_RC_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
+  /* -------- */
+  /* stb rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"stb", "stb"}, {"stb.nr", "stb.nr"}},
+
+  /* sth rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"sth", "sth"}, {"sth.nr", "sth.nr"}},
+
+  /* str rA, [rB, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_S8_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
+  /* -------- */
+  /* stb rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STB_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"stb", "stb"}, {"stb.nr", "stb.nr"}},
+
+  /* sth rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STH_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"sth", "sth"}, {"sth.nr", "sth.nr"}},
+
+  /* str rA, [rB, rC, #simm] */
+  {&flare_grp_info_g4,
+    FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_RC_S8_LDST,
+    {"str", "str"}, {"str.nr", "str.nr"}},
   /* -------- */
   /* udivmod rA, rB, rC */
   {&flare_grp_info_g4,
@@ -854,75 +999,117 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
     {"sdivmod64", "sdivmod64"}, {"sdivmod64.nr", "sdivmod64.nr"}},
 };
-static const flare_grp_info_t flare_grp_info_g5 =
+static const flare_grp_info_t flare_grp_info_g5_index_ra_rb =
 {
   .grp=&flare_enc_info_grp_16,
   .grp_value=FLARE_G5_GRP_VALUE,
 
-  .subgrp=NULL,
-  .subgrp_value=0,
+  .subgrp=&flare_enc_info_g5_index_ra_rb_subgrp,
+  .subgrp_value=FLARE_G5_INDEX_RA_RB_SUBGRP_VALUE,
 };
 static const flare_opc_info_t
-  flare_opc_info_g5[FLARE_G5_OPC_INFO_LIM] =
+  flare_opc_info_g5_index_ra_rb[FLARE_G5_INDEX_RA_RB_OPC_INFO_LIM] =
 {
-  /* -------- */
-  /* ldr rA, [rB, #simm] */
-  {&flare_grp_info_g5,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_S5_LDST,
-    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
-  /* -------- */
-  /* Following are some pseudo instructions */
-  /* ldr rA, [rB] */
-  {&flare_grp_info_g5,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_LDST_32,
-    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  /* index rA, rB */
+  {&flare_grp_info_g5_index_ra_rb,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB,
+    {"index", "index"}, {"index.nr", "index.nr"}}
+  ///* -------- */
+  ///* ldr rA, [rB, #simm] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_S5_LDST,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  ///* -------- */
+  ///* Following are some pseudo instructions */
+  ///* ldr rA, [rB] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_LDST_32,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
-  /* ldr rA, [rB, rC] */
-  {&flare_grp_info_g5,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_LDST_32,
-    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  ///* ldr rA, [rB, rC] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_LDST_32,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
-  /* ldr rA, [rB, rC, #simm] */
-  {&flare_grp_info_g5,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_S5_LDST,
-    {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  ///* ldr rA, [rB, rC, #simm] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_S5_LDST,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
   /* -------- */
 };
-
-static const flare_grp_info_t flare_grp_info_g6 =
+static const flare_grp_info_t flare_grp_info_g5_index_ra_simm =
 {
   .grp=&flare_enc_info_grp_16,
-  .grp_value=FLARE_G6_GRP_VALUE,
+  .grp_value=FLARE_G5_GRP_VALUE,
 
-  .subgrp=NULL,
-  .subgrp_value=0,
+  .subgrp=&flare_enc_info_g5_index_ra_simm_subgrp,
+  .subgrp_value=FLARE_G5_INDEX_RA_SIMM_SUBGRP_VALUE,
 };
 static const flare_opc_info_t
-  flare_opc_info_g6[FLARE_G6_OPC_INFO_LIM] =
+  flare_opc_info_g5_index_ra_simm[FLARE_G5_INDEX_RA_SIMM_OPC_INFO_LIM] =
 {
-  /* -------- */
-  /* str rA, [rB, #simm] */
-  {&flare_grp_info_g6,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_S5_LDST,
-    {"str", "str"}, {"str.nr", "str.nr"}},
-  /* -------- */
-  /* Following are some pseudo instructions */
-  /* st rA, [rB] */
-  {&flare_grp_info_g6,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_LDST_32,
-    {"str", "str"}, {"str.nr", "str.nr"}},
+  /* index rA, rB */
+  {&flare_grp_info_g5_index_ra_simm,
+    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_S8,
+    {"index", "index"}, {"index.nr", "index.nr"}}
+  ///* -------- */
+  ///* ldr rA, [rB, #simm] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_S5_LDST,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
+  ///* -------- */
+  ///* Following are some pseudo instructions */
+  ///* ldr rA, [rB] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_LDST_32,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
-  /* str rA, [rB, rC] */
-  {&flare_grp_info_g6,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_LDST_32,
-    {"str", "str"}, {"str.nr", "str.nr"}},
+  ///* ldr rA, [rB, rC] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_LDST_32,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
 
-  /* str rA, [rB, rC, #simm] */
-  {&flare_grp_info_g6,
-    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_S5_LDST,
-    {"str", "str"}, {"str.nr", "str.nr"}},
+  ///* ldr rA, [rB, rC, #simm] */
+  //{&flare_grp_info_g5,
+  //  FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_S5_LDST,
+  //  {"ldr", "ldr"}, {"ldr.nr", "ldr.nr"}},
   /* -------- */
 };
+
+//static const flare_grp_info_t flare_grp_info_g6 =
+//{
+//  .grp=&flare_enc_info_grp_16,
+//  .grp_value=FLARE_G6_GRP_VALUE,
+//
+//  .subgrp=NULL,
+//  .subgrp_value=0,
+//};
+//static const flare_opc_info_t
+//  flare_opc_info_g6[FLARE_G6_OPC_INFO_LIM] =
+//{
+//  /* -------- */
+//  /* str rA, [rB, #simm] */
+//  {&flare_grp_info_g6,
+//    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_S5_LDST,
+//    {"str", "str"}, {"str.nr", "str.nr"}},
+//  /* -------- */
+//  /* Following are some pseudo instructions */
+//  /* st rA, [rB] */
+//  {&flare_grp_info_g6,
+//    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_LDST_32,
+//    {"str", "str"}, {"str.nr", "str.nr"}},
+//
+//  /* str rA, [rB, rC] */
+//  {&flare_grp_info_g6,
+//    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_LDST_32,
+//    {"str", "str"}, {"str.nr", "str.nr"}},
+//
+//  /* str rA, [rB, rC, #simm] */
+//  {&flare_grp_info_g6,
+//    FLARE_OPC_INFO_NULL_OP, FLARE_OA_RA_RB_RC_S5_LDST,
+//    {"str", "str"}, {"str.nr", "str.nr"}},
+//  /* -------- */
+//};
 
 static const flare_grp_info_t flare_grp_info_g7_aluopbh =
 {

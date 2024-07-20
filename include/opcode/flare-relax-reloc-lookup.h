@@ -58,38 +58,53 @@ flare_relax_reloc_tuple_g7_icreload =
     R_FLARE_G7_ICRELOAD_S32_NO_RELAX}, /* lpre_no_relax */
 };
 static const struct flare_relax_reloc_tuple
-flare_relax_reloc_tuple_g1g5g6_uimm =
+flare_relax_reloc_tuple_g5_index_simm =
 {
-  {BFD_RELOC_FLARE_G1G5G6_U5,
-    R_FLARE_G1G5G6_U5}, /* small */
-  {BFD_RELOC_FLARE_G1G5G6_S17_FOR_U5,
-    R_FLARE_G1G5G6_S17_FOR_U5}, /* pre */
-  {BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5,
-    R_FLARE_G1G5G6_S32_FOR_U5}, /* lpre */
-  {BFD_RELOC_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX,
-    R_FLARE_G1G5G6_S32_FOR_U5_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G5_INDEX_S8, R_FLARE_G5_INDEX_S8}, /* small */
+  {BFD_RELOC_FLARE_G5_INDEX_S20, R_FLARE_G5_INDEX_S20}, /* pre */
+  {BFD_RELOC_FLARE_G5_INDEX_S32, R_FLARE_G5_INDEX_S32}, /* lpre */
+  {BFD_RELOC_FLARE_G5_INDEX_S32_NO_RELAX,
+    R_FLARE_G5_INDEX_S32_NO_RELAX}, /* lpre_no_relax */
 };
 static const struct flare_relax_reloc_tuple
-flare_relax_reloc_tuple_g1g5g6_simm =
+flare_relax_reloc_tuple_g1_uimm =
 {
-  {BFD_RELOC_FLARE_G1G5G6_S5, R_FLARE_G1G5G6_S5}, /* small */
-  {BFD_RELOC_FLARE_G1G5G6_S17, R_FLARE_G1G5G6_S17}, /* pre */
-  {BFD_RELOC_FLARE_G1G5G6_S32, R_FLARE_G1G5G6_S32}, /* lpre */
-  {BFD_RELOC_FLARE_G1G5G6_S32_NO_RELAX,
-    R_FLARE_G1G5G6_S32_NO_RELAX}, /* lpre_no_relax */
+  {BFD_RELOC_FLARE_G1_U5,
+    R_FLARE_G1_U5}, /* small */
+  {BFD_RELOC_FLARE_G1_S17_FOR_U5,
+    R_FLARE_G1_S17_FOR_U5}, /* pre */
+  {BFD_RELOC_FLARE_G1_S32_FOR_U5,
+    R_FLARE_G1_S32_FOR_U5}, /* lpre */
+  {BFD_RELOC_FLARE_G1_S32_FOR_U5_NO_RELAX,
+    R_FLARE_G1_S32_FOR_U5_NO_RELAX}, /* lpre_no_relax */
+};
+static const struct flare_relax_reloc_tuple
+flare_relax_reloc_tuple_g1_simm =
+{
+  {BFD_RELOC_FLARE_G1_S5, R_FLARE_G1_S5}, /* small */
+  {BFD_RELOC_FLARE_G1_S17, R_FLARE_G1_S17}, /* pre */
+  {BFD_RELOC_FLARE_G1_S32, R_FLARE_G1_S32}, /* lpre */
+  {BFD_RELOC_FLARE_G1_S32_NO_RELAX,
+    R_FLARE_G1_S32_NO_RELAX}, /* lpre_no_relax */
 };
 static inline const struct flare_relax_reloc_tuple *
 flare_relax_reloc_lookup
-  (bool is_pcrel, bool is_g7_icreload, bool is_small_imm_unsigned)
+  (bool is_pcrel,
+  bool is_g5_index,
+  bool is_g7_icreload,
+  bool is_small_imm_unsigned)
 {
   return
     !is_pcrel
     ? (
       !is_g7_icreload
       ? (
-        !is_small_imm_unsigned
-        ? &flare_relax_reloc_tuple_g1g5g6_simm
-        : &flare_relax_reloc_tuple_g1g5g6_uimm
+	!is_g5_index
+	? (
+	  !is_small_imm_unsigned
+	  ? &flare_relax_reloc_tuple_g1_simm
+	  : &flare_relax_reloc_tuple_g1_uimm
+	) : &flare_relax_reloc_tuple_g5_index_simm
       ) : &flare_relax_reloc_tuple_g7_icreload
     ) : &flare_relax_reloc_tuple_pcrel;
 }

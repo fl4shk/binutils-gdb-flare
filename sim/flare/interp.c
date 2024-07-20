@@ -341,29 +341,29 @@ sim_open (SIM_OPEN_KIND kind, host_callback *cb,
   }
 //#define CHECK_FLAG(T,H) if (tflags & T) { hflags |= H; tflags ^= T; }
 
-static unsigned int
-convert_target_flags (unsigned int tflags)
-{
-  unsigned int hflags = 0x0;
-
-  CHECK_FLAG (0x0001, O_WRONLY);
-  CHECK_FLAG (0x0002, O_RDWR);
-  CHECK_FLAG (0x0008, O_APPEND);
-  CHECK_FLAG (0x0200, O_CREAT);
-  CHECK_FLAG (0x0400, O_TRUNC);
-  CHECK_FLAG (0x0800, O_EXCL);
-  CHECK_FLAG (0x2000, O_SYNC);
-
-  if (tflags != 0x0)
-  {
-    fprintf (stderr, 
-      "Simulator Error: problem converting target open flags for host.  "
-      "0x%x\n", 
-      tflags);
-  }
-
-  return hflags;
-}
+//static unsigned int
+//convert_target_flags (unsigned int tflags)
+//{
+//  unsigned int hflags = 0x0;
+//
+//  CHECK_FLAG (0x0001, O_WRONLY);
+//  CHECK_FLAG (0x0002, O_RDWR);
+//  CHECK_FLAG (0x0008, O_APPEND);
+//  CHECK_FLAG (0x0200, O_CREAT);
+//  CHECK_FLAG (0x0400, O_TRUNC);
+//  CHECK_FLAG (0x0800, O_EXCL);
+//  CHECK_FLAG (0x2000, O_SYNC);
+//
+//  if (tflags != 0x0)
+//  {
+//    fprintf (stderr, 
+//      "Simulator Error: problem converting target open flags for host.  "
+//      "0x%x\n", 
+//      tflags);
+//  }
+//
+//  return hflags;
+//}
 /* TODO: Split this up into finger trace levels than just insn.  */
 #define FLARE_TRACE_INSN(str) \
   TRACE_INSN (scpu, \
@@ -490,1974 +490,1974 @@ sim_engine_run (SIM_DESC sd,
                 int nr_cpus, /* ignore  */
                 int siggnal) /* ignore  */
 {
-  int32_t pc, opc;
-  bool have_index_insn, have_pre_insn, have_lpre_insn;
-  flare_temp_t
-    index_insn, prefix_insn, insn,
-    grp, subgrp, ra_ind, rb_ind, index_ra_ind, index_rb_ind,
-    simm, uimm, fwl,
-    nbytes;
-  const flare_opc_info_t
-    *opc_info;
-  sim_cpu *scpu = STATE_CPU (sd, 0); /* FIXME */
-  address_word cia = CPU_PC_GET (scpu);
-
-  pc = cpu.pc;
-
-  /* Run instructions here. */
-  do 
-  {
-    opc = pc;
-    have_index_insn = false;
-    have_pre_insn = false;
-    have_lpre_insn = false;
-    index_insn = prefix_insn = insn = 0x0;
-    grp = subgrp = ra_ind = rb_ind = index_ra_ind = index_rb_ind = 0x0ull;
-    simm = uimm = fwl = 0x0ull;
-    nbytes = 0x0;
-    opc_info = (const flare_opc_info_t *) NULL;
-
-    /* Fetch the instruction at pc.  */
-    index_insn = prefix_insn = insn
-      = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
-        | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
-
-    grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
-
-    if ((have_index_insn = (
-      flare_get_insn_field_ei (&flare_enc_info_grp_16, index_insn)
-        == FLARE_G4_GRP_VALUE
-      && flare_get_insn_field_ei (&flare_enc_info_g4_op, index_insn)
-        == FLARE_G4_OP_ENUM_INDEX_RA_RB
-      ))
-    )
-    {
-      nbytes += 2;
-      index_ra_ind = flare_get_insn_field_ei
-        (&flare_enc_info_ra_ind, index_insn);
-      index_rb_ind = flare_get_insn_field_ei
-        (&flare_enc_info_rb_ind, index_insn);
-      prefix_insn = insn
-        = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
-        | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
-
-      grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
-    }
-
-    if ((have_pre_insn = (
-      flare_get_insn_field_ei
-        (&flare_enc_info_g0_pre_fullgrp, prefix_insn)
-        == FLARE_G0_PRE_FULLGRP_VALUE
-      ))
-    )
-    {
-      nbytes += 2;
-      simm = flare_sign_extend (flare_get_insn_field_ei
-        (&flare_enc_info_g0_pre_s12, prefix_insn),
-        flare_enc_info_g0_pre_s12.bitsize);
-
-      insn
-        = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
-        | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
-
-      grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
-    }
-    else if ((have_lpre_insn = (
-      flare_get_insn_field_ei
-        (&flare_enc_info_g0_lpre_fullgrp_16, prefix_insn)
-        == FLARE_G0_LPRE_FULLGRP_VALUE
-      ))
-    )
-    {
-      nbytes += 2;
-      prefix_insn = (prefix_insn << 16)
-        | (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
-        | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
-
-      nbytes += 2;
-      insn
-        = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
-        | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
-
-      switch (grp = flare_get_insn_field_ei
-        (&flare_enc_info_grp_16, insn))
-      {
-        case FLARE_G1_GRP_VALUE:
-        case FLARE_G5_GRP_VALUE:
-        case FLARE_G6_GRP_VALUE:
-          simm = flare_sign_extend (flare_get_insn_field_ei
-            (&flare_enc_info_g0_lpre_s27, prefix_insn),
-            flare_enc_info_g0_lpre_s27.bitsize);
-          break;
-        case FLARE_G3_GRP_VALUE:
-          simm = flare_sign_extend (flare_get_insn_field_ei
-            (&flare_enc_info_g0_lpre_s23, prefix_insn),
-            flare_enc_info_g0_lpre_s23.bitsize);
-          break;
-        default:
-          simm = 0x0;
-          break;
-      }
-    }
-
-    nbytes += 2;
-
-    /* Decode instruction.  */
-    ra_ind = flare_get_insn_field_ei (&flare_enc_info_ra_ind, insn);
-    rb_ind = flare_get_insn_field_ei (&flare_enc_info_rb_ind, insn);
-    switch (grp)
-    {
-      case FLARE_G0_GRP_VALUE:
-      {
-        FLARE_TRACE_INSN ("SIGILL_G0");
-        sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-      }
-        break;
-      case FLARE_G1_GRP_VALUE:
-      {
-        int32_t
-          *ra = &cpu.gprs[ra_ind],
-          fp = cpu.gprs[FLARE_GPR_ENUM_FP],
-          sp = cpu.gprs[FLARE_GPR_ENUM_SP],
-          temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
-          *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS],
-          //ids = cpu.sprs[FLARE_SPR_ENUM_IDS],
-          //ira = cpu.sprs[FLARE_SPR_ENUM_IRA],
-          *ity = &cpu.sprs[FLARE_SPR_ENUM_ITY],
-          *sty = &cpu.sprs[FLARE_SPR_ENUM_STY];
-
-        opc_info = &flare_opc_info_g1
-          [flare_get_insn_field_ei (&flare_enc_info_g1_op, insn)];
-        //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-        //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
-        if (have_pre_insn || have_lpre_insn)
-        {
-          simm = uimm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-            | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
-              insn);
-        }
-        else
-        {
-          simm = flare_sign_extend 
-            (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
-            flare_enc_info_g1g5g6_i5.bitsize);
-          uimm = flare_zero_extend 
-            (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
-            flare_enc_info_g1g5g6_i5.bitsize);
-        }
-
-        switch (opc_info->opcode)
-        {
-          case FLARE_G1_OP_ENUM_ADD_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub 
-              (32u, /* bits */
-              *ra, /* operand_a */
-              (int32_t) simm, /* operand_b */
-              temp_flags_in, /* flags_in */
-              NULL, /* flags_out */ 
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ADD_RA_PC_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub 
-              (32u, /* bits */
-              (int32_t) (pc + nbytes), /* operand_a */
-              (int32_t) simm, /* operand_b */
-              temp_flags_in, /* flags_in */
-              NULL, /* flags_out */ 
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ADD_RA_SP_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub 
-              (32u, /* bits */
-              (int32_t) sp, /* operand_a */
-              (int32_t) simm, /* operand_b */
-              temp_flags_in, /* flags_in */
-              NULL, /* flags_out */ 
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ADD_RA_FP_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub 
-              (32u, /* bits */
-              (int32_t) fp, /* operand_a */
-              (int32_t) simm, /* operand_b */
-              temp_flags_in, /* flags_in */
-              NULL, /* flags_out */ 
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G1_OP_ENUM_CMP_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            //*ra = 
-            (void)flare_sim_add_sub 
-              (32u, /* bits */
-              *ra, /* operand_a */
-              (int32_t) simm, /* operand_b */
-              temp_flags_in, /* flags_in */
-              flags, /* flags_out */ 
-              false, /* with_carry_in */
-              true /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G1_OP_ENUM_CPY_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = simm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_LSL_RA_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (uint32_t) (*ra) << (uint32_t) uimm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_LSR_RA_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (uint32_t) (*ra) >> (uint32_t) uimm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ASR_RA_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (int32_t) (*ra) >> (uint32_t) uimm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_AND_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra &= simm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ORR_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra |= simm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_XOR_RA_S5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra ^= simm;
-          }
-            break;
-          case FLARE_G1_OP_ENUM_ZE_RA_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (int32_t) flare_zero_extend (*ra, uimm);
-          }
-            break;
-          case FLARE_G1_OP_ENUM_SE_RA_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (int32_t) flare_sign_extend (*ra, uimm);
-          }
-            break;
-          case FLARE_G1_OP_ENUM_SWI_RA_S5:
-          case FLARE_G1_OP_ENUM_SWI_U5:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ity = 0x1;
-            *sty
-              = (opc_info->opcode == FLARE_G1_OP_ENUM_SWI_RA_S5
-                ? *ra 
-                : 0x0)
-                + (opc_info->opcode == FLARE_G1_OP_ENUM_SWI_RA_S5
-                  ? simm
-                  : uimm);
-
-            switch ((uint32_t) (*sty))
-            {
-              case TARGET_NEWLIB_SYS_exit:
-              {
-                int32_t
-                  r0 = cpu.gprs[FLARE_GPR_ENUM_R0];
-
-                sim_engine_halt (sd, scpu, NULL, pc, sim_exited, r0);
-              }
-                break;
-              case TARGET_NEWLIB_SYS_open:
-              {
-                int32_t
-                  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-                  r1 = cpu.gprs[FLARE_GPR_ENUM_R1];
-                  //r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
-
-                char fname[1024];
-                int
-                  mode
-                    = (int) convert_target_flags ((unsigned) r1),
-                    //= (int) r1,
-                  //perm = (int) r2,
-                  fd;
-                sim_core_read_buffer (sd, scpu, read_map, fname, *r0,
-                  1024);
-                fd = sim_io_open (sd, fname, mode);
-                printf ("%d; opened \"%s\"\n",
-                  fd, fname);
-
-                /* FIXME - set errno */
-                *r0 = fd;
-              }
-                break;
-              case TARGET_NEWLIB_SYS_close:
-              {
-                int32_t
-                  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0];
-
-                int
-                  fd = *r0,
-                  rv;
-
-                if (fd > 2)
-                {
-                  rv = sim_io_close (sd, fd);
-                }
-                else
-                {
-                  rv = 0;
-                }
-
-                *r0 = rv;
-              }
-                break;
-              case TARGET_NEWLIB_SYS_read:
-              {
-                int32_t
-                  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-                  r1 = cpu.gprs[FLARE_GPR_ENUM_R1],
-                  r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
-
-                int
-                  fd = *r0,
-                  read_ret = 0;
-                unsigned len = (unsigned) r2;
-
-                char *buf = malloc (len);
-                read_ret = sim_io_read (sd, fd, buf, len);
-                sim_core_write_buffer (sd, scpu, write_map, buf, r1, len);
-                free (buf);
-
-                *r0 = read_ret;
-              }
-                break;
-              case TARGET_NEWLIB_SYS_write:
-              {
-                int32_t
-                  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-                  r1 = cpu.gprs[FLARE_GPR_ENUM_R1],
-                  r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
-
-                char *str;
-                unsigned
-                  count,
-                  len = (unsigned) r2;
-                str = malloc (len);
-                sim_core_read_buffer (sd, scpu, read_map, str, r1, len);
-                count = sim_io_write (sd, *r0, str, len);
-                free (str);
-
-                *r0 = count;
-              }
-                break;
-              case TARGET_NEWLIB_SYS_unlink:
-              {
-                int32_t
-                  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0];
-
-                char
-                  fname[1024];
-                  int fd;
-                sim_core_read_buffer
-                  (sd, scpu, read_map, fname, *r0, 1024);
-                fd = sim_io_unlink (sd, fname);
-
-                /* FIXME - set errno */
-                *r0 = fd;
-              }
-                break;
-              //case 0xffffffff: /* Linux System Call */
-              //{
-              //  unsigned int handler = cpu.asregs.sregs[1];
-              //  unsigned int sp = cpu.gprs[FLARE_GPR_ENUM_SP];
-
-              //  /* Save a slot for the static chain.  */
-              //  sp -= 4;
-
-              //  /* Push the return address.  */
-              //  sp -= 4;
-              //  wr32 (scpu, opc, sp, pc + 6);
-          
-              //  /* Push the current frame pointer.  */
-              //  sp -= 4;
-              //  wr32 (scpu, opc, sp, cpu.gprs[FLARE_GPR_ENUM_FP]);
-
-              //  /* Uncache the stack pointer and set the fp & pc.  */
-              //  cpu.gprs[FLARE_GPR_ENUM_SP] = sp;
-              //  cpu.gprs[FLARE_GPR_ENUM_FP] = sp;
-              //  pc = handler - 6;
-              //}
-              default:
-                break;
-            }
-          }
-            break;
-          default:
-          {
-            FLARE_TRACE_INSN ("SIGILL_G1");
-            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-          }
-            break;
-        }
-      }
-        break;
-      case FLARE_G2_GRP_VALUE:
-      {
-        int32_t
-          *ra = &cpu.gprs[ra_ind],
-          rb = cpu.gprs[rb_ind],
-          fp = cpu.gprs[FLARE_GPR_ENUM_FP],
-          sp = cpu.gprs[FLARE_GPR_ENUM_SP],
-          temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
-          temp_flags_out,
-          *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
-
-        opc_info = &flare_opc_info_g2
-          [flare_get_insn_field_ei (&flare_enc_info_g2_op, insn)];
-        fwl = flare_get_insn_field_ei (&flare_enc_info_g2_f, insn);
-
-        switch (opc_info->opcode)
-        {
-          case FLARE_G2_OP_ENUM_ADD_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_SUB_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              false, /* with_carry_in */
-              true /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_ADD_RA_SP_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              sp, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_ADD_RA_FP_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              fp, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              false, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_CMP_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            //*ra = 
-            (void)flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              flags, /* flags out */
-              false, /* with_carry_in */
-              true /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_CPY_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_LSL_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (uint32_t) (*ra) << (uint32_t) rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_LSR_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (uint32_t) (*ra) >> (uint32_t) rb;
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_ASR_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = (*ra) >> (uint32_t) rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_AND_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra &= rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_ORR_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra |= rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_XOR_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra ^= rb;
-
-            if (fwl)
-            {
-              flare_sim_set_flags_zn (32u, *ra, flags);
-            }
-          }
-            break;
-          case FLARE_G2_OP_ENUM_ADC_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              true, /* with_carry_in */
-              false /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_SBC_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              fwl ? flags : NULL, /* flags out */
-              true, /* with_carry_in */
-              true /* do_sub */
-              );
-          }
-            break;
-          case FLARE_G2_OP_ENUM_CMPBC_RA_RB:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            (void) flare_sim_add_sub
-              (32u, /* bits */
-              *ra, /* operand_a */
-              rb, /* operand_b */
-              temp_flags_in, /* flags_in */
-              &temp_flags_out, /* flags out */
-              true, /* with_carry_in */
-              true /* do_sub */
-              );
-
-            /* Chain together flags.Z */
-            *flags = temp_flags_out & ~FLARE_FLAGS_Z_MASK;
-            if (
-              (temp_flags_in & FLARE_FLAGS_Z_MASK)
-              && (temp_flags_out & FLARE_FLAGS_Z_MASK)
-            )
-            {
-              *flags |= FLARE_FLAGS_Z_MASK; 
-            }
-          }
-            break;
-            
-          case FLARE_G2_OP_ENUM_RESERVED_15:
-          default:
-          {
-            FLARE_TRACE_INSN ("SIGILL_G2");
-            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-          }
-            break;
-        }
-      }
-        break;
-      case FLARE_G3_GRP_VALUE:
-      {
-        int32_t
-          //branch_target,
-          flags;
-        bool flags_z, flags_c, flags_v, flags_n;
-
-        opc_info = &flare_opc_info_g3
-          [flare_get_insn_field_ei (&flare_enc_info_g3_op, insn)];
-        //printf ("simm: %i\n", (int) simm);
-        if (have_pre_insn || have_lpre_insn)
-        {
-          simm = (simm << flare_enc_info_g3_s9.bitsize)
-            | flare_get_insn_field_ei (&flare_enc_info_g3_s9, insn);
-        }
-        else
-        {
-          simm = flare_sign_extend 
-            (flare_get_insn_field_ei (&flare_enc_info_g3_s9, insn),
-            flare_enc_info_g3_s9.bitsize);
-        }
-        //printf ("simm: %i\n", (int) simm);
-
-        //branch_target = pc + nbytes + (int32_t) simm;
-        flags = cpu.sprs[FLARE_SPR_ENUM_FLAGS];
-        flags_z = (flags & FLARE_FLAGS_Z_MASK) != 0;
-        flags_c = (flags & FLARE_FLAGS_C_MASK) != 0;
-        flags_v = (flags & FLARE_FLAGS_V_MASK) != 0;
-        flags_n = (flags & FLARE_FLAGS_N_MASK) != 0;
-
-        switch (opc_info->opcode)
-        {
-          case FLARE_G3_OP_ENUM_BL_PCREL_S9:
-          {
-            int32_t
-              *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *lr = pc + nbytes;
-            pc += simm & ~0x1ull;
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BRA_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            //printf ("simm: %i\n", (int) simm);
-            pc += simm & ~0x1ull;
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BEQ_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BNE_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (!flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BMI_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_n)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BPL_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (!flags_n)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BVS_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_v)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BVC_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (!flags_v)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BGEU_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_c)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BLTU_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (!flags_c)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BGTU_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_c && !flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BLEU_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (!flags_c || flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BGES_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_n == flags_v)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BLTS_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_n != flags_v)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BGTS_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_n == flags_v && !flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          case FLARE_G3_OP_ENUM_BLES_PCREL_S9:
-          {
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            if (flags_n != flags_v || flags_z)
-            {
-              pc += simm & ~0x1ull;
-            }
-          }
-            break;
-          default:
-          {
-            FLARE_TRACE_INSN ("SIGILL_G3");
-            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-          }
-            break;
-        }
-      }
-        break;
-      case FLARE_G4_GRP_VALUE:
-      {
-        opc_info = &flare_opc_info_g4
-          [flare_get_insn_field_ei (&flare_enc_info_g4_op, insn)];
-
-        switch (opc_info->opcode)
-        {
-          case FLARE_G4_OP_ENUM_JL_RA:
-          {
-            int32_t
-              ra = cpu.gprs[ra_ind],
-              *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *lr = pc + nbytes;
-
-            /* Account for the `pc += nbytes;` statement at the end of the 
-              do-while loop */
-            pc = (ra & ~0x1ull) - nbytes;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_JMP_RA:
-          {
-            int32_t
-              ra = cpu.gprs[ra_ind];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            pc = ra;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_JMP_IRA:
-          {
-            int32_t
-              ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            pc = ira;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_RETI:
-          {
-            int32_t
-              *ie = &cpu.sprs[FLARE_SPR_ENUM_IE],
-              ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ie |= 0x1;
-            pc = ira;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_EI:
-          {
-            int32_t
-              *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ie |= 0x1;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_DI:
-          {
-            int32_t
-              *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ie &= ~0x1;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_PUSH_RA_RB:
-          {
-            int32_t
-              *ra = &cpu.sprs[ra_ind],
-              *rb = &cpu.gprs[rb_ind];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            wr32 (scpu, opc, *rb, *ra);
-            *rb -= sizeof (*ra);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_PUSH_SA_RB:
-          {
-            if (ra_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                *rb = &cpu.gprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-              wr32 (scpu, opc, *rb, *sa);
-              *rb -= sizeof (*sa);
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_PUSH_SA_RB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_POP_RA_RB:
-          {
-            int32_t
-              *ra = &cpu.sprs[ra_ind],
-              *rb = &cpu.gprs[rb_ind];
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-            *rb += sizeof (*ra);
-            *ra = rd32 (scpu, opc, *rb);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_POP_SA_RB:
-          {
-            if (ra_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                *rb = &cpu.gprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-              *rb += sizeof (*sa);
-              *sa = rd32 (scpu, opc, *rb);
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_POP_SA_RB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_POP_PC_RB:
-          {
-            if (ra_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *rb = &cpu.gprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-              *rb += sizeof (pc);
-              pc = rd32 (scpu, opc, *rb);
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_POP_PC_RB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_MUL_RA_RB:
-          {
-            int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind];
-
-            int32_t
-              lhs = *ra,
-              rhs = rb;
-
-            lhs *= rhs;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = lhs;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_UDIV_RA_RB:
-          {
-            int32_t
-              *ra = &cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *rc = (
-		have_index_insn
-		? &cpu.gprs[index_ra_ind]
-		: NULL
-	      );
-	    uint32_t
-	      lhs = (uint32_t) (*ra),
-	      rhs = (uint32_t) rb;
-
-
-            if (have_index_insn)
-            {
-	      *rc = lhs % rhs;
-            }
-            lhs /= rhs;
-
-            //FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("udivmod");
-	    }
-
-            *ra = lhs;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_SDIV_RA_RB:
-          {
-	    int32_t
-	      *ra = &cpu.gprs[ra_ind],
-	      rb = cpu.gprs[rb_ind],
-              *rc = (
-		have_index_insn
-		? &cpu.gprs[index_ra_ind]
-		: NULL
-	      );
-
-            int32_t
-              lhs = *ra,
-              rhs = rb;
-
-            if (have_index_insn)
-            {
-	      *rc = lhs % rhs;
-            }
-	    lhs /= rhs;
-
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("sdivmod");
-	    }
-
-	    *ra = (int32_t) lhs;
-          }
-            break;
-
-          //case FLARE_G4_OP_ENUM_UMOD_RA_RB:
-          //{
-          //  int32_t
-          //    *ra = &cpu.gprs[ra_ind],
-          //    rb = cpu.gprs[rb_ind];
-
-          //  uint32_t
-          //    lhs = (uint32_t) (*ra),
-          //    rhs = (uint32_t) rb;
-
-          //  lhs %= rhs;
-
-          //  FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-          //  *ra = (int32_t) lhs;
-          //}
-          //  break;
-          //case FLARE_G4_OP_ENUM_SMOD_RA_RB:
-          //{
-          //  int32_t
-          //    *ra = &cpu.gprs[ra_ind],
-          //    rb = cpu.gprs[rb_ind];
-
-          //  int32_t
-          //    lhs = *ra,
-          //    rhs = rb;
-
-          //  lhs %= rhs;
-
-          //  FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-          //  *ra = lhs;
-          //}
-          //  break;
-          case FLARE_G4_OP_ENUM_LUMUL_RA_RB:
-          {
-            int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *rc = (
-		have_index_insn
-		? &cpu.gprs[index_ra_ind]
-		: &cpu.gprs[FLARE_GPR_ENUM_R0]
-	      ),
-              *rd = (
-		have_index_insn
-		? &cpu.gprs[index_rb_ind]
-		: &cpu.gprs[FLARE_GPR_ENUM_R1]
-	      );
-
-            uint64_t
-              ra_zeroext = flare_zero_extend (ra, 32u),
-              rb_zeroext = flare_zero_extend (rb, 32u),
-              lhs = ra_zeroext * rb_zeroext;
-
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("lumul");
-	    }
-
-            *rc = (int32_t) (lhs >> 32u);
-            *rd = (int32_t) lhs;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_LSMUL_RA_RB:
-          {
-            int32_t
-              ra = cpu.gprs[ra_ind],
-              rb = cpu.gprs[rb_ind],
-              *rc = (
-	        have_index_insn
-	        ? &cpu.gprs[index_ra_ind]
-	        : &cpu.gprs[FLARE_GPR_ENUM_R0]
-	      ),
-              *rd = (
-	        have_index_insn
-	        ? &cpu.gprs[index_rb_ind]
-	        : &cpu.gprs[FLARE_GPR_ENUM_R1]
-	      );
-
-            int64_t
-              ra_signext = flare_sign_extend (ra, 32u),
-              rb_signext = flare_sign_extend (rb, 32u),
-              lhs = ra_signext * rb_signext;
-
-            //FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("lsmul");
-	    }
-
-            *rc = (int32_t) (lhs >> 32u);
-            *rd = (int32_t) lhs;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_UDIV64_RA_RB:
-          {
-            int32_t
-              //ra = cpu.gprs[ra_ind],
-              //rb = cpu.gprs[rb_ind],
-              //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-              //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
-              *ra = &cpu.gprs[ra_ind & (~0x1)],
-              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
-              rb = cpu.gprs[rb_ind & (~0x1)],
-              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1],
-              *rc = (
-		have_index_insn
-		? &cpu.gprs[index_ra_ind]
-		: NULL
-              ),
-              *rd = (
-		have_index_insn
-		? &cpu.gprs[index_rb_ind]
-		: NULL
-              );
-
-            uint64_t
-              //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
-              //  | flare_zero_extend (*r1, 32u)),
-              //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
-              //  | flare_zero_extend (rb, 32u));
-              lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
-              rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1),
-              mod_lhs;
-            mod_lhs = lhs % rhs;
-            lhs /= rhs;
-
-            //FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("udivmod64");
-	    }
-
-            //*r0 = (int32_t) (lhs >> 32u);
-            //*r1 = (int32_t) lhs;
-            *ra = (int32_t) (lhs >> 32u);
-            *ra_p_1 = (int32_t) lhs;
-            *rc = (int32_t) (mod_lhs >> 32u);
-            *rd = (int32_t) mod_lhs;
-          }
-            break;
-          case FLARE_G4_OP_ENUM_SDIV64_RA_RB:
-          {
-            int32_t
-              //ra = cpu.gprs[ra_ind],
-              //rb = cpu.gprs[rb_ind],
-              //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-              //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
-              *ra = &cpu.gprs[ra_ind & (~0x1)],
-              *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
-              rb = cpu.gprs[rb_ind & (~0x1)],
-              rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1],
-              *rc = (
-		have_index_insn
-		? &cpu.gprs[index_ra_ind]
-		: NULL
-              ),
-              *rd = (
-		have_index_insn
-		? &cpu.gprs[index_rb_ind]
-		: NULL
-              );
-
-            int64_t
-              //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
-              //  | flare_zero_extend (*r1, 32u)),
-              //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
-              //  | flare_zero_extend (rb, 32u));
-              lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
-              rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1),
-              mod_lhs;
-            mod_lhs = lhs % rhs;
-            lhs /= rhs;
-
-            //FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    if (!have_index_insn)
-	    {
-	      FLARE_TRACE_INSN (opc_info->names[fwl]);
-	    }
-	    else
-	    {
-	      FLARE_TRACE_INSN ("sdivmod64");
-	    }
-
-            //*r0 = (int32_t) (lhs >> 32u);
-            //*r1 = (int32_t) lhs;
-            *ra = (int32_t) (lhs >> 32u);
-            *ra_p_1 = (int32_t) lhs;
-            *rc = (int32_t) (mod_lhs >> 32u);
-            *rd = (int32_t) mod_lhs;
-          }
-            break;
-          //case FLARE_G4_OP_ENUM_UMOD64_RA_RB:
-          //{
-          //  //int32_t
-          //  //  ra = cpu.gprs[ra_ind],
-          //  //  rb = cpu.gprs[rb_ind],
-          //  //  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-          //  //  *r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
-
-          //  //uint64_t
-          //  //  lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
-          //  //    | flare_zero_extend (*r1, 32u)),
-          //  //  rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
-          //  //    | flare_zero_extend (rb, 32u));
-          //  //lhs %= rhs;
-
-          //  //FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-          //  //*r0 = (int32_t) (lhs >> 32u);
-          //  //*r1 = (int32_t) lhs;
-          //  int32_t
-          //    //ra = cpu.gprs[ra_ind],
-          //    //rb = cpu.gprs[rb_ind],
-          //    //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
-          //    //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
-          //    *ra = &cpu.gprs[ra_ind & (~0x1)],
-          //    *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
-          //    rb = cpu.gprs[rb_ind & (~0x1)],
-          //    rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
-
-          //  uint64_t
-          //    //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
-          //    //  | flare_zero_extend (*r1, 32u)),
-          //    //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
-          //    //  | flare_zero_extend (rb, 32u));
-          //    lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
-          //    rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
-          //  lhs %= rhs;
-
-          //  FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-          //  //*r0 = (int32_t) (lhs >> 32u);
-          //  //*r1 = (int32_t) lhs;
-          //  *ra = (int32_t) (lhs >> 32u);
-          //  *ra_p_1 = (int32_t) lhs;
-          //}
-          //  break;
-          //case FLARE_G4_OP_ENUM_SMOD64_RA_RB:
-          //{
-          //  int32_t
-          //    *ra = &cpu.gprs[ra_ind & (~0x1)],
-          //    *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
-          //    rb = cpu.gprs[rb_ind & (~0x1)],
-          //    rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
-
-          //  int64_t
-          //    lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
-          //    rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
-          //  lhs %= rhs;
-
-          //  FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-          //  *ra = (int32_t) (lhs >> 32u);
-          //  *ra_p_1 = (int32_t) lhs;
-          //}
-            break;
-          case FLARE_G4_OP_ENUM_LDUB_RA_RB:
-          {
-            int32_t
-              //*ra = (
-	      //  !have_index_insn
-	      //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
-	      //),
-              //rb = cpu.gprs[rb_ind],
-              *ra = (
-		//!have_index_insn
-		//? 
-		&cpu.gprs[ra_ind]
-		//: &cpu.gprs[index_ra_ind]
-	      ),
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_zero_extend (rd8u (scpu, opc, addr), 8u);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_LDSB_RA_RB:
-          {
-            int32_t
-              *ra = (
-		//!have_index_insn
-		//? 
-		&cpu.gprs[ra_ind]
-		//: &cpu.gprs[index_ra_ind]
-	      ),
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sign_extend (rd8s (scpu, opc, addr), 8u);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_LDUH_RA_RB:
-          {
-            int32_t
-              //*ra = &cpu.gprs[ra_ind],
-              //*ra = (
-	      //  !have_index_insn
-	      //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
-	      //),
-              //rb = cpu.gprs[rb_ind],
-              *ra = (
-		//!have_index_insn
-		//? 
-		&cpu.gprs[ra_ind]
-		//: &cpu.gprs[index_ra_ind]
-	      ),
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_zero_extend (rd16u (scpu, opc, addr), 16u);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_LDSH_RA_RB:
-          {
-            int32_t
-              //*ra = &cpu.gprs[ra_ind],
-              //*ra = (
-	      //  !have_index_insn
-	      //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
-	      //),
-              //rb = cpu.gprs[rb_ind],
-              *ra = (
-		//!have_index_insn
-		//? 
-		&cpu.gprs[ra_ind]
-		//: &cpu.gprs[index_ra_ind]
-	      ),
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            *ra = flare_sign_extend (rd16s (scpu, opc, addr), 16u);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_STB_RA_RB:
-          {
-            int32_t
-              //ra = cpu.gprs[ra_ind],
-              //*ra = (
-	      //  !have_index_insn
-	      //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
-	      //),
-              //rb = cpu.gprs[rb_ind],
-              *ra = (
-		//!have_index_insn
-		//? 
-		&cpu.gprs[ra_ind]
-		//: &cpu.gprs[index_ra_ind]
-	      ),
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            wr8 (scpu, opc, addr, *ra);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_STH_RA_RB:
-          {
-            int32_t
-              ra = cpu.gprs[ra_ind],
-              //rb = cpu.gprs[rb_ind],
-              rb = (
-		!have_index_insn
-		? cpu.gprs[rb_ind]
-		: cpu.gprs[index_ra_ind]
-	      ),
-              rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-            uint32_t
-              addr = 0;
-
-            addr = rb + rc;
-
-            FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-            wr16 (scpu, opc, addr, ra);
-          }
-            break;
-          case FLARE_G4_OP_ENUM_CPY_RA_SB:
-          {
-            if (rb_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *ra = &cpu.gprs[ra_ind],
-                sb = cpu.sprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              *ra = sb;
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_CPY_RA_SB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_CPY_SA_RB:
-          {
-            if (ra_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                rb = cpu.gprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              *sa = rb;
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_CPY_SA_RB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_CPY_SA_SB:
-          {
-            if (ra_ind < FLARE_NUM_SPRS
-              && rb_ind < FLARE_NUM_SPRS)
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                sb = cpu.gprs[rb_ind];
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              *sa = sb;
-            }
-            else
-            {
-              FLARE_TRACE_INSN ("SIGILL_G4_CPY_SA_SB");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-          }
-            break;
-          case FLARE_G4_OP_ENUM_INDEX_RA_RB:
-          //case FLARE_G4_OP_ENUM_RESERVED_31:
-          default:
-          {
-            FLARE_TRACE_INSN ("SIGILL_G4");
-            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-          }
-            break;
-        }
-      }
-        break;
-      case FLARE_G5_GRP_VALUE:
-      {
-        int32_t
-          *ra = &cpu.gprs[ra_ind],
-          //rb = cpu.gprs[rb_ind],
-          rb = (
-	    !have_index_insn
-	    ? cpu.gprs[rb_ind]
-	    : cpu.gprs[index_ra_ind]
-	  ),
-          rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-        uint32_t
-          addr = 0;
-
-        opc_info = &flare_opc_info_g5[0];
-        //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-        //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
-        if (have_pre_insn || have_lpre_insn)
-        {
-          simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-            | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
-              insn);
-        }
-        else
-        {
-          simm = flare_sign_extend 
-            (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
-            flare_enc_info_g1g5g6_i5.bitsize);
-        }
-
-
-        addr = rb + rc + simm;
-
-        FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-        *ra = rd32 (scpu, opc, addr);
-      }
-        break;
-      case FLARE_G6_GRP_VALUE:
-      {
-        int32_t
-          ra = cpu.gprs[ra_ind],
-          //rb = cpu.gprs[rb_ind],
-          rb = (
-	    !have_index_insn
-	    ? cpu.gprs[rb_ind]
-	    : cpu.gprs[index_ra_ind]
-	  ),
-          rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
-        uint32_t
-          addr = 0;
-
-        opc_info = &flare_opc_info_g6[0];
-        //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-        //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
-        if (have_pre_insn || have_lpre_insn)
-        {
-          simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
-            | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
-              insn);
-        }
-        else
-        {
-          simm = flare_sign_extend 
-            (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
-            flare_enc_info_g1g5g6_i5.bitsize);
-        }
-
-        addr = rb + rc + simm;
-
-        FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-        wr32 (scpu, opc, addr, ra);
-      }
-        break;
-      case FLARE_G7_GRP_VALUE:
-      {
-        if ((subgrp = flare_get_insn_field_ei
-          (&flare_enc_info_g7_aluopbh_subgrp, insn))
-          == FLARE_G7_ALUOPBH_SUBGRP_VALUE)
-        {
-          opc_info = &flare_opc_info_g7_aluopbh
-            [flare_get_insn_field_ei
-              (&flare_enc_info_g7_aluopbh_op, insn)];
-          fwl = flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_w,
-            insn);
-          switch (opc_info->opcode)
-          {
-            case FLARE_G7_ALUOPBH_OP_ENUM_CMP_RA_RB:
-            {
-              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
-              {
-                int32_t
-                  ra = cpu.gprs[ra_ind],
-                  rb = cpu.gprs[rb_ind],
-                  temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
-                  *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                (void) flare_sim_add_sub
-                  (8u, /* bits */
-                  ra, /* operand_a */
-                  rb, /* operand_b */
-                  temp_flags_in, /* flags_in */
-                  flags, /* flags out */
-                  false, /* with_carry_in */
-                  true /* do_sub */
-                  );
-              }
-              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
-              {
-                int32_t
-                  ra = cpu.gprs[ra_ind],
-                  rb = cpu.gprs[rb_ind],
-                  temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
-                  *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                (void) flare_sim_add_sub
-                  (16u, /* bits */
-                  ra, /* operand_a */
-                  rb, /* operand_b */
-                  temp_flags_in, /* flags_in */
-                  flags, /* flags out */
-                  false, /* with_carry_in */
-                  true /* do_sub */
-                  );
-              }
-              else
-              {
-                FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
-                sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                  SIM_SIGILL);
-              }
-            }
-              break;
-            case FLARE_G7_ALUOPBH_OP_ENUM_LSR_RA_RB:
-            {
-              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
-              {
-                uint8_t ra = (uint8_t) (cpu.gprs[ra_ind] & 0xff);
-                uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
-                ra >>= rb;
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                cpu.gprs[ra_ind] = (flare_temp_t) ra;
-              }
-              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
-              {
-                uint16_t ra = (uint16_t) (cpu.gprs[ra_ind] & 0xffff);
-                uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
-                ra >>= rb;
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                cpu.gprs[ra_ind] = (flare_temp_t) ra;
-              }
-              else
-              {
-                FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
-                sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                  SIM_SIGILL);
-              }
-            }
-              break;
-            case FLARE_G7_ALUOPBH_OP_ENUM_ASR_RA_RB:
-            {
-              if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
-              {
-                int8_t ra = cpu.gprs[ra_ind] & 0xff;
-                uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
-                ra >>= rb;
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                cpu.gprs[ra_ind] = flare_sign_extend
-                  ((flare_temp_t) ra, 8ull);
-              }
-              else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
-              {
-                int16_t ra = cpu.gprs[ra_ind] & 0xffff;
-                uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
-                ra >>= rb;
-
-                FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-                cpu.gprs[ra_ind] = flare_sign_extend
-                  ((flare_temp_t) ra, 16ull);
-              }
-              else
-              {
-                FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
-                sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                  SIM_SIGILL);
-              }
-            }
-              break;
-            default:
-            {
-              FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_OP");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-              break;
-          }
-        }
-        else if ((subgrp = flare_get_insn_field_ei
-          (&flare_enc_info_g7_sprldst_subgrp, insn))
-          == FLARE_G7_SPRLDST_SUBGRP_VALUE)
-        {
-          opc_info = &flare_opc_info_g7_sprldst
-            [flare_get_insn_field_ei
-              (&flare_enc_info_g7_sprldst_op, insn)];
-          switch (opc_info->opcode)
-          {
-            case FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_RB:
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                rb = cpu.gprs[rb_ind];
-              uint32_t addr = (uint32_t)rb;
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              *sa = rd32 (scpu, opc, addr);
-            }
-              break;
-            case FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_SB:
-            {
-              int32_t
-                *sa = &cpu.sprs[ra_ind],
-                sb = cpu.sprs[rb_ind];
-              uint32_t addr = (uint32_t)sb;
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              *sa = rd32 (scpu, opc, addr);
-            }
-              break;
-            case FLARE_G7_SPRLDST_OP_ENUM_STR_SA_RB:
-            {
-              int32_t
-                sa = cpu.sprs[ra_ind],
-                rb = cpu.gprs[rb_ind];
-              uint32_t addr = (uint32_t)rb;
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              wr32 (scpu, opc, addr, sa);
-            }
-              break;
-            case FLARE_G7_SPRLDST_OP_ENUM_STR_SA_SB:
-            {
-              int32_t
-                sa = cpu.sprs[ra_ind],
-                sb = cpu.sprs[rb_ind];
-              uint32_t addr = (uint32_t)sb;
-
-              FLARE_TRACE_INSN (opc_info->names[fwl]);
-
-              wr32 (scpu, opc, addr, sa);
-            }
-              break;
-            default:
-            {
-              FLARE_TRACE_INSN ("SIGILL_G7_SPRLDST_OP");
-              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
-                SIM_SIGILL);
-            }
-              break;
-          }
-        }
-        else if ((subgrp = flare_get_insn_field_ei
-          (&flare_enc_info_g7_icreload_subgrp, insn))
-          == FLARE_G7_ICRELOAD_SUBGRP_VALUE)
-        {
-          //int32_t
-          //  ra = cpu.gprs[ra_ind],
-          //  //rb = cpu.gprs[rb_ind],
-          //  rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
-          //uint32_t
-          //  addr = 0;
-
-          opc_info = &flare_opc_info_g7_icreload[0];
-
-          //if (have_pre_insn || have_lpre_insn)
-          //{
-          //  simm = (simm << flare_enc_info_g7_icreload_s5.bitsize)
-          //    | flare_get_insn_field_ei
-          //      (&flare_enc_info_g7_icreload_s5, insn);
-          //}
-          //else
-          //{
-          //  simm = flare_sign_extend 
-          //    (flare_get_insn_field_ei
-          //      (&flare_enc_info_g7_icreload_s5, insn),
-          //    flare_enc_info_g7_icreload_s5.bitsize);
-          //}
-
-          //addr = ra + rc + simm;
-          FLARE_TRACE_INSN (opc_info->names[fwl]);
-        }
-	else if ((subgrp = flare_get_insn_field_ei
-	  (&flare_enc_info_g7_icflush_subgrp, insn))
-	  == FLARE_G7_ICFLUSH_SUBGRP_VALUE)
-	{
-	  opc_info = &flare_opc_info_g7_icflush[0];
-	  FLARE_TRACE_INSN (opc_info->names[fwl]);
-	}
-        else
-        {
-          FLARE_TRACE_INSN ("SIGILL_G7_SUBGRP");
-          sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
-        }
-      }
-        break;
-    }
-
-    ++cpu.insn_cnt;
-
-    //pc += 2;
-    pc += nbytes;
-
-    cpu.pc = pc;
-
-    if (sim_events_tick (sd))
-    {
-      sim_events_process (sd);
-    }
-
-  } while (1);
+  //int32_t pc, opc;
+  //bool have_index_insn, have_pre_insn, have_lpre_insn;
+  //flare_temp_t
+  //  index_insn, prefix_insn, insn,
+  //  grp, subgrp, ra_ind, rb_ind, index_ra_ind, index_rb_ind,
+  //  simm, uimm, fwl,
+  //  nbytes;
+  //const flare_opc_info_t
+  //  *opc_info;
+  //sim_cpu *scpu = STATE_CPU (sd, 0); /* FIXME */
+  //address_word cia = CPU_PC_GET (scpu);
+
+  //pc = cpu.pc;
+
+  ///* Run instructions here. */
+  //do 
+  //{
+  //  opc = pc;
+  //  have_index_insn = false;
+  //  have_pre_insn = false;
+  //  have_lpre_insn = false;
+  //  index_insn = prefix_insn = insn = 0x0;
+  //  grp = subgrp = ra_ind = rb_ind = index_ra_ind = index_rb_ind = 0x0ull;
+  //  simm = uimm = fwl = 0x0ull;
+  //  nbytes = 0x0;
+  //  opc_info = (const flare_opc_info_t *) NULL;
+
+  //  /* Fetch the instruction at pc.  */
+  //  index_insn = prefix_insn = insn
+  //    = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
+  //      | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+  //  grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
+
+  //  if ((have_index_insn = (
+  //    flare_get_insn_field_ei (&flare_enc_info_grp_16, index_insn)
+  //      == FLARE_G4_GRP_VALUE
+  //    && flare_get_insn_field_ei (&flare_enc_info_g4_op, index_insn)
+  //      == FLARE_G4_OP_ENUM_INDEX_RA_RB
+  //    ))
+  //  )
+  //  {
+  //    nbytes += 2;
+  //    index_ra_ind = flare_get_insn_field_ei
+  //      (&flare_enc_info_ra_ind, index_insn);
+  //    index_rb_ind = flare_get_insn_field_ei
+  //      (&flare_enc_info_rb_ind, index_insn);
+  //    prefix_insn = insn
+  //      = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
+  //      | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+  //    grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
+  //  }
+
+  //  if ((have_pre_insn = (
+  //    flare_get_insn_field_ei
+  //      (&flare_enc_info_g0_pre_fullgrp, prefix_insn)
+  //      == FLARE_G0_PRE_FULLGRP_VALUE
+  //    ))
+  //  )
+  //  {
+  //    nbytes += 2;
+  //    simm = flare_sign_extend (flare_get_insn_field_ei
+  //      (&flare_enc_info_g0_pre_s12, prefix_insn),
+  //      flare_enc_info_g0_pre_s12.bitsize);
+
+  //    insn
+  //      = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
+  //      | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+  //    grp = flare_get_insn_field_ei (&flare_enc_info_grp_16, insn);
+  //  }
+  //  else if ((have_lpre_insn = (
+  //    flare_get_insn_field_ei
+  //      (&flare_enc_info_g0_lpre_fullgrp_16, prefix_insn)
+  //      == FLARE_G0_LPRE_FULLGRP_VALUE
+  //    ))
+  //  )
+  //  {
+  //    nbytes += 2;
+  //    prefix_insn = (prefix_insn << 16)
+  //      | (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
+  //      | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+  //    nbytes += 2;
+  //    insn
+  //      = (sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes) << 8)
+  //      | sim_core_read_aligned_1 (scpu, cia, read_map, pc + nbytes + 1);
+
+  //    switch (grp = flare_get_insn_field_ei
+  //      (&flare_enc_info_grp_16, insn))
+  //    {
+  //      case FLARE_G1_GRP_VALUE:
+  //      case FLARE_G5_GRP_VALUE:
+  //      case FLARE_G6_GRP_VALUE:
+  //        simm = flare_sign_extend (flare_get_insn_field_ei
+  //          (&flare_enc_info_g0_lpre_s27, prefix_insn),
+  //          flare_enc_info_g0_lpre_s27.bitsize);
+  //        break;
+  //      case FLARE_G3_GRP_VALUE:
+  //        simm = flare_sign_extend (flare_get_insn_field_ei
+  //          (&flare_enc_info_g0_lpre_s23, prefix_insn),
+  //          flare_enc_info_g0_lpre_s23.bitsize);
+  //        break;
+  //      default:
+  //        simm = 0x0;
+  //        break;
+  //    }
+  //  }
+
+  //  nbytes += 2;
+
+  //  /* Decode instruction.  */
+  //  ra_ind = flare_get_insn_field_ei (&flare_enc_info_ra_ind, insn);
+  //  rb_ind = flare_get_insn_field_ei (&flare_enc_info_rb_ind, insn);
+  //  switch (grp)
+  //  {
+  //    case FLARE_G0_GRP_VALUE:
+  //    {
+  //      FLARE_TRACE_INSN ("SIGILL_G0");
+  //      sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //    }
+  //      break;
+  //    case FLARE_G1_GRP_VALUE:
+  //    {
+  //      int32_t
+  //        *ra = &cpu.gprs[ra_ind],
+  //        fp = cpu.gprs[FLARE_GPR_ENUM_FP],
+  //        sp = cpu.gprs[FLARE_GPR_ENUM_SP],
+  //        temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
+  //        *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS],
+  //        //ids = cpu.sprs[FLARE_SPR_ENUM_IDS],
+  //        //ira = cpu.sprs[FLARE_SPR_ENUM_IRA],
+  //        *ity = &cpu.sprs[FLARE_SPR_ENUM_ITY],
+  //        *sty = &cpu.sprs[FLARE_SPR_ENUM_STY];
+
+  //      opc_info = &flare_opc_info_g1
+  //        [flare_get_insn_field_ei (&flare_enc_info_g1_op, insn)];
+  //      //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //      //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
+  //      if (have_pre_insn || have_lpre_insn)
+  //      {
+  //        simm = uimm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //          | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
+  //            insn);
+  //      }
+  //      else
+  //      {
+  //        simm = flare_sign_extend 
+  //          (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
+  //          flare_enc_info_g1g5g6_i5.bitsize);
+  //        uimm = flare_zero_extend 
+  //          (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
+  //          flare_enc_info_g1g5g6_i5.bitsize);
+  //      }
+
+  //      switch (opc_info->opcode)
+  //      {
+  //        case FLARE_G1_OP_ENUM_ADD_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub 
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            (int32_t) simm, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            NULL, /* flags_out */ 
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ADD_RA_PC_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub 
+  //            (32u, /* bits */
+  //            (int32_t) (pc + nbytes), /* operand_a */
+  //            (int32_t) simm, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            NULL, /* flags_out */ 
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ADD_RA_SP_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub 
+  //            (32u, /* bits */
+  //            (int32_t) sp, /* operand_a */
+  //            (int32_t) simm, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            NULL, /* flags_out */ 
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ADD_RA_FP_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub 
+  //            (32u, /* bits */
+  //            (int32_t) fp, /* operand_a */
+  //            (int32_t) simm, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            NULL, /* flags_out */ 
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_CMP_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          //*ra = 
+  //          (void)flare_sim_add_sub 
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            (int32_t) simm, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            flags, /* flags_out */ 
+  //            false, /* with_carry_in */
+  //            true /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_CPY_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = simm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_LSL_RA_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (uint32_t) (*ra) << (uint32_t) uimm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_LSR_RA_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (uint32_t) (*ra) >> (uint32_t) uimm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ASR_RA_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (int32_t) (*ra) >> (uint32_t) uimm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_AND_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra &= simm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ORR_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra |= simm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_XOR_RA_S5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra ^= simm;
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_ZE_RA_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (int32_t) flare_zero_extend (*ra, uimm);
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_SE_RA_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (int32_t) flare_sign_extend (*ra, uimm);
+  //        }
+  //          break;
+  //        case FLARE_G1_OP_ENUM_SWI_RA_S5:
+  //        case FLARE_G1_OP_ENUM_SWI_U5:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ity = 0x1;
+  //          *sty
+  //            = (opc_info->opcode == FLARE_G1_OP_ENUM_SWI_RA_S5
+  //              ? *ra 
+  //              : 0x0)
+  //              + (opc_info->opcode == FLARE_G1_OP_ENUM_SWI_RA_S5
+  //                ? simm
+  //                : uimm);
+
+  //          switch ((uint32_t) (*sty))
+  //          {
+  //            case TARGET_NEWLIB_SYS_exit:
+  //            {
+  //              int32_t
+  //                r0 = cpu.gprs[FLARE_GPR_ENUM_R0];
+
+  //              sim_engine_halt (sd, scpu, NULL, pc, sim_exited, r0);
+  //            }
+  //              break;
+  //            case TARGET_NEWLIB_SYS_open:
+  //            {
+  //              int32_t
+  //                *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //                r1 = cpu.gprs[FLARE_GPR_ENUM_R1];
+  //                //r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
+
+  //              char fname[1024];
+  //              int
+  //                mode
+  //                  = (int) convert_target_flags ((unsigned) r1),
+  //                  //= (int) r1,
+  //                //perm = (int) r2,
+  //                fd;
+  //              sim_core_read_buffer (sd, scpu, read_map, fname, *r0,
+  //                1024);
+  //              fd = sim_io_open (sd, fname, mode);
+  //              printf ("%d; opened \"%s\"\n",
+  //                fd, fname);
+
+  //              /* FIXME - set errno */
+  //              *r0 = fd;
+  //            }
+  //              break;
+  //            case TARGET_NEWLIB_SYS_close:
+  //            {
+  //              int32_t
+  //                *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0];
+
+  //              int
+  //                fd = *r0,
+  //                rv;
+
+  //              if (fd > 2)
+  //              {
+  //                rv = sim_io_close (sd, fd);
+  //              }
+  //              else
+  //              {
+  //                rv = 0;
+  //              }
+
+  //              *r0 = rv;
+  //            }
+  //              break;
+  //            case TARGET_NEWLIB_SYS_read:
+  //            {
+  //              int32_t
+  //                *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //                r1 = cpu.gprs[FLARE_GPR_ENUM_R1],
+  //                r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
+
+  //              int
+  //                fd = *r0,
+  //                read_ret = 0;
+  //              unsigned len = (unsigned) r2;
+
+  //              char *buf = malloc (len);
+  //              read_ret = sim_io_read (sd, fd, buf, len);
+  //              sim_core_write_buffer (sd, scpu, write_map, buf, r1, len);
+  //              free (buf);
+
+  //              *r0 = read_ret;
+  //            }
+  //              break;
+  //            case TARGET_NEWLIB_SYS_write:
+  //            {
+  //              int32_t
+  //                *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //                r1 = cpu.gprs[FLARE_GPR_ENUM_R1],
+  //                r2 = cpu.gprs[FLARE_GPR_ENUM_R2];
+
+  //              char *str;
+  //              unsigned
+  //                count,
+  //                len = (unsigned) r2;
+  //              str = malloc (len);
+  //              sim_core_read_buffer (sd, scpu, read_map, str, r1, len);
+  //              count = sim_io_write (sd, *r0, str, len);
+  //              free (str);
+
+  //              *r0 = count;
+  //            }
+  //              break;
+  //            case TARGET_NEWLIB_SYS_unlink:
+  //            {
+  //              int32_t
+  //                *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0];
+
+  //              char
+  //                fname[1024];
+  //                int fd;
+  //              sim_core_read_buffer
+  //                (sd, scpu, read_map, fname, *r0, 1024);
+  //              fd = sim_io_unlink (sd, fname);
+
+  //              /* FIXME - set errno */
+  //              *r0 = fd;
+  //            }
+  //              break;
+  //            //case 0xffffffff: /* Linux System Call */
+  //            //{
+  //            //  unsigned int handler = cpu.asregs.sregs[1];
+  //            //  unsigned int sp = cpu.gprs[FLARE_GPR_ENUM_SP];
+
+  //            //  /* Save a slot for the static chain.  */
+  //            //  sp -= 4;
+
+  //            //  /* Push the return address.  */
+  //            //  sp -= 4;
+  //            //  wr32 (scpu, opc, sp, pc + 6);
+  //        
+  //            //  /* Push the current frame pointer.  */
+  //            //  sp -= 4;
+  //            //  wr32 (scpu, opc, sp, cpu.gprs[FLARE_GPR_ENUM_FP]);
+
+  //            //  /* Uncache the stack pointer and set the fp & pc.  */
+  //            //  cpu.gprs[FLARE_GPR_ENUM_SP] = sp;
+  //            //  cpu.gprs[FLARE_GPR_ENUM_FP] = sp;
+  //            //  pc = handler - 6;
+  //            //}
+  //            default:
+  //              break;
+  //          }
+  //        }
+  //          break;
+  //        default:
+  //        {
+  //          FLARE_TRACE_INSN ("SIGILL_G1");
+  //          sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //        }
+  //          break;
+  //      }
+  //    }
+  //      break;
+  //    case FLARE_G2_GRP_VALUE:
+  //    {
+  //      int32_t
+  //        *ra = &cpu.gprs[ra_ind],
+  //        rb = cpu.gprs[rb_ind],
+  //        fp = cpu.gprs[FLARE_GPR_ENUM_FP],
+  //        sp = cpu.gprs[FLARE_GPR_ENUM_SP],
+  //        temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
+  //        temp_flags_out,
+  //        *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
+
+  //      opc_info = &flare_opc_info_g2
+  //        [flare_get_insn_field_ei (&flare_enc_info_g2_op, insn)];
+  //      fwl = flare_get_insn_field_ei (&flare_enc_info_g2_f, insn);
+
+  //      switch (opc_info->opcode)
+  //      {
+  //        case FLARE_G2_OP_ENUM_ADD_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_SUB_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            false, /* with_carry_in */
+  //            true /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_ADD_RA_SP_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            sp, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_ADD_RA_FP_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            fp, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            false, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_CMP_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          //*ra = 
+  //          (void)flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            flags, /* flags out */
+  //            false, /* with_carry_in */
+  //            true /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_CPY_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_LSL_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (uint32_t) (*ra) << (uint32_t) rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_LSR_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (uint32_t) (*ra) >> (uint32_t) rb;
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_ASR_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = (*ra) >> (uint32_t) rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_AND_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra &= rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_ORR_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra |= rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_XOR_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra ^= rb;
+
+  //          if (fwl)
+  //          {
+  //            flare_sim_set_flags_zn (32u, *ra, flags);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_ADC_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            true, /* with_carry_in */
+  //            false /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_SBC_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            fwl ? flags : NULL, /* flags out */
+  //            true, /* with_carry_in */
+  //            true /* do_sub */
+  //            );
+  //        }
+  //          break;
+  //        case FLARE_G2_OP_ENUM_CMPBC_RA_RB:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          (void) flare_sim_add_sub
+  //            (32u, /* bits */
+  //            *ra, /* operand_a */
+  //            rb, /* operand_b */
+  //            temp_flags_in, /* flags_in */
+  //            &temp_flags_out, /* flags out */
+  //            true, /* with_carry_in */
+  //            true /* do_sub */
+  //            );
+
+  //          /* Chain together flags.Z */
+  //          *flags = temp_flags_out & ~FLARE_FLAGS_Z_MASK;
+  //          if (
+  //            (temp_flags_in & FLARE_FLAGS_Z_MASK)
+  //            && (temp_flags_out & FLARE_FLAGS_Z_MASK)
+  //          )
+  //          {
+  //            *flags |= FLARE_FLAGS_Z_MASK; 
+  //          }
+  //        }
+  //          break;
+  //          
+  //        case FLARE_G2_OP_ENUM_RESERVED_15:
+  //        default:
+  //        {
+  //          FLARE_TRACE_INSN ("SIGILL_G2");
+  //          sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //        }
+  //          break;
+  //      }
+  //    }
+  //      break;
+  //    case FLARE_G3_GRP_VALUE:
+  //    {
+  //      int32_t
+  //        //branch_target,
+  //        flags;
+  //      bool flags_z, flags_c, flags_v, flags_n;
+
+  //      opc_info = &flare_opc_info_g3
+  //        [flare_get_insn_field_ei (&flare_enc_info_g3_op, insn)];
+  //      //printf ("simm: %i\n", (int) simm);
+  //      if (have_pre_insn || have_lpre_insn)
+  //      {
+  //        simm = (simm << flare_enc_info_g3_s9.bitsize)
+  //          | flare_get_insn_field_ei (&flare_enc_info_g3_s9, insn);
+  //      }
+  //      else
+  //      {
+  //        simm = flare_sign_extend 
+  //          (flare_get_insn_field_ei (&flare_enc_info_g3_s9, insn),
+  //          flare_enc_info_g3_s9.bitsize);
+  //      }
+  //      //printf ("simm: %i\n", (int) simm);
+
+  //      //branch_target = pc + nbytes + (int32_t) simm;
+  //      flags = cpu.sprs[FLARE_SPR_ENUM_FLAGS];
+  //      flags_z = (flags & FLARE_FLAGS_Z_MASK) != 0;
+  //      flags_c = (flags & FLARE_FLAGS_C_MASK) != 0;
+  //      flags_v = (flags & FLARE_FLAGS_V_MASK) != 0;
+  //      flags_n = (flags & FLARE_FLAGS_N_MASK) != 0;
+
+  //      switch (opc_info->opcode)
+  //      {
+  //        case FLARE_G3_OP_ENUM_BL_PCREL_S9:
+  //        {
+  //          int32_t
+  //            *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *lr = pc + nbytes;
+  //          pc += simm & ~0x1ull;
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BRA_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          //printf ("simm: %i\n", (int) simm);
+  //          pc += simm & ~0x1ull;
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BEQ_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BNE_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BMI_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_n)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BPL_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!flags_n)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BVS_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_v)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BVC_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!flags_v)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BGEU_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_c)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BLTU_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!flags_c)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BGTU_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_c && !flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BLEU_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!flags_c || flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BGES_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_n == flags_v)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BLTS_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_n != flags_v)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BGTS_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_n == flags_v && !flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G3_OP_ENUM_BLES_PCREL_S9:
+  //        {
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (flags_n != flags_v || flags_z)
+  //          {
+  //            pc += simm & ~0x1ull;
+  //          }
+  //        }
+  //          break;
+  //        default:
+  //        {
+  //          FLARE_TRACE_INSN ("SIGILL_G3");
+  //          sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //        }
+  //          break;
+  //      }
+  //    }
+  //      break;
+  //    case FLARE_G4_GRP_VALUE:
+  //    {
+  //      opc_info = &flare_opc_info_g4
+  //        [flare_get_insn_field_ei (&flare_enc_info_g4_op, insn)];
+
+  //      switch (opc_info->opcode)
+  //      {
+  //        case FLARE_G4_OP_ENUM_JL_RA:
+  //        {
+  //          int32_t
+  //            ra = cpu.gprs[ra_ind],
+  //            *lr = &cpu.gprs[FLARE_GPR_ENUM_LR];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *lr = pc + nbytes;
+
+  //          /* Account for the `pc += nbytes;` statement at the end of the 
+  //            do-while loop */
+  //          pc = (ra & ~0x1ull) - nbytes;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_JMP_RA:
+  //        {
+  //          int32_t
+  //            ra = cpu.gprs[ra_ind];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          pc = ra;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_JMP_IRA:
+  //        {
+  //          int32_t
+  //            ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          pc = ira;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_RETI:
+  //        {
+  //          int32_t
+  //            *ie = &cpu.sprs[FLARE_SPR_ENUM_IE],
+  //            ira = cpu.sprs[FLARE_SPR_ENUM_IRA];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ie |= 0x1;
+  //          pc = ira;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_EI:
+  //        {
+  //          int32_t
+  //            *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ie |= 0x1;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_DI:
+  //        {
+  //          int32_t
+  //            *ie = &cpu.sprs[FLARE_SPR_ENUM_IE];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ie &= ~0x1;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_PUSH_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = &cpu.sprs[ra_ind],
+  //            *rb = &cpu.gprs[rb_ind];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          wr32 (scpu, opc, *rb, *ra);
+  //          *rb -= sizeof (*ra);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_PUSH_SA_RB:
+  //        {
+  //          if (ra_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              *rb = &cpu.gprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //            wr32 (scpu, opc, *rb, *sa);
+  //            *rb -= sizeof (*sa);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_PUSH_SA_RB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_POP_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = &cpu.sprs[ra_ind],
+  //            *rb = &cpu.gprs[rb_ind];
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          *rb += sizeof (*ra);
+  //          *ra = rd32 (scpu, opc, *rb);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_POP_SA_RB:
+  //        {
+  //          if (ra_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              *rb = &cpu.gprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //            *rb += sizeof (*sa);
+  //            *sa = rd32 (scpu, opc, *rb);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_POP_SA_RB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_POP_PC_RB:
+  //        {
+  //          if (ra_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *rb = &cpu.gprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //            *rb += sizeof (pc);
+  //            pc = rd32 (scpu, opc, *rb);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_POP_PC_RB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_MUL_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = &cpu.gprs[ra_ind],
+  //            rb = cpu.gprs[rb_ind];
+
+  //          int32_t
+  //            lhs = *ra,
+  //            rhs = rb;
+
+  //          lhs *= rhs;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = lhs;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_UDIV_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = &cpu.gprs[ra_ind],
+  //            rb = cpu.gprs[rb_ind],
+  //            *rc = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_ra_ind]
+  //      	: NULL
+  //            );
+  //          uint32_t
+  //            lhs = (uint32_t) (*ra),
+  //            rhs = (uint32_t) rb;
+
+
+  //          if (have_index_insn)
+  //          {
+  //            *rc = lhs % rhs;
+  //          }
+  //          lhs /= rhs;
+
+  //          //FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("udivmod");
+  //          }
+
+  //          *ra = lhs;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_SDIV_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = &cpu.gprs[ra_ind],
+  //            rb = cpu.gprs[rb_ind],
+  //            *rc = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_ra_ind]
+  //      	: NULL
+  //            );
+
+  //          int32_t
+  //            lhs = *ra,
+  //            rhs = rb;
+
+  //          if (have_index_insn)
+  //          {
+  //            *rc = lhs % rhs;
+  //          }
+  //          lhs /= rhs;
+
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("sdivmod");
+  //          }
+
+  //          *ra = (int32_t) lhs;
+  //        }
+  //          break;
+
+  //        //case FLARE_G4_OP_ENUM_UMOD_RA_RB:
+  //        //{
+  //        //  int32_t
+  //        //    *ra = &cpu.gprs[ra_ind],
+  //        //    rb = cpu.gprs[rb_ind];
+
+  //        //  uint32_t
+  //        //    lhs = (uint32_t) (*ra),
+  //        //    rhs = (uint32_t) rb;
+
+  //        //  lhs %= rhs;
+
+  //        //  FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //        //  *ra = (int32_t) lhs;
+  //        //}
+  //        //  break;
+  //        //case FLARE_G4_OP_ENUM_SMOD_RA_RB:
+  //        //{
+  //        //  int32_t
+  //        //    *ra = &cpu.gprs[ra_ind],
+  //        //    rb = cpu.gprs[rb_ind];
+
+  //        //  int32_t
+  //        //    lhs = *ra,
+  //        //    rhs = rb;
+
+  //        //  lhs %= rhs;
+
+  //        //  FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //        //  *ra = lhs;
+  //        //}
+  //        //  break;
+  //        case FLARE_G4_OP_ENUM_LUMUL_RA_RB:
+  //        {
+  //          int32_t
+  //            ra = cpu.gprs[ra_ind],
+  //            rb = cpu.gprs[rb_ind],
+  //            *rc = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_ra_ind]
+  //      	: &cpu.gprs[FLARE_GPR_ENUM_R0]
+  //            ),
+  //            *rd = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_rb_ind]
+  //      	: &cpu.gprs[FLARE_GPR_ENUM_R1]
+  //            );
+
+  //          uint64_t
+  //            ra_zeroext = flare_zero_extend (ra, 32u),
+  //            rb_zeroext = flare_zero_extend (rb, 32u),
+  //            lhs = ra_zeroext * rb_zeroext;
+
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("lumul");
+  //          }
+
+  //          *rc = (int32_t) (lhs >> 32u);
+  //          *rd = (int32_t) lhs;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_LSMUL_RA_RB:
+  //        {
+  //          int32_t
+  //            ra = cpu.gprs[ra_ind],
+  //            rb = cpu.gprs[rb_ind],
+  //            *rc = (
+  //              have_index_insn
+  //              ? &cpu.gprs[index_ra_ind]
+  //              : &cpu.gprs[FLARE_GPR_ENUM_R0]
+  //            ),
+  //            *rd = (
+  //              have_index_insn
+  //              ? &cpu.gprs[index_rb_ind]
+  //              : &cpu.gprs[FLARE_GPR_ENUM_R1]
+  //            );
+
+  //          int64_t
+  //            ra_signext = flare_sign_extend (ra, 32u),
+  //            rb_signext = flare_sign_extend (rb, 32u),
+  //            lhs = ra_signext * rb_signext;
+
+  //          //FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("lsmul");
+  //          }
+
+  //          *rc = (int32_t) (lhs >> 32u);
+  //          *rd = (int32_t) lhs;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_UDIV64_RA_RB:
+  //        {
+  //          int32_t
+  //            //ra = cpu.gprs[ra_ind],
+  //            //rb = cpu.gprs[rb_ind],
+  //            //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //            //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
+  //            *ra = &cpu.gprs[ra_ind & (~0x1)],
+  //            *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+  //            rb = cpu.gprs[rb_ind & (~0x1)],
+  //            rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1],
+  //            *rc = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_ra_ind]
+  //      	: NULL
+  //            ),
+  //            *rd = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_rb_ind]
+  //      	: NULL
+  //            );
+
+  //          uint64_t
+  //            //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
+  //            //  | flare_zero_extend (*r1, 32u)),
+  //            //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
+  //            //  | flare_zero_extend (rb, 32u));
+  //            lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
+  //            rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1),
+  //            mod_lhs;
+  //          mod_lhs = lhs % rhs;
+  //          lhs /= rhs;
+
+  //          //FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("udivmod64");
+  //          }
+
+  //          //*r0 = (int32_t) (lhs >> 32u);
+  //          //*r1 = (int32_t) lhs;
+  //          *ra = (int32_t) (lhs >> 32u);
+  //          *ra_p_1 = (int32_t) lhs;
+  //          *rc = (int32_t) (mod_lhs >> 32u);
+  //          *rd = (int32_t) mod_lhs;
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_SDIV64_RA_RB:
+  //        {
+  //          int32_t
+  //            //ra = cpu.gprs[ra_ind],
+  //            //rb = cpu.gprs[rb_ind],
+  //            //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //            //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
+  //            *ra = &cpu.gprs[ra_ind & (~0x1)],
+  //            *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+  //            rb = cpu.gprs[rb_ind & (~0x1)],
+  //            rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1],
+  //            *rc = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_ra_ind]
+  //      	: NULL
+  //            ),
+  //            *rd = (
+  //      	have_index_insn
+  //      	? &cpu.gprs[index_rb_ind]
+  //      	: NULL
+  //            );
+
+  //          int64_t
+  //            //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
+  //            //  | flare_zero_extend (*r1, 32u)),
+  //            //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
+  //            //  | flare_zero_extend (rb, 32u));
+  //            lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
+  //            rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1),
+  //            mod_lhs;
+  //          mod_lhs = lhs % rhs;
+  //          lhs /= rhs;
+
+  //          //FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          if (!have_index_insn)
+  //          {
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("sdivmod64");
+  //          }
+
+  //          //*r0 = (int32_t) (lhs >> 32u);
+  //          //*r1 = (int32_t) lhs;
+  //          *ra = (int32_t) (lhs >> 32u);
+  //          *ra_p_1 = (int32_t) lhs;
+  //          *rc = (int32_t) (mod_lhs >> 32u);
+  //          *rd = (int32_t) mod_lhs;
+  //        }
+  //          break;
+  //        //case FLARE_G4_OP_ENUM_UMOD64_RA_RB:
+  //        //{
+  //        //  //int32_t
+  //        //  //  ra = cpu.gprs[ra_ind],
+  //        //  //  rb = cpu.gprs[rb_ind],
+  //        //  //  *r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //        //  //  *r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
+
+  //        //  //uint64_t
+  //        //  //  lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
+  //        //  //    | flare_zero_extend (*r1, 32u)),
+  //        //  //  rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
+  //        //  //    | flare_zero_extend (rb, 32u));
+  //        //  //lhs %= rhs;
+
+  //        //  //FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //        //  //*r0 = (int32_t) (lhs >> 32u);
+  //        //  //*r1 = (int32_t) lhs;
+  //        //  int32_t
+  //        //    //ra = cpu.gprs[ra_ind],
+  //        //    //rb = cpu.gprs[rb_ind],
+  //        //    //*r0 = &cpu.gprs[FLARE_GPR_ENUM_R0],
+  //        //    //*r1 = &cpu.gprs[FLARE_GPR_ENUM_R1];
+  //        //    *ra = &cpu.gprs[ra_ind & (~0x1)],
+  //        //    *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+  //        //    rb = cpu.gprs[rb_ind & (~0x1)],
+  //        //    rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
+
+  //        //  uint64_t
+  //        //    //lhs = (uint64_t) ((flare_zero_extend (*r0, 32u) << 32u)
+  //        //    //  | flare_zero_extend (*r1, 32u)),
+  //        //    //rhs = (uint64_t) ((flare_zero_extend (ra, 32u) << 32u)
+  //        //    //  | flare_zero_extend (rb, 32u));
+  //        //    lhs = (((uint64_t) (*ra)) << 32u) | ((uint64_t) (*ra_p_1)),
+  //        //    rhs = (((uint64_t) rb) << 32u) | ((uint64_t) rb_p_1);
+  //        //  lhs %= rhs;
+
+  //        //  FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //        //  //*r0 = (int32_t) (lhs >> 32u);
+  //        //  //*r1 = (int32_t) lhs;
+  //        //  *ra = (int32_t) (lhs >> 32u);
+  //        //  *ra_p_1 = (int32_t) lhs;
+  //        //}
+  //        //  break;
+  //        //case FLARE_G4_OP_ENUM_SMOD64_RA_RB:
+  //        //{
+  //        //  int32_t
+  //        //    *ra = &cpu.gprs[ra_ind & (~0x1)],
+  //        //    *ra_p_1 = &cpu.gprs[(ra_ind & (~0x1)) + 0x1],
+  //        //    rb = cpu.gprs[rb_ind & (~0x1)],
+  //        //    rb_p_1 = cpu.gprs[(rb_ind & (~0x1)) + 0x1];
+
+  //        //  int64_t
+  //        //    lhs = (((int64_t) (*ra)) << 32u) | ((int64_t) (*ra_p_1)),
+  //        //    rhs = (((int64_t) rb) << 32u) | ((int64_t) rb_p_1);
+  //        //  lhs %= rhs;
+
+  //        //  FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //        //  *ra = (int32_t) (lhs >> 32u);
+  //        //  *ra_p_1 = (int32_t) lhs;
+  //        //}
+  //          break;
+  //        case FLARE_G4_OP_ENUM_LDUB_RA_RB:
+  //        {
+  //          int32_t
+  //            //*ra = (
+  //            //  !have_index_insn
+  //            //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
+  //            //),
+  //            //rb = cpu.gprs[rb_ind],
+  //            *ra = (
+  //      	//!have_index_insn
+  //      	//? 
+  //      	&cpu.gprs[ra_ind]
+  //      	//: &cpu.gprs[index_ra_ind]
+  //            ),
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_zero_extend (rd8u (scpu, opc, addr), 8u);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_LDSB_RA_RB:
+  //        {
+  //          int32_t
+  //            *ra = (
+  //      	//!have_index_insn
+  //      	//? 
+  //      	&cpu.gprs[ra_ind]
+  //      	//: &cpu.gprs[index_ra_ind]
+  //            ),
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sign_extend (rd8s (scpu, opc, addr), 8u);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_LDUH_RA_RB:
+  //        {
+  //          int32_t
+  //            //*ra = &cpu.gprs[ra_ind],
+  //            //*ra = (
+  //            //  !have_index_insn
+  //            //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
+  //            //),
+  //            //rb = cpu.gprs[rb_ind],
+  //            *ra = (
+  //      	//!have_index_insn
+  //      	//? 
+  //      	&cpu.gprs[ra_ind]
+  //      	//: &cpu.gprs[index_ra_ind]
+  //            ),
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_zero_extend (rd16u (scpu, opc, addr), 16u);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_LDSH_RA_RB:
+  //        {
+  //          int32_t
+  //            //*ra = &cpu.gprs[ra_ind],
+  //            //*ra = (
+  //            //  !have_index_insn
+  //            //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
+  //            //),
+  //            //rb = cpu.gprs[rb_ind],
+  //            *ra = (
+  //      	//!have_index_insn
+  //      	//? 
+  //      	&cpu.gprs[ra_ind]
+  //      	//: &cpu.gprs[index_ra_ind]
+  //            ),
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          *ra = flare_sign_extend (rd16s (scpu, opc, addr), 16u);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_STB_RA_RB:
+  //        {
+  //          int32_t
+  //            //ra = cpu.gprs[ra_ind],
+  //            //*ra = (
+  //            //  !have_index_insn
+  //            //  ? &cpu.gprs[ra_ind] : &cpu.gprs[index_ra_ind]
+  //            //),
+  //            //rb = cpu.gprs[rb_ind],
+  //            *ra = (
+  //      	//!have_index_insn
+  //      	//? 
+  //      	&cpu.gprs[ra_ind]
+  //      	//: &cpu.gprs[index_ra_ind]
+  //            ),
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          wr8 (scpu, opc, addr, *ra);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_STH_RA_RB:
+  //        {
+  //          int32_t
+  //            ra = cpu.gprs[ra_ind],
+  //            //rb = cpu.gprs[rb_ind],
+  //            rb = (
+  //      	!have_index_insn
+  //      	? cpu.gprs[rb_ind]
+  //      	: cpu.gprs[index_ra_ind]
+  //            ),
+  //            rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //          uint32_t
+  //            addr = 0;
+
+  //          addr = rb + rc;
+
+  //          FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //          wr16 (scpu, opc, addr, ra);
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_CPY_RA_SB:
+  //        {
+  //          if (rb_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *ra = &cpu.gprs[ra_ind],
+  //              sb = cpu.sprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            *ra = sb;
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_CPY_RA_SB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_CPY_SA_RB:
+  //        {
+  //          if (ra_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              rb = cpu.gprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            *sa = rb;
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_CPY_SA_RB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_CPY_SA_SB:
+  //        {
+  //          if (ra_ind < FLARE_NUM_SPRS
+  //            && rb_ind < FLARE_NUM_SPRS)
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              sb = cpu.gprs[rb_ind];
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            *sa = sb;
+  //          }
+  //          else
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G4_CPY_SA_SB");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //        }
+  //          break;
+  //        case FLARE_G4_OP_ENUM_INDEX_RA_RB:
+  //        //case FLARE_G4_OP_ENUM_RESERVED_31:
+  //        default:
+  //        {
+  //          FLARE_TRACE_INSN ("SIGILL_G4");
+  //          sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //        }
+  //          break;
+  //      }
+  //    }
+  //      break;
+  //    case FLARE_G5_GRP_VALUE:
+  //    {
+  //      int32_t
+  //        *ra = &cpu.gprs[ra_ind],
+  //        //rb = cpu.gprs[rb_ind],
+  //        rb = (
+  //          !have_index_insn
+  //          ? cpu.gprs[rb_ind]
+  //          : cpu.gprs[index_ra_ind]
+  //        ),
+  //        rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //      uint32_t
+  //        addr = 0;
+
+  //      opc_info = &flare_opc_info_g5[0];
+  //      //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //      //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
+  //      if (have_pre_insn || have_lpre_insn)
+  //      {
+  //        simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //          | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
+  //            insn);
+  //      }
+  //      else
+  //      {
+  //        simm = flare_sign_extend 
+  //          (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
+  //          flare_enc_info_g1g5g6_i5.bitsize);
+  //      }
+
+
+  //      addr = rb + rc + simm;
+
+  //      FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //      *ra = rd32 (scpu, opc, addr);
+  //    }
+  //      break;
+  //    case FLARE_G6_GRP_VALUE:
+  //    {
+  //      int32_t
+  //        ra = cpu.gprs[ra_ind],
+  //        //rb = cpu.gprs[rb_ind],
+  //        rb = (
+  //          !have_index_insn
+  //          ? cpu.gprs[rb_ind]
+  //          : cpu.gprs[index_ra_ind]
+  //        ),
+  //        rc = !have_index_insn ? 0x0 : cpu.gprs[index_rb_ind];
+  //      uint32_t
+  //        addr = 0;
+
+  //      opc_info = &flare_opc_info_g6[0];
+  //      //simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //      //  | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn);
+  //      if (have_pre_insn || have_lpre_insn)
+  //      {
+  //        simm = (simm << flare_enc_info_g1g5g6_i5.bitsize)
+  //          | flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5,
+  //            insn);
+  //      }
+  //      else
+  //      {
+  //        simm = flare_sign_extend 
+  //          (flare_get_insn_field_ei (&flare_enc_info_g1g5g6_i5, insn),
+  //          flare_enc_info_g1g5g6_i5.bitsize);
+  //      }
+
+  //      addr = rb + rc + simm;
+
+  //      FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //      wr32 (scpu, opc, addr, ra);
+  //    }
+  //      break;
+  //    case FLARE_G7_GRP_VALUE:
+  //    {
+  //      if ((subgrp = flare_get_insn_field_ei
+  //        (&flare_enc_info_g7_aluopbh_subgrp, insn))
+  //        == FLARE_G7_ALUOPBH_SUBGRP_VALUE)
+  //      {
+  //        opc_info = &flare_opc_info_g7_aluopbh
+  //          [flare_get_insn_field_ei
+  //            (&flare_enc_info_g7_aluopbh_op, insn)];
+  //        fwl = flare_get_insn_field_ei (&flare_enc_info_g7_aluopbh_w,
+  //          insn);
+  //        switch (opc_info->opcode)
+  //        {
+  //          case FLARE_G7_ALUOPBH_OP_ENUM_CMP_RA_RB:
+  //          {
+  //            if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
+  //            {
+  //              int32_t
+  //                ra = cpu.gprs[ra_ind],
+  //                rb = cpu.gprs[rb_ind],
+  //                temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
+  //                *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              (void) flare_sim_add_sub
+  //                (8u, /* bits */
+  //                ra, /* operand_a */
+  //                rb, /* operand_b */
+  //                temp_flags_in, /* flags_in */
+  //                flags, /* flags out */
+  //                false, /* with_carry_in */
+  //                true /* do_sub */
+  //                );
+  //            }
+  //            else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
+  //            {
+  //              int32_t
+  //                ra = cpu.gprs[ra_ind],
+  //                rb = cpu.gprs[rb_ind],
+  //                temp_flags_in = cpu.sprs[FLARE_SPR_ENUM_FLAGS],
+  //                *flags = &cpu.sprs[FLARE_SPR_ENUM_FLAGS];
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              (void) flare_sim_add_sub
+  //                (16u, /* bits */
+  //                ra, /* operand_a */
+  //                rb, /* operand_b */
+  //                temp_flags_in, /* flags_in */
+  //                flags, /* flags out */
+  //                false, /* with_carry_in */
+  //                true /* do_sub */
+  //                );
+  //            }
+  //            else
+  //            {
+  //              FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
+  //              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //                SIM_SIGILL);
+  //            }
+  //          }
+  //            break;
+  //          case FLARE_G7_ALUOPBH_OP_ENUM_LSR_RA_RB:
+  //          {
+  //            if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
+  //            {
+  //              uint8_t ra = (uint8_t) (cpu.gprs[ra_ind] & 0xff);
+  //              uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
+  //              ra >>= rb;
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              cpu.gprs[ra_ind] = (flare_temp_t) ra;
+  //            }
+  //            else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
+  //            {
+  //              uint16_t ra = (uint16_t) (cpu.gprs[ra_ind] & 0xffff);
+  //              uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
+  //              ra >>= rb;
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              cpu.gprs[ra_ind] = (flare_temp_t) ra;
+  //            }
+  //            else
+  //            {
+  //              FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
+  //              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //                SIM_SIGILL);
+  //            }
+  //          }
+  //            break;
+  //          case FLARE_G7_ALUOPBH_OP_ENUM_ASR_RA_RB:
+  //          {
+  //            if (fwl == FLARE_G7_ALUOPBH_W_ENUM_8)
+  //            {
+  //              int8_t ra = cpu.gprs[ra_ind] & 0xff;
+  //              uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
+  //              ra >>= rb;
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              cpu.gprs[ra_ind] = flare_sign_extend
+  //                ((flare_temp_t) ra, 8ull);
+  //            }
+  //            else if (fwl == FLARE_G7_ALUOPBH_W_ENUM_16)
+  //            {
+  //              int16_t ra = cpu.gprs[ra_ind] & 0xffff;
+  //              uint32_t rb = (uint32_t) cpu.gprs[rb_ind];
+  //              ra >>= rb;
+
+  //              FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //              cpu.gprs[ra_ind] = flare_sign_extend
+  //                ((flare_temp_t) ra, 16ull);
+  //            }
+  //            else
+  //            {
+  //              FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_W");
+  //              sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //                SIM_SIGILL);
+  //            }
+  //          }
+  //            break;
+  //          default:
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G7_ALUOPBH_OP");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //            break;
+  //        }
+  //      }
+  //      else if ((subgrp = flare_get_insn_field_ei
+  //        (&flare_enc_info_g7_sprldst_subgrp, insn))
+  //        == FLARE_G7_SPRLDST_SUBGRP_VALUE)
+  //      {
+  //        opc_info = &flare_opc_info_g7_sprldst
+  //          [flare_get_insn_field_ei
+  //            (&flare_enc_info_g7_sprldst_op, insn)];
+  //        switch (opc_info->opcode)
+  //        {
+  //          case FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_RB:
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              rb = cpu.gprs[rb_ind];
+  //            uint32_t addr = (uint32_t)rb;
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            *sa = rd32 (scpu, opc, addr);
+  //          }
+  //            break;
+  //          case FLARE_G7_SPRLDST_OP_ENUM_LDR_SA_SB:
+  //          {
+  //            int32_t
+  //              *sa = &cpu.sprs[ra_ind],
+  //              sb = cpu.sprs[rb_ind];
+  //            uint32_t addr = (uint32_t)sb;
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            *sa = rd32 (scpu, opc, addr);
+  //          }
+  //            break;
+  //          case FLARE_G7_SPRLDST_OP_ENUM_STR_SA_RB:
+  //          {
+  //            int32_t
+  //              sa = cpu.sprs[ra_ind],
+  //              rb = cpu.gprs[rb_ind];
+  //            uint32_t addr = (uint32_t)rb;
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            wr32 (scpu, opc, addr, sa);
+  //          }
+  //            break;
+  //          case FLARE_G7_SPRLDST_OP_ENUM_STR_SA_SB:
+  //          {
+  //            int32_t
+  //              sa = cpu.sprs[ra_ind],
+  //              sb = cpu.sprs[rb_ind];
+  //            uint32_t addr = (uint32_t)sb;
+
+  //            FLARE_TRACE_INSN (opc_info->names[fwl]);
+
+  //            wr32 (scpu, opc, addr, sa);
+  //          }
+  //            break;
+  //          default:
+  //          {
+  //            FLARE_TRACE_INSN ("SIGILL_G7_SPRLDST_OP");
+  //            sim_engine_halt (sd, scpu, NULL, pc, sim_stopped,
+  //              SIM_SIGILL);
+  //          }
+  //            break;
+  //        }
+  //      }
+  //      else if ((subgrp = flare_get_insn_field_ei
+  //        (&flare_enc_info_g7_icreload_subgrp, insn))
+  //        == FLARE_G7_ICRELOAD_SUBGRP_VALUE)
+  //      {
+  //        //int32_t
+  //        //  ra = cpu.gprs[ra_ind],
+  //        //  //rb = cpu.gprs[rb_ind],
+  //        //  rc = !have_index_insn ? 0x0 : cpu.gprs[rc_ind];
+  //        //uint32_t
+  //        //  addr = 0;
+
+  //        opc_info = &flare_opc_info_g7_icreload[0];
+
+  //        //if (have_pre_insn || have_lpre_insn)
+  //        //{
+  //        //  simm = (simm << flare_enc_info_g7_icreload_s5.bitsize)
+  //        //    | flare_get_insn_field_ei
+  //        //      (&flare_enc_info_g7_icreload_s5, insn);
+  //        //}
+  //        //else
+  //        //{
+  //        //  simm = flare_sign_extend 
+  //        //    (flare_get_insn_field_ei
+  //        //      (&flare_enc_info_g7_icreload_s5, insn),
+  //        //    flare_enc_info_g7_icreload_s5.bitsize);
+  //        //}
+
+  //        //addr = ra + rc + simm;
+  //        FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //      }
+  //      else if ((subgrp = flare_get_insn_field_ei
+  //        (&flare_enc_info_g7_icflush_subgrp, insn))
+  //        == FLARE_G7_ICFLUSH_SUBGRP_VALUE)
+  //      {
+  //        opc_info = &flare_opc_info_g7_icflush[0];
+  //        FLARE_TRACE_INSN (opc_info->names[fwl]);
+  //      }
+  //      else
+  //      {
+  //        FLARE_TRACE_INSN ("SIGILL_G7_SUBGRP");
+  //        sim_engine_halt (sd, scpu, NULL, pc, sim_stopped, SIM_SIGILL);
+  //      }
+  //    }
+  //      break;
+  //  }
+
+  //  ++cpu.insn_cnt;
+
+  //  //pc += 2;
+  //  pc += nbytes;
+
+  //  cpu.pc = pc;
+
+  //  if (sim_events_tick (sd))
+  //  {
+  //    sim_events_process (sd);
+  //  }
+
+  //} while (1);
 }
 SIM_RC
 sim_create_inferior (SIM_DESC sd, struct bfd *abfd,

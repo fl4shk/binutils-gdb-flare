@@ -102,9 +102,9 @@ flare_relax_frag (asection *sec, fragS *fragP, long stretch);
   Check also that `fx_addsy` is not `NULL`, to make sure the fixup refers 
   to some sort of label. */
 //#define TC_VALIDATE_FIX(fixP, valP, seg)
-//  if ((fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S5
-//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S17
-//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1G5G6_S32
+//  if ((fixP->fx_r_type == BFD_RELOC_FLARE_G1_S5
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1_S17
+//    || fixP->fx_r_type == BFD_RELOC_FLARE_G1_S32
 //    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S9_PCREL
 //    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S21_PCREL
 //    || fixP->fx_r_type == BFD_RELOC_FLARE_G3_S32_PCREL)

@@ -454,15 +454,15 @@ flare_set_insn_field_ei_p (const flare_enc_info_t *enc_info,
 #define FLARE_G4_OP_ENUM_POP_SA_RB (0x9ull)
 #define FLARE_G4_OP_ENUM_POP_PC_RB (0xaull)
 #define FLARE_G4_OP_ENUM_MUL_RA_RB (0xbull)
-#define FLARE_G4_OP_ENUM_UDIV_RA_RB (0xcull)
-#define FLARE_G4_OP_ENUM_SDIV_RA_RB (0xdull)
+#define FLARE_G4_OP_ENUM_UDIVMOD_RA_RB (0xcull)
+#define FLARE_G4_OP_ENUM_SDIVMOD_RA_RB (0xdull)
 //#define FLARE_G4_OP_ENUM_UMOD_RA_RB (0xeull)
 //#define FLARE_G4_OP_ENUM_SMOD_RA_RB (0xfull)
 #define FLARE_G4_OP_ENUM_LUMUL_RA_RB (0x0eull)
 #define FLARE_G4_OP_ENUM_LSMUL_RA_RB (0x0full)
 
-#define FLARE_G4_OP_ENUM_UDIV64_RA_RB (0x10ull)
-#define FLARE_G4_OP_ENUM_SDIV64_RA_RB (0x11ull)
+#define FLARE_G4_OP_ENUM_UDIVMOD64_RA_RB (0x10ull)
+#define FLARE_G4_OP_ENUM_SDIVMOD64_RA_RB (0x11ull)
 //#define FLARE_G4_OP_ENUM_UMOD64_RA_RB (0x14ull)
 //#define FLARE_G4_OP_ENUM_SMOD64_RA_RB (0x15ull)
 #define FLARE_G4_OP_ENUM_LDUB_RA_RB (0x12ull)
@@ -817,6 +817,8 @@ extern const flare_reg_t sprs[FLARE_NUM_SPRS];
 #define FLARE_SPR_ENUM_IE (0x3ull)
 #define FLARE_SPR_ENUM_ITY (0x4ull)
 #define FLARE_SPR_ENUM_STY (0x5ull)
+#define FLARE_SPR_ENUM_MODHI (0x6ull)
+#define FLARE_SPR_ENUM_MODLO (0x7ull)
 
 #define FLARE_INST_SPRS() \
   { \
@@ -921,9 +923,9 @@ typedef enum flare_oparg_t
   FLARE_OA_SA_RB,
   FLARE_OA_SA_SB,
   FLARE_OA_PC_RB,
-  FLARE_OA_RA_RB_RC_DIVMOD,
+  //FLARE_OA_RA_RB_RC_DIVMOD,
   FLARE_OA_RC_RD_RA_RB_LMUL,
-  FLARE_OA_RA_RB_RC_RD_DIVMOD64,
+  //FLARE_OA_RA_RB_RC_RD_DIVMOD64,
   FLARE_OA_RA_IMPLICIT_SP,
   FLARE_OA_SA_IMPLICIT_SP,
   FLARE_OA_PC_IMPLICIT_SP,
@@ -1123,7 +1125,9 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //extern const flare_opc_info_t
 //  flare_opc_info_g3[FLARE_G3_OPC_INFO_LIM];
 
-#define FLARE_G4_OPC_INFO_LIM (32ull + 5ull + 6ull + 7ull + 5ull + 13ull)
+#define FLARE_G4_OPC_INFO_LIM ( \
+  32ull + 5ull + 6ull + 7ull + 5ull + 9ull \
+)
 //extern const flare_opc_info_t
 //  flare_opc_info_g4[FLARE_G4_OPC_INFO_LIM];
 

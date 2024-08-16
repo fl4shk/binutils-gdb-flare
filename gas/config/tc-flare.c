@@ -518,9 +518,9 @@ typedef enum flare_have_index_2reg_kind_t {
   FLARE_HIDX2R_KIND_NO_INDEX,
   FLARE_HIDX2R_KIND_ATOMIC,
   FLARE_HIDX2R_KIND_LDST,
-  FLARE_HIDX2R_KIND_DIVMOD,
+  //FLARE_HIDX2R_KIND_DIVMOD,
   FLARE_HIDX2R_KIND_LMUL,
-  FLARE_HIDX2R_KIND_DIVMOD64,
+  //FLARE_HIDX2R_KIND_DIVMOD64,
   FLARE_HIDX2R_KIND_JUSTADDR,
 } flare_have_index_2reg_kind_t;
 
@@ -3544,23 +3544,23 @@ flare_assemble_post_parse_worker (flare_parse_data_t *pd,
       my_reg_0 = my_reg_a;
     }
       break;
-    case FLARE_HIDX2R_KIND_DIVMOD:
-    {
-      my_reg_0 = my_reg_a;
-    }
-      break;
+    //case FLARE_HIDX2R_KIND_DIVMOD:
+    //{
+    //  my_reg_0 = my_reg_a;
+    //}
+    //  break;
     case FLARE_HIDX2R_KIND_LMUL:
     {
       my_reg_0 = my_reg_a;
       my_reg_1 = my_reg_b;
     }
       break;
-    case FLARE_HIDX2R_KIND_DIVMOD64:
-    {
-      my_reg_0 = my_reg_a;
-      my_reg_1 = my_reg_b;
-    }
-      break;
+    //case FLARE_HIDX2R_KIND_DIVMOD64:
+    //{
+    //  my_reg_0 = my_reg_a;
+    //  my_reg_1 = my_reg_b;
+    //}
+    //  break;
     case FLARE_HIDX2R_KIND_JUSTADDR:
     {
       my_reg_0 = 0x0ull;
@@ -4264,19 +4264,19 @@ md_assemble (char *str)
         pd.parse_good = true;
       }
         break;
-      case FLARE_OA_RA_RB_RC_DIVMOD:
-      {
-	FLARE_SKIP_ISSPACE ();
-	FLARE_PARSE_GPR (reg_a);
-	FLARE_PARSE_COMMA ();
-	FLARE_PARSE_GPR (reg_b);
-	FLARE_PARSE_COMMA ();
-	FLARE_PARSE_GPR (reg_c);
-	pd.parse_good = true;
-	//pd.have_index = true;
-        pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_DIVMOD; 
-      }
-	break;
+//      case FLARE_OA_RA_RB_RC_DIVMOD:
+//      {
+//	FLARE_SKIP_ISSPACE ();
+//	FLARE_PARSE_GPR (reg_a);
+//	FLARE_PARSE_COMMA ();
+//	FLARE_PARSE_GPR (reg_b);
+//	FLARE_PARSE_COMMA ();
+//	FLARE_PARSE_GPR (reg_c);
+//	pd.parse_good = true;
+//	//pd.have_index = true;
+//        pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_DIVMOD; 
+//      }
+//	break;
       case FLARE_OA_RC_RD_RA_RB_LMUL:
       {
 	FLARE_SKIP_ISSPACE ();
@@ -4292,21 +4292,21 @@ md_assemble (char *str)
         pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_LMUL; 
       }
 	break;
-      case FLARE_OA_RA_RB_RC_RD_DIVMOD64:
-      {
-	FLARE_SKIP_ISSPACE ();
-	FLARE_PARSE_GPR (reg_a);
-	FLARE_PARSE_COMMA ();
-	FLARE_PARSE_GPR (reg_b);
-	FLARE_PARSE_COMMA ();
-	FLARE_PARSE_GPR (reg_c);
-	FLARE_PARSE_COMMA ();
-	FLARE_PARSE_GPR (reg_d);
-	pd.parse_good = true;
-	//pd.have_index = true;
-        pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_DIVMOD64; 
-      }
-	break;
+      //case FLARE_OA_RA_RB_RC_RD_DIVMOD64:
+      //{
+      //  FLARE_SKIP_ISSPACE ();
+      //  FLARE_PARSE_GPR (reg_a);
+      //  FLARE_PARSE_COMMA ();
+      //  FLARE_PARSE_GPR (reg_b);
+      //  FLARE_PARSE_COMMA ();
+      //  FLARE_PARSE_GPR (reg_c);
+      //  FLARE_PARSE_COMMA ();
+      //  FLARE_PARSE_GPR (reg_d);
+      //  pd.parse_good = true;
+      //  //pd.have_index = true;
+      //  pd.have_index_2reg_kind = FLARE_HIDX2R_KIND_DIVMOD64; 
+      //}
+	//break;
       case FLARE_OA_RA_IMPLICIT_SP:
       {
         FLARE_SKIP_ISSPACE ();
@@ -4843,23 +4843,23 @@ md_assemble (char *str)
 	my_reg_1 = my_reg_c;
       }
 	break;
-      case FLARE_HIDX2R_KIND_DIVMOD:
-      {
-	my_reg_0 = my_reg_c;
-      }
-	break;
+//      case FLARE_HIDX2R_KIND_DIVMOD:
+//      {
+//	my_reg_0 = my_reg_c;
+//      }
+//	break;
       case FLARE_HIDX2R_KIND_LMUL:
       {
 	my_reg_0 = my_reg_c;
 	my_reg_1 = my_reg_d;
       }
 	break;
-      case FLARE_HIDX2R_KIND_DIVMOD64:
-      {
-	my_reg_0 = my_reg_c;
-	my_reg_1 = my_reg_d;
-      }
-	break;
+//      case FLARE_HIDX2R_KIND_DIVMOD64:
+//      {
+//	my_reg_0 = my_reg_c;
+//	my_reg_1 = my_reg_d;
+//      }
+//	break;
       case FLARE_HIDX2R_KIND_JUSTADDR:
       {
 	//my_reg_0 = pd.reg_a != NULL ? pd.reg_a->index : 0x0ull;

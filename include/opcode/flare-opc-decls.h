@@ -689,15 +689,15 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_MUL_RA_RB, FLARE_OA_RA_RB,
     {"mul", "mul"}, {"mul.nr", "mul.nr"}},
   /* -------- */
-  /* udiv rA, rB */
+  /* udivmod rA, rB */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UDIV_RA_RB, FLARE_OA_RA_RB,
-    {"udiv", "udiv"}, {"udiv.nr", "udiv.nr"}},
+    FLARE_G4_OP_ENUM_UDIVMOD_RA_RB, FLARE_OA_RA_RB,
+    {"udivmod", "udivmod"}, {"udivmod.nr", "udivmod.nr"}},
 
-  /* sdiv rA, rB */
+  /* sdivmod rA, rB */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB,
-    {"sdiv", "sdiv"}, {"sdiv.nr", "sdiv.nr"}},
+    FLARE_G4_OP_ENUM_SDIVMOD_RA_RB, FLARE_OA_RA_RB,
+    {"sdivmod", "sdivmod"}, {"sdivmod.nr", "sdivmod.nr"}},
 
   ///* umod rA, rB */
   //{&flare_grp_info_g4,
@@ -723,15 +723,15 @@ static const flare_opc_info_t
 
   /* -------- */
 
-  /* udiv64 rA, rB */
+  /* udivmod64 rA, rB */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UDIV64_RA_RB, FLARE_OA_RA_RB,
-    {"udiv64", "udiv64"}, {"udiv64.nr", "udiv64.nr"}},
+    FLARE_G4_OP_ENUM_UDIVMOD64_RA_RB, FLARE_OA_RA_RB,
+    {"udivmod64", "udivmod64"}, {"udivmod64.nr", "udivmod64.nr"}},
 
-  /* sdiv64 rA, rB */
+  /* sdivmod64 rA, rB */
   {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB,
-    {"sdiv64", "sdiv64"}, {"sdiv64.nr", "sdiv64.nr"}},
+    FLARE_G4_OP_ENUM_SDIVMOD64_RA_RB, FLARE_OA_RA_RB,
+    {"sdivmod64", "sdivmod64"}, {"sdivmod64.nr", "sdivmod64.nr"}},
   /* -------- */
   ///* umod64 rA, rB */
   //{&flare_grp_info_g4,
@@ -969,15 +969,15 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_STR_RA_RB, FLARE_OA_RA_RB_RC_S7_LDST,
     {"str", "str"}, {"str.nr", "str.nr"}},
   /* -------- */
-  /* udivmod rA, rB, rC */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
-    {"udivmod", "udivmod"}, {"udivmod.nr", "udivmod.nr"}},
+  ///* udivmod rA, rB, rC */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_UDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
+  //  {"udivmod", "udivmod"}, {"udivmod.nr", "udivmod.nr"}},
 
-  /* sdivmod rA, rB, rC */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
-    {"sdivmod", "sdivmod"}, {"sdivmod.nr", "sdivmod.nr"}},
+  ///* sdivmod rA, rB, rC */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
+  //  {"sdivmod", "sdivmod"}, {"sdivmod.nr", "sdivmod.nr"}},
 
   /* lumul rC, rD, rA, rB */
   {&flare_grp_info_g4,
@@ -989,15 +989,15 @@ static const flare_opc_info_t
     FLARE_G4_OP_ENUM_LSMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
     {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
 
-  /* udivmod64 rA, rB, rC, rD */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_UDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
-    {"udivmod64", "udivmod64"}, {"udivmod64.nr", "udivmod64.nr"}},
+  ///* udivmod64 rA, rB, rC, rD */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_UDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
+  //  {"udivmod64", "udivmod64"}, {"udivmod64.nr", "udivmod64.nr"}},
 
-  /* sdivmod64 rA, rB, rC, rD */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
-    {"sdivmod64", "sdivmod64"}, {"sdivmod64.nr", "sdivmod64.nr"}},
+  ///* sdivmod64 rA, rB, rC, rD */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_SDIV64_RA_RB, FLARE_OA_RA_RB_RC_RD_DIVMOD64,
+  //  {"sdivmod64", "sdivmod64"}, {"sdivmod64.nr", "sdivmod64.nr"}},
 };
 static const flare_grp_info_t flare_grp_info_g5_index_ra_rb =
 {

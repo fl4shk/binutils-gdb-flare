@@ -979,15 +979,15 @@ static const flare_opc_info_t
   //  FLARE_G4_OP_ENUM_SDIV_RA_RB, FLARE_OA_RA_RB_RC_DIVMOD,
   //  {"sdivmod", "sdivmod"}, {"sdivmod.nr", "sdivmod.nr"}},
 
-  /* lumul rC, rD, rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LUMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
-    {"lumul", "lumul"}, {"lumul.nr", "lumul.nr"}},
+  ///* lumul rC, rD, rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_LUMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
+  //  {"lumul", "lumul"}, {"lumul.nr", "lumul.nr"}},
 
-  /* lsmul rC, rD, rA, rB */
-  {&flare_grp_info_g4,
-    FLARE_G4_OP_ENUM_LSMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
-    {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
+  ///* lsmul rC, rD, rA, rB */
+  //{&flare_grp_info_g4,
+  //  FLARE_G4_OP_ENUM_LSMUL_RA_RB, FLARE_OA_RC_RD_RA_RB_LMUL,
+  //  {"lsmul", "lsmul"}, {"lsmul.nr", "lsmul.nr"}},
 
   ///* udivmod64 rA, rB, rC, rD */
   //{&flare_grp_info_g4,

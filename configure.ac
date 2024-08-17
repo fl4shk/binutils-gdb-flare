@@ -1107,7 +1107,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb"
     ;;
   flare-*-*)
-    noconfigdirs="$noconfigdirs gdb gprof target-libgloss"
+    noconfigdirs="$noconfigdirs 'bfd/doc' sim gdb gprof target-libgloss"
     ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs gdb"

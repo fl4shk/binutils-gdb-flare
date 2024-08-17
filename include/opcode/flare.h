@@ -805,8 +805,8 @@ extern const flare_reg_t gprs[FLARE_NUM_GPRS];
 /* special-purpose registers */
 //#define FLARE_NUM_SPRS (16ull)
 //#define FLARE_REAL_NUM_SPRS (8ull)
-//#define FLARE_NUM_SPRS (8ull)
-#define FLARE_NUM_SPRS (6ull)
+#define FLARE_NUM_SPRS (8ull)
+//#define FLARE_NUM_SPRS (6ull)
 extern const flare_reg_t sprs[FLARE_NUM_SPRS];
 
 #define FLARE_SPR_ENUM_FLAGS (0x0ull)
@@ -817,8 +817,8 @@ extern const flare_reg_t sprs[FLARE_NUM_SPRS];
 #define FLARE_SPR_ENUM_IE (0x3ull)
 #define FLARE_SPR_ENUM_ITY (0x4ull)
 #define FLARE_SPR_ENUM_STY (0x5ull)
-#define FLARE_SPR_ENUM_MODHI (0x6ull)
-#define FLARE_SPR_ENUM_MODLO (0x7ull)
+#define FLARE_SPR_ENUM_HI (0x6ull)
+#define FLARE_SPR_ENUM_LO (0x7ull)
 
 #define FLARE_INST_SPRS() \
   { \
@@ -830,6 +830,8 @@ extern const flare_reg_t sprs[FLARE_NUM_SPRS];
     {"ie", FLARE_SPR_ENUM_IE, FLARE_REG_KIND_SPR}, \
     {"ity", FLARE_SPR_ENUM_ITY, FLARE_REG_KIND_SPR}, \
     {"sty", FLARE_SPR_ENUM_STY, FLARE_REG_KIND_SPR}, \
+    {"hi", FLARE_SPR_ENUM_HI, FLARE_REG_KIND_SPR}, \
+    {"lo", FLARE_SPR_ENUM_LO, FLARE_REG_KIND_SPR}, \
   }
 
 /* bits of `flags` */
@@ -924,7 +926,7 @@ typedef enum flare_oparg_t
   FLARE_OA_SA_SB,
   FLARE_OA_PC_RB,
   //FLARE_OA_RA_RB_RC_DIVMOD,
-  FLARE_OA_RC_RD_RA_RB_LMUL,
+  //FLARE_OA_RC_RD_RA_RB_LMUL,
   //FLARE_OA_RA_RB_RC_RD_DIVMOD64,
   FLARE_OA_RA_IMPLICIT_SP,
   FLARE_OA_SA_IMPLICIT_SP,
@@ -1126,7 +1128,7 @@ extern void flare_opci_v2d_delete_data (flare_opci_v2d_t *self);
 //  flare_opc_info_g3[FLARE_G3_OPC_INFO_LIM];
 
 #define FLARE_G4_OPC_INFO_LIM ( \
-  32ull + 5ull + 6ull + 7ull + 5ull + 9ull \
+  32ull + 5ull + 6ull + 7ull + 5ull + 7ull \
 )
 //extern const flare_opc_info_t
 //  flare_opc_info_g4[FLARE_G4_OPC_INFO_LIM];

@@ -388,6 +388,8 @@ DESCRIPTION
 .#define bfd_mach_moxie		1
 .  bfd_arch_flare,   {* The flare processor.  *}
 .#define bfd_mach_flare		1
+.  bfd_arch_snowhousecpu,   {* The snowhousecpu processor.  *}
+.#define bfd_mach_snowhousecpu		1
 .  bfd_arch_ft32,      {* The ft32 processor.  *}
 .#define bfd_mach_ft32		1
 .#define bfd_mach_ft32b		2
@@ -679,6 +681,7 @@ extern const bfd_arch_info_type bfd_mn10200_arch;
 extern const bfd_arch_info_type bfd_mn10300_arch;
 extern const bfd_arch_info_type bfd_moxie_arch;
 extern const bfd_arch_info_type bfd_flare_arch;
+extern const bfd_arch_info_type bfd_snowhousecpu_arch;
 extern const bfd_arch_info_type bfd_ft32_arch;
 extern const bfd_arch_info_type bfd_msp430_arch;
 extern const bfd_arch_info_type bfd_mt_arch;
@@ -769,6 +772,7 @@ static const bfd_arch_info_type * const bfd_archures_list[] =
     &bfd_mn10300_arch,
     &bfd_moxie_arch,
     &bfd_flare_arch,
+    &bfd_snowhousecpu_arch,
     &bfd_ft32_arch,
     &bfd_msp430_arch,
     &bfd_mt_arch,

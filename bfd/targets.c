@@ -826,6 +826,7 @@ extern const bfd_target mn10300_elf32_vec;
 extern const bfd_target moxie_elf32_be_vec;
 extern const bfd_target moxie_elf32_le_vec;
 extern const bfd_target flare_elf32_vec;
+extern const bfd_target snowhousecpu_elf32_vec;
 extern const bfd_target msp430_elf32_vec;
 extern const bfd_target msp430_elf32_ti_vec;
 extern const bfd_target mt_elf32_vec;
@@ -1205,6 +1206,7 @@ static const bfd_target * const _bfd_target_vector[] =
 	&moxie_elf32_le_vec,
 
 	&flare_elf32_vec,
+	&snowhousecpu_elf32_vec,
 
 	&msp430_elf32_vec,
 	&msp430_elf32_ti_vec,

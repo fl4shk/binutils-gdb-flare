@@ -1106,6 +1106,9 @@ case "${target}" in
   d30v-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
+  snowhousecpu-*-*)
+    noconfigdirs="$noconfigdirs 'bfd/doc' sim gdb gprof target-libgloss"
+    ;;
   flare-*-*)
     noconfigdirs="$noconfigdirs 'bfd/doc' sim gdb gprof target-libgloss"
     ;;

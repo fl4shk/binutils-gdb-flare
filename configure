@@ -3879,7 +3879,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb"
     ;;
   snowhousecpu-*-*)
-    noconfigdirs="$noconfigdirs 'bfd/doc' sim gdb gprof target-libgloss"
+    noconfigdirs="$noconfigdirs 'bfd/doc' 'binutils/doc' sim gdb gprof target-libgloss"
     ;;
   flare-*-*)
     noconfigdirs="$noconfigdirs 'bfd/doc' sim gdb gprof target-libgloss"

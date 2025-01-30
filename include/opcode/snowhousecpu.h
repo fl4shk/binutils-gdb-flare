@@ -409,10 +409,10 @@ typedef struct snowhousecpu_opc_info_t {
 
 
 //#define SNOWHOUSECPU_ENUM_OP_ADD (0x0ull)
-#define SNOWHOUSECPU_OI_INST_ADD_RA_RB_RC \
-  {"add", SNOWHOUSECPU_OA_RA_RB_RC, 0ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
 #define SNOWHOUSECPU_OI_INST_ADD_RA_RB_SIMM16 \
-  {"add", SNOWHOUSECPU_OA_RA_RB_S16, 0ull, {0ull,SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
+  {"add", SNOWHOUSECPU_OA_RA_RB_S16, 0ull, {0ull,SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
+#define SNOWHOUSECPU_OI_INST_ADD_RA_RB_RC \
+  {"add", SNOWHOUSECPU_OA_RA_RB_RC, 0ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
 #define SNOWHOUSECPU_OI_INST_SUB_RA_RB_RC \
   {"sub", SNOWHOUSECPU_OA_RA_RB_RC, 1ull, {0ull, SNOWHOUSECPU_SOK_NONE, 0ull}}
 //#define SubReserved {1ull, 1ull} // 1, 1
@@ -422,14 +422,14 @@ typedef struct snowhousecpu_opc_info_t {
   {"slts", SNOWHOUSECPU_OA_RA_RB_RC, 2ull, {0ull, SNOWHOUSECPU_SOK_IMM16_LO, 1ull}}
   //--------
 #define SNOWHOUSECPU_OI_INST_XOR_RA_RB_RC \
-  {"xor", SNOWHOUSECPU_OA_RA_RB_RC, 3ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
+  {"xor", SNOWHOUSECPU_OA_RA_RB_RC, 3ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
 #define SNOWHOUSECPU_OI_INST_XOR_RA_RB_SIMM16 \
-  {"xor", SNOWHOUSECPU_OA_RA_RB_S16, 3ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
+  {"xor", SNOWHOUSECPU_OA_RA_RB_S16, 3ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
 
-#define SNOWHOUSECPU_OI_INST_OR_RA_RB_RC \
-  {"or", SNOWHOUSECPU_OA_RA_RB_RC, 4ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
 #define SNOWHOUSECPU_OI_INST_OR_RA_RB_SIMM16 \
-  {"or", SNOWHOUSECPU_OA_RA_RB_S16, 4ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
+  {"or", SNOWHOUSECPU_OA_RA_RB_S16, 4ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
+#define SNOWHOUSECPU_OI_INST_OR_RA_RB_RC \
+  {"or", SNOWHOUSECPU_OA_RA_RB_RC, 4ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
 
 // `AND_RA_RB_SIMM16` is moved down here to help with synthesis/routing of
 // executing/decoding instructions
@@ -488,7 +488,7 @@ typedef struct snowhousecpu_opc_info_t {
   {"stb", SNOWHOUSECPU_OA_RA_RB_S16, 8ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_FULL, 7ull}}
   //--------
 #define SNOWHOUSECPU_OI_INST_BEQ_RA_RB_SIMM16 \
-  {"eq", SNOWHOUSECPU_OA_RA_RB_PCREL_S16, 9ull, {2ull, SNOWHOUSECPU_SOK_RC_IDX_FULL, 0ull}}
+  {"beq", SNOWHOUSECPU_OA_RA_RB_PCREL_S16, 9ull, {2ull, SNOWHOUSECPU_SOK_RC_IDX_FULL, 0ull}}
 #define SNOWHOUSECPU_OI_INST_BL_RA_SIMM16 \
   {"bl", SNOWHOUSECPU_OA_RA_PCREL_S16, 9ull, {1ull, SNOWHOUSECPU_SOK_RC_IDX_FULL, 0ull}}
 #define SNOWHOUSECPU_OI_INST_BL_SIMM16 \
@@ -545,7 +545,7 @@ typedef struct snowhousecpu_opc_info_t {
 //  unsigned subop_value;
 //} snowhousecpu_opsubop_info_t;
 
-//#define SNOWHOUSECPU_OPC_INFO_NAME_MAX_LEN (15ull)
+#define SNOWHOUSECPU_OPC_INFO_NAME_MAX_LEN (15ull)
 //#define SNOWHOUSECPU_OPC_INFO_NAMES_LIM (1ull)
 //typedef struct snowhousecpu_opc_info_t
 //{
@@ -568,6 +568,7 @@ typedef struct snowhousecpu_dasm_info_t
   int length;
   int status;
   bool is_bad: 1;
+  bool have_non_pre_relaxable_imm: 1;
   //bool grp_decode_err: 1;
   //bool g7_subgrp_decode_err: 1;
   //have_index_have_ra_ind: 1; // true for `rA`, false for `rB`
@@ -685,10 +686,33 @@ extern void snowhousecpu_opci_v2d_delete_data (snowhousecpu_opci_v2d_t *self);
 //  snowhousecpu_temp_t rc_idx: 4;
 //} snowhousecpu_enc_instr_t;
 /* -------- */
+static inline snowhousecpu_temp_t
+snowhousecpu_enc_temp_insn (snowhousecpu_temp_t op,
+				snowhousecpu_temp_t ra_idx,
+				snowhousecpu_temp_t rb_idx,
+				snowhousecpu_temp_t rc_idx,
+				snowhousecpu_temp_t imm16)
+{
+  snowhousecpu_temp_t insn = 0x0;
+  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_OP_MASK, SNOWHOUSECPU_OP_BITPOS, &insn, op);
+  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RA_IDX_MASK, SNOWHOUSECPU_RA_IDX_BITPOS, &insn, ra_idx);
+  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RB_IDX_MASK, SNOWHOUSECPU_RB_IDX_BITPOS, &insn, rb_idx);
+  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RC_IDX_MASK, SNOWHOUSECPU_RC_IDX_BITPOS, &insn, rc_idx);
+  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_IMM16_MASK, SNOWHOUSECPU_IMM16_BITPOS, &insn, imm16);
+  return insn;
+}
+//typedef struct snowhousecpu_dasm_temp_instr_t {
+//  const snowhousecpu_opc_info_t *opc_info;
+//  snowhousecpu_temp_t ra_idx;
+//  snowhousecpu_temp_t rb_idx;
+//  snowhousecpu_temp_t rc_idx;
+//} snowhousecpu_dasm_temp_instr_t;
 //static inline snowhousecpu_temp_t
 //snowhousecpu_enc_temp_insn_pre (snowhousecpu_temp_t simm16)
 //{
-//  
+//  return snowhousecpu_enc_temp_insn (
+//    /* op */
+//  );
 //}
 /* -------- */
 /* -------- */
@@ -802,21 +826,6 @@ snowhousecpu_get_ext_imm (snowhousecpu_temp_t prefix_mask,
 //    SNOWHOUSECPU_G7_ICRELOAD_S5_BITPOS,
 //    insn);
 //}
-static inline snowhousecpu_temp_t
-snowhousecpu_enc_temp_insn (snowhousecpu_temp_t op,
-				snowhousecpu_temp_t ra_idx,
-				snowhousecpu_temp_t rb_idx,
-				snowhousecpu_temp_t rc_idx,
-				snowhousecpu_temp_t imm16)
-{
-  snowhousecpu_temp_t insn = 0x0;
-  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_OP_MASK, SNOWHOUSECPU_OP_BITPOS, &insn, op);
-  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RA_IDX_MASK, SNOWHOUSECPU_RA_IDX_BITPOS, &insn, ra_idx);
-  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RB_IDX_MASK, SNOWHOUSECPU_RB_IDX_BITPOS, &insn, rb_idx);
-  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_RC_IDX_MASK, SNOWHOUSECPU_RC_IDX_BITPOS, &insn, rc_idx);
-  snowhousecpu_set_insn_field_p (SNOWHOUSECPU_IMM16_MASK, SNOWHOUSECPU_IMM16_BITPOS, &insn, imm16);
-  return insn;
-}
 
 static inline snowhousecpu_temp_t
 snowhousecpu_get_s32 (snowhousecpu_temp_t prefix_insn,

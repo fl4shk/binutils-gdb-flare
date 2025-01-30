@@ -48,6 +48,51 @@ const snowhousecpu_reg_t gprs[SNOWHOUSECPU_NUM_GPRS] = SNOWHOUSECPU_INST_GPRS ()
 const snowhousecpu_reg_t sprs[SNOWHOUSECPU_NUM_SPRS] = SNOWHOUSECPU_INST_SPRS ();
 
 const snowhousecpu_reg_t reg_pc = SNOWHOUSECPU_INST_REG_PC ();
+extern void
+snowhousecpu_dasm_info_do_disassemble (snowhousecpu_dasm_info_t *self)
+{
+  if ((self->status = self->rd32_func (self)))
+  {
+    return;
+  }
+  self->iword = bfd_getl32 (self->buffer);
+  const snowhousecpu_temp_t temp_simm16 = (
+    snowhousecpu_get_insn_field (SNOWHOUSECPU_IMM16_MASK, SNOWHOUSECPU_IMM16_BITPOS, self->iword)
+  );
+  snowhousecpu_temp_t temp_simm32 = 0;
+
+  if (
+    snowhousecpu_get_insn_field (SNOWHOUSECPU_OP_MASK, SNOWHOUSECPU_OP_BITPOS, self->iword)
+    == snowhousecpu_opc_info_pre_simm16.op
+  )
+  {
+    self->length += 4;
+    if ((self->status = self->rd32_func (self)))
+    {
+      return;
+    }
+    //self->simm = snowhousecpu_sign_extend (snowhousecpu_get_g5_index_s19
+    //  ((self->iword >> SNOWHOUSECPU_ONE_EXT_BITPOS), self->iword),
+    //  snowhousecpu_enc_info_g5_index_ra_simm_s7.bitsize
+    //  + snowhousecpu_enc_info_g0_pre_s12.bitsize);
+    //self->simm = snowhousecpu_sign_extend (
+    //  32
+    //)
+    //self->iword = bfd_getl32 (self->buffer);
+    self->iword = (self->iword << SNOWHOUSECPU_ONE_EXT_BITPOS)
+      | bfd_getl32 (self->buffer);
+    temp_simm32 = snowhousecpu_sign_extend(
+      (temp_simm16 << 16)
+      | snowhousecpu_get_insn_field (
+        SNOWHOUSECPU_IMM16_MASK, SNOWHOUSECPU_IMM16_BITPOS, self->iword
+      ),
+      32
+    );
+  }
+
+  self->simm = temp_simm32; // change it for the bit shifts by immediate values
+  snowhousecpu_dasm_info_do_disassemble_worker (self);
+}
 
 static char *
 do_snprintf_insn_snowhousecpu_maybe_pre

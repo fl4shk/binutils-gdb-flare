@@ -1,5 +1,5 @@
 /* snowhousecpu-relax-reloc-lookup.h:
-   lookup `bfd_reloc_code_real_type`s for relaxing Flare instructions.
+   lookup `bfd_reloc_code_real_type`s for relaxing SnowHouseCpu instructions.
 
    Copyright (C) 2025 Free Software Foundation, Inc.
    Contributed by Andrew Clark (FL4SHK).

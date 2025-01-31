@@ -76,10 +76,11 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
     for (
       count=0; //opc_info=opc_info_arr;
       //opc_info!=NULL;
-      count++<snowhousecpu_opc_info_size_arr[self->op];
-      opc_info=snowhousecpu_opc_info_a2d[self->op][count]
+      count<snowhousecpu_opc_info_size_arr[self->op];
+      ++count
     )
     {
+      opc_info = snowhousecpu_opc_info_a2d[self->op][count];
       //const snowhousecpu_opc_info_t *opc_info = *opc_info_arr;
       bool finished = false;
       switch (opc_info->subop.kind)
@@ -122,8 +123,20 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
           break;
         case SNOWHOUSECPU_SOK_RC_IDX_NZ:
         {
-          if ((self->subop_rc_idx != 0) == opc_info->subop.val)
+          if (
+            (self->subop_rc_idx != 0) == opc_info->subop.val
+            //&& count < 2
+          )
           {
+            //fprintf (
+            //  stderr,
+            //  "test/debug: %s %u: %lu == %lu: %u\n",
+            //  opc_info->name,
+            //  opc_info->oparg,
+            //  self->subop_rc_idx,
+            //  opc_info->subop.val,
+            //  count
+            //);
             finished = true;
           }
         }
@@ -146,6 +159,7 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
         }
         break;
       }
+      //++count;
     }
     if (self->opc_info == NULL)
     {
@@ -155,17 +169,30 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
     {
       switch (self->opc_info->oparg)
       {
+        case SNOWHOUSECPU_OA_RA_S16:
         case SNOWHOUSECPU_OA_RA_RB_S16:
         case SNOWHOUSECPU_OA_RA_RB_SHIFT_U5:
         case SNOWHOUSECPU_OA_RA_PCREL_S16:
         case SNOWHOUSECPU_OA_RA_RB_PCREL_S16:
         case SNOWHOUSECPU_OA_RB_RA_PCREL_S16:
         case SNOWHOUSECPU_OA_RA_PC_PCREL_S16:
-        case SNOWHOUSECPU_OA_SIMM16:
+        case SNOWHOUSECPU_OA_S16:
           self->have_non_pre_imm = true;
+          //fprintf (
+          //  stderr,
+          //  "debug (have_non_pre_imm): %s %u\n",
+          //  self->opc_info->name,
+          //  self->opc_info->oparg
+          //);
           break;
         default:
           self->have_non_pre_imm = false;
+          //fprintf (
+          //  stderr,
+          //  "debug (!have_non_pre_imm): %s %u\n",
+          //  self->opc_info->name,
+          //  self->opc_info->oparg
+          //);
           break;
       }
     }

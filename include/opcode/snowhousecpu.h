@@ -387,7 +387,7 @@ typedef enum snowhousecpu_oparg_t
   SNOWHOUSECPU_OA_RA_IRA,
   SNOWHOUSECPU_OA_IE_RB,
   SNOWHOUSECPU_OA_IRA,
-  SNOWHOUSECPU_OA_SIMM16,
+  SNOWHOUSECPU_OA_S16,
 } snowhousecpu_oparg_t;
 
 typedef enum snowhousecpu_opc_subop_kind_t {
@@ -529,7 +529,7 @@ typedef struct snowhousecpu_opc_info_t {
   {"jmp", SNOWHOUSECPU_OA_RB, 9ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_FULL, 6ull}}
 
 #define SNOWHOUSECPU_OI_INST_PRE_SIMM16 \
-  {"pre", SNOWHOUSECPU_OA_SIMM16, 10ull, {0ull, SNOWHOUSECPU_SOK_NONE, 0ull}}
+  {"pre", SNOWHOUSECPU_OA_S16, 10ull, {0ull, SNOWHOUSECPU_SOK_NONE, 0ull}}
 
 
 
@@ -582,6 +582,7 @@ typedef struct snowhousecpu_dasm_info_t
   //have_index_ra_simm: 1;
   //have_icreload: 1;
   const snowhousecpu_opc_info_t *opc_info;
+  const snowhousecpu_opc_info_t *inp_opc_info;
   //const snowhousecpu_opc_info_t *opc_main;
   snowhousecpu_temp_t iword;
   snowhousecpu_temp_t simm;

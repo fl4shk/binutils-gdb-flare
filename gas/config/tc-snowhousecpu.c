@@ -640,9 +640,12 @@ append_cl_insn (snowhousecpu_cl_insn_t *cl_insn,
 
   no_relax = snowhousecpu_cl_insn_no_relax (cl_insn);
 
-  if (relax_insn->have_imm)
+  if (
+    relax_insn->have_imm
+    && address_expr != NULL
+  )
   {
-    gas_assert (address_expr != NULL);
+    //gas_assert (address_expr != NULL);
 
     /* blindly copied from "tc-riscv.c": `append_insn ()` */ 
     if (now_seg == absolute_section)
@@ -2188,6 +2191,7 @@ snowhousecpu_relax_insn_ctor (snowhousecpu_relax_insn_t *self,
   // we don't need the ctor for self->dasm_info because we do the memset to zero in this function.
   //snowhousecpu_dasm_info_ctor (&self->dasm_info, NULL);
   //self->have_imm = false;
+  memset (&self->dasm_info, 0, sizeof(self->dasm_info));
   self->dasm_info.iword = cl_insn->data;
 
   snowhousecpu_dasm_info_do_disassemble_worker (&self->dasm_info);
@@ -3546,6 +3550,11 @@ md_assemble (char *str)
         SNOWHOUSECPU_PARSE_GPR (reg_a);
         SNOWHOUSECPU_PARSE_COMMA ();
         SNOWHOUSECPU_PARSE_GPR (reg_b);
+        //fprintf (
+        //  stderr,
+        //  "SNOWHOUSECPU_OA_RA_RB: parse_good: %s\n",
+        //  pd.opc_info->name
+        //);
         //pd.have_imm = false;
         pd.parse_good = true;
         break;
@@ -3682,7 +3691,7 @@ md_assemble (char *str)
         pd.reg_a = NULL;
         pd.parse_good = true;
         break;
-      case SNOWHOUSECPU_OA_SIMM16:
+      case SNOWHOUSECPU_OA_S16:
         SNOWHOUSECPU_SKIP_ISSPACE ();
         SNOWHOUSECPU_PARSE_EXP ();
         pd.have_imm = true;
@@ -4595,6 +4604,11 @@ md_assemble (char *str)
           //  finished = true;
           //}
           //pd.reg_c = (gprs + pd.opc_info->subop.val);
+          //fprintf (
+          //  stderr,
+          //  "debug in parse: %s\n",
+          //  pd.reg_c != NULL ? pd.reg_c->name : "null"
+          //);
         }
           break;
         case SNOWHOUSECPU_SOK_IMM16_LO:

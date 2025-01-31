@@ -102,14 +102,14 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
                 == (opc_info->subop.is_non_inequality_branch_etc - 1ull)
               )
               {
-                fprintf (
-                  stderr,
-                  "dasm: %s %s, %s, simm16; %u\n",
-                  opc_info->name,
-                  gprs[self->ra_idx].name,
-                  gprs[self->rb_idx].name,
-                  (unsigned) opc_info->subop.is_non_inequality_branch_etc
-                );
+                //fprintf (
+                //  stderr,
+                //  "dasm: %s %s, %s, simm16; %u\n",
+                //  opc_info->name,
+                //  gprs[self->ra_idx].name,
+                //  gprs[self->rb_idx].name,
+                //  (unsigned) opc_info->subop.is_non_inequality_branch_etc
+                //);
                 finished = true;
               }
             }

@@ -2100,10 +2100,10 @@ have_relaxable_temp_insn (fragS *fragP)
     !snowhousecpu_cl_insn_no_relax (cl_insn)
     && cl_insn->have_pre != SNOWHOUSECPU_HAVE_PRE_NONE)
   {
-    fprintf (
-      stderr,
-      "have_relaxable_temp_insn (): returning true.\n"
-    );
+    //fprintf (
+    //  stderr,
+    //  "have_relaxable_temp_insn (): returning true.\n"
+    //);
     return true;
     //snowhousecpu_dasm_info_t dasm_info;
     //snowhousecpu_dasm_info_ctor (&dasm_info, NULL);
@@ -2148,10 +2148,10 @@ have_relaxable_temp_insn (fragS *fragP)
     //    break;
     //}
   }
-    fprintf (
-      stderr,
-      "have_relaxable_temp_insn (): returning false.\n"
-    );
+  //fprintf (
+  //  stderr,
+  //  "have_relaxable_temp_insn (): returning false.\n"
+  //);
   return false;
 }
 
@@ -2195,12 +2195,12 @@ snowhousecpu_relax_insn_ctor (snowhousecpu_relax_insn_t *self,
     //true
     self->dasm_info.have_non_pre_imm
   );
-  fprintf (
-    stderr,
-    "self->have_imm: %u; oparg: %u\n",
-    (unsigned) self->have_imm,
-    (unsigned) self->dasm_info.opc_info->oparg
-  );
+  //fprintf (
+  //  stderr,
+  //  "self->have_imm: %u; oparg: %u\n",
+  //  (unsigned) self->have_imm,
+  //  (unsigned) self->dasm_info.opc_info->oparg
+  //);
   switch (cl_insn->have_pre) {
     case SNOWHOUSECPU_HAVE_PRE_NONE:
     {
@@ -2440,12 +2440,6 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
       /*(!relax_insn->was_lpre && cl_insn->is_small_imm_unsigned)*/)
     )
     {
-      fprintf (
-        stderr,
-        "relax_can_shrink_value: "
-        "self->value: %lx\n",
-        self->value
-      );
       //if ((self->rm_prefix = (
       //  !relax_insn->was_lpre
       //  || relax_can_shrink_value
@@ -2472,6 +2466,12 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
         self->length
           //= 2
           = have_pre_insn_length (SNOWHOUSECPU_HAVE_PRE_NONE);
+        //fprintf (
+        //  stderr,
+        //  "relax_can_shrink_value: "
+        //  "self->value: %lx; self->length: %u\n",
+        //  self->value, self->length
+        //);
         //if (relax_insn->is_pcrel)
         //{
         //  /* I think this doesn't need to be done in a relocation?
@@ -2674,13 +2674,13 @@ snowhousecpu_relax_frag (asection *sec, fragS *fragP,
   if (have_relaxable_temp_insn (fragP)) {
     offsetT old_var = fragP->fr_var;
     fragP->fr_var = relaxed_cl_insn_length (fragP, sec, true);
-    fprintf (
-      stderr,
-      "snowhousecpu_relax_frag(): %u %u; %u\n",
-      (unsigned) old_var,
-      (unsigned) fragP->fr_var,
-      (unsigned) (fragP->fr_var - old_var)
-    );
+    //fprintf (
+    //  stderr,
+    //  "snowhousecpu_relax_frag(): %u %u; %u\n",
+    //  (unsigned) old_var,
+    //  (unsigned) fragP->fr_var,
+    //  (unsigned) (fragP->fr_var - old_var)
+    //);
     return fragP->fr_var - old_var;
   }
 
@@ -2733,12 +2733,12 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   //  relax_temp.length);
   if (fragP->fr_var != have_pre_insn_length (cl_insn->have_pre))
   {
-    fprintf (
-      stderr,
-      "fragP->fr_var: %u !=: %u\n",
-      (unsigned) fragP->fr_var,
-      have_pre_insn_length (cl_insn->have_pre)
-    );
+    //fprintf (
+    //  stderr,
+    //  "fragP->fr_var: %u !=: %u\n",
+    //  (unsigned) fragP->fr_var,
+    //  have_pre_insn_length (cl_insn->have_pre)
+    //);
     gas_assert (fragP->fr_var == have_pre_insn_length (cl_insn->have_pre));
   }
   //const bool have_g5_index_ra_simm = (
@@ -3054,10 +3054,10 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     );
     //--------
 
-    //printf (
-    //  "cl_insn.reloc: %s\n",
-    //  bfd_reloc_type_lookup (stdoutput, cl_insn.reloc)->name
-    //);
+    printf (
+      "cl_insn.reloc: %s\n",
+      bfd_reloc_type_lookup (stdoutput, cl_insn.reloc)->name
+    );
 
     //pd->p = frag_more (pd->nbytes);
 
@@ -3516,6 +3516,14 @@ md_assemble (char *str)
         //pd.have_imm = false;
         pd.parse_good = true;
         break;
+      case SNOWHOUSECPU_OA_RA_S16:
+        SNOWHOUSECPU_SKIP_ISSPACE ();
+        SNOWHOUSECPU_PARSE_GPR (reg_a);
+        SNOWHOUSECPU_PARSE_COMMA ();
+        SNOWHOUSECPU_PARSE_EXP ();
+        pd.have_imm = true;
+        pd.parse_good = true;
+        break;
       case SNOWHOUSECPU_OA_RA_RB:
         SNOWHOUSECPU_SKIP_ISSPACE ();
         SNOWHOUSECPU_PARSE_GPR (reg_a);
@@ -3592,9 +3600,10 @@ md_assemble (char *str)
         pd.parse_good = true;
         pd.is_pcrel = true;
         break;
-      case SNOWHOUSECPU_OA_PCREL_S16:
+      case SNOWHOUSECPU_OA_PCREL_S16_IMPLICIT_LR:
         SNOWHOUSECPU_SKIP_ISSPACE ();
         SNOWHOUSECPU_PARSE_EXP ();
+        pd.reg_a = gprs + SNOWHOUSECPU_GPR_ENUM_LR;
         pd.have_imm = true;
         pd.parse_good = true;
         pd.is_pcrel = true;
@@ -4538,13 +4547,13 @@ md_assemble (char *str)
               else if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 1)
               {
                 // beq, bne
-                fprintf (
-                  stderr,
-                  "beq, bne: %s %s, %s, simm16\n",
-                  pd.opc_info->name,
-                  pd.reg_a->name,
-                  pd.reg_b->name
-                );
+                //fprintf (
+                //  stderr,
+                //  "beq, bne: %s %s, %s, simm16\n",
+                //  pd.opc_info->name,
+                //  pd.reg_a->name,
+                //  pd.reg_b->name
+                //);
                 if (
                   (pd.reg_a->index == pd.reg_b->index && pd.reg_a->index != 0)
                   //== (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)

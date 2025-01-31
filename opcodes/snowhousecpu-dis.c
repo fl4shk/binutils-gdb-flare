@@ -285,7 +285,7 @@ do_print_insn_snowhousecpu (snowhousecpu_dasm_info_t *args)
 	do_snprintf_insn_snowhousecpu_maybe_pre (args));
     }
       break;
-    case SNOWHOUSECPU_OA_PCREL_S16:
+    case SNOWHOUSECPU_OA_PCREL_S16_IMPLICIT_LR:
     {
       fpr (stream, "%s\t%i%s",
 	args->opc_info->name,

@@ -199,7 +199,7 @@ static reloc_howto_type snowhousecpu_elf_howto_table [] =
     false),                     /* pcrel_offset */
   HOWTO (R_SNOWHOUSECPU_SHIFT_U5,       /* type */
     0,                                  /* rightshift */
-    2,                                  /* size (0 = byte, 1 = short, 2 = long) */
+    0,                                  /* size (0 = byte, 1 = short, 2 = long) */
     5,                                  /* bitsize */
     false,                              /* pc_relative */
     SNOWHOUSECPU_SHIFT_IMM5_BITPOS,     /* bitpos */
@@ -733,6 +733,14 @@ snowhousecpu_elf_do_non_sub_imm_reloc (bfd *input_bfd,
       relocation += snowhousecpu_zero_extend (
         val, SNOWHOUSECPU_SHIFT_IMM5_BITSIZE
       );
+      fprintf (
+	stderr,
+	"SHIFT_U5 debug: %lx %lu %lu\n",
+	insn,
+	val,
+	relocation
+      );
+
       bfd_put_32 (input_bfd, insn, contents + address);
     }
 
@@ -885,6 +893,7 @@ snowhousecpu_elf_do_non_sub_imm_reloc (bfd *input_bfd,
     {
       relocation -= address;
     }
+    relocation += 4;
 
     //printf ("snowhousecpu_elf_do_non_sub_imm_reloc: pc_relative: %i\n",
     //  (signed) relocation);

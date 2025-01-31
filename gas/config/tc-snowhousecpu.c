@@ -2369,7 +2369,14 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
   //snowhousecpu_relax_insn_ctor
   //  ((relax_insn = &cl_insn->relax_insn),
   //  cl_insn);
-  self->length = 8;
+  if (cl_insn->opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5)
+  {
+    self->length = 8;
+  }
+  else
+  {
+    self->length = 4;
+  }
 
   if (
     //(have_expr = expr_symbol_where (fragP->fr_symbol, &pfile, &pline))
@@ -2731,7 +2738,10 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   //  fragP->fr_var,
   //  have_plp_insn_length (cl_insn->have_plp),
   //  relax_temp.length);
-  if (fragP->fr_var != have_pre_insn_length (cl_insn->have_pre))
+  if (
+    fragP->fr_var != have_pre_insn_length (cl_insn->have_pre)
+    //&& cl_insn->opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5
+  )
   {
     //fprintf (
     //  stderr,
@@ -3033,7 +3043,14 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     //  pd->simm
     //);
     //cl_insn.have_plp = SNOWHOUSECPU_HAVE_PLP_LPRE;
-    cl_insn.have_pre = SNOWHOUSECPU_HAVE_PRE_PRE;
+    if (cl_insn.opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5)
+    {
+      cl_insn.have_pre = SNOWHOUSECPU_HAVE_PRE_PRE;
+    }
+    else
+    {
+      cl_insn.have_pre = SNOWHOUSECPU_HAVE_PRE_NONE;
+    }
     temp_ex = (!which_exp ? &pd->ex : &pd->ex_1);
     //--------
     //const struct snowhousecpu_relax_reloc_tuple
@@ -4594,6 +4611,12 @@ md_assemble (char *str)
               SNOWHOUSECPU_SHIFT_IMM5_MASK, SNOWHOUSECPU_SHIFT_IMM5_BITPOS,
               &pd.simm, prev_simm
             );
+            //fprintf (
+            //  stderr,
+            //  "shift by immediate: %lx %lu\n",
+            //  pd.simm,
+            //  prev_simm
+            //);
           }
         }
           break;

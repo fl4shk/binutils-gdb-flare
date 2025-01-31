@@ -156,7 +156,7 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
       switch (self->opc_info->oparg)
       {
         case SNOWHOUSECPU_OA_RA_RB_S16:
-        //case SNOWHOUSECPU_OA_RA_RB_SHIFT_U5:
+        case SNOWHOUSECPU_OA_RA_RB_SHIFT_U5:
         case SNOWHOUSECPU_OA_RA_PCREL_S16:
         case SNOWHOUSECPU_OA_RA_RB_PCREL_S16:
         case SNOWHOUSECPU_OA_RB_RA_PCREL_S16:

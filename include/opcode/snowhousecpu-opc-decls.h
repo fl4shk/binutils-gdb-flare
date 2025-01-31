@@ -29,6 +29,8 @@
 static const snowhousecpu_opc_info_t
   snowhousecpu_opc_info_add_ra_rb_rc = SNOWHOUSECPU_OI_INST_ADD_RA_RB_RC,
   snowhousecpu_opc_info_add_ra_rb_simm16 = SNOWHOUSECPU_OI_INST_ADD_RA_RB_SIMM16,
+  snowhousecpu_opc_info_cpy_ra_rb = SNOWHOUSECPU_OI_INST_CPY_RA_RB,
+  snowhousecpu_opc_info_cpy_ra_simm16 = SNOWHOUSECPU_OI_INST_CPY_RA_SIMM16,
   snowhousecpu_opc_info_sub_ra_rb_rc = SNOWHOUSECPU_OI_INST_SUB_RA_RB_RC,
   snowhousecpu_opc_info_sltu_ra_rb_rc = SNOWHOUSECPU_OI_INST_SLTU_RA_RB_RC,
   snowhousecpu_opc_info_slts_ra_rb_rc = SNOWHOUSECPU_OI_INST_SLTS_RA_RB_RC,
@@ -108,7 +110,9 @@ snowhousecpu_opc_info_add_arr[] =
 {
   &snowhousecpu_opc_info_add_ra_rb_rc,
   &snowhousecpu_opc_info_add_ra_rb_simm16,
-  NULL,
+  &snowhousecpu_opc_info_cpy_ra_rb,
+  &snowhousecpu_opc_info_cpy_ra_simm16,
+  //NULL,
 };
 //#define snowhousecpu_opc_info_add_arr_size
 //  (snowhousecpu_opc_info_arr_size (snowhousecpu_opc_info_add_arr))

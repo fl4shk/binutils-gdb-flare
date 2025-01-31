@@ -396,7 +396,7 @@ typedef enum snowhousecpu_opc_subop_kind_t {
   SNOWHOUSECPU_SOK_IMM16_LO,
 } snowhousecpu_opc_subop_kind_t;
 typedef struct snowhousecpu_opc_subop_subop_t {
-  snowhousecpu_temp_t is_non_ineqaulity_branch_etc: 2;
+  snowhousecpu_temp_t is_non_inequality_branch_etc: 2;
   snowhousecpu_opc_subop_kind_t kind: 2;
   snowhousecpu_temp_t val;
 } snowhousecpu_opc_subop_t;
@@ -413,6 +413,10 @@ typedef struct snowhousecpu_opc_info_t {
   {"add", SNOWHOUSECPU_OA_RA_RB_S16, 0ull, {0ull,SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
 #define SNOWHOUSECPU_OI_INST_ADD_RA_RB_RC \
   {"add", SNOWHOUSECPU_OA_RA_RB_RC, 0ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
+#define SNOWHOUSECPU_OI_INST_CPY_RA_SIMM16 \
+  {"cpy", SNOWHOUSECPU_OA_RA_RB, 0ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 0ull}}
+#define SNOWHOUSECPU_OI_INST_CPY_RA_RB \
+  {"cpy", SNOWHOUSECPU_OA_RA_RB, 0ull, {0ull, SNOWHOUSECPU_SOK_RC_IDX_NZ, 1ull}}
 #define SNOWHOUSECPU_OI_INST_SUB_RA_RB_RC \
   {"sub", SNOWHOUSECPU_OA_RA_RB_RC, 1ull, {0ull, SNOWHOUSECPU_SOK_NONE, 0ull}}
 //#define SubReserved {1ull, 1ull} // 1, 1
@@ -568,7 +572,7 @@ typedef struct snowhousecpu_dasm_info_t
   int length;
   int status;
   bool is_bad: 1;
-  bool have_non_pre_relaxable_imm: 1;
+  bool have_non_pre_imm: 1;
   //bool grp_decode_err: 1;
   //bool g7_subgrp_decode_err: 1;
   //have_index_have_ra_ind: 1; // true for `rA`, false for `rB`

@@ -122,41 +122,54 @@ snowhousecpu_insn_number_to_chars (char *p, snowhousecpu_temp_t val, int n)
   //  val,
   //  n
   //);
-  //gas_assert (n == 2 || n == 4 || n == 6);
-  for (int i = 0; i < n / 2; ++i)
-  //for (int i = (int)(n / 2) - 1; i >= 0; --i)
+  switch (n)
   {
-    const unsigned to_print = (val >> (i * 16)) & 0xffffu;
-    const size_t plus = n - (i * 2) - 2; //(n / 2) - (i * 2) + 1;
-    char *mod_p = p + plus;
-    //const uintptr_t mod_p_u = (uintptr_t)mod_p;
-    //printf (
-    //  "%x; %lu; %lx\n",
-    //  to_print,
-    //  plus,
-    //  mod_p_u
-    //);
-    //printf (
-    //  "%x\n",
-    //  to_print
-    //);
-    snowhousecpu_number_to_chars (mod_p, to_print, 2);
-    //switch (n)
-    //{
-    //  case 2:
-    //  {
-    //  }
-    //    break;
-    //  case 4:
-    //  {
-    //  }
-    //    break;
-    //  case 6:
-    //  {
-    //  }
-    //    break;
-    //}
+    case 4:
+      snowhousecpu_number_to_chars (p, val & 0xffffffffull, 4);
+      break;
+    case 8:
+      snowhousecpu_number_to_chars (p, (val >> 32) & 0xffffffffull, 4);
+      snowhousecpu_number_to_chars (p + 4, val & 0xffffffffull, 4);
+      break;
+    default:
+      abort ();
+      break;
   }
+  ////gas_assert (n == 2 || n == 4 || n == 6);
+  //for (int i = 0; i < n / 2; ++i)
+  ////for (int i = (int)(n / 2) - 1; i >= 0; --i)
+  //{
+  //  const unsigned to_print = (val >> (i * 16)) & 0xffffu;
+  //  const size_t plus = n - (i * 2) - 2; //(n / 2) - (i * 2) + 1;
+  //  char *mod_p = p + plus;
+  //  //const uintptr_t mod_p_u = (uintptr_t)mod_p;
+  //  //printf (
+  //  //  "%x; %lu; %lx\n",
+  //  //  to_print,
+  //  //  plus,
+  //  //  mod_p_u
+  //  //);
+  //  //printf (
+  //  //  "%x\n",
+  //  //  to_print
+  //  //);
+  //  snowhousecpu_number_to_chars (mod_p, to_print, 2);
+  //  //switch (n)
+  //  //{
+  //  //  case 2:
+  //  //  {
+  //  //  }
+  //  //    break;
+  //  //  case 4:
+  //  //  {
+  //  //  }
+  //  //    break;
+  //  //  case 6:
+  //  //  {
+  //  //  }
+  //  //    break;
+  //  //}
+  //}
   //printf("\n");
 }
 
@@ -457,7 +470,7 @@ typedef struct snowhousecpu_parse_data_t
     have_imm : 1,
     //is_small_imm_unsigned: 1,
     //is_g7_icreload: 1,
-    have_cpy64 : 1,
+    //have_cpy64 : 1,
     //have_simm : 1,
     is_pcrel : 1,
     //no_relax : 1,
@@ -1175,60 +1188,60 @@ md_apply_fix (fixS *fixP,
     //case BFD_RELOC_SNOWHOUSECPU_G1_S17:
     //case BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S19:
     //case BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S17:
-    case BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16:
-      if (fixP->fx_addsy == NULL
-        //|| snowhousecpu_relaxable_symbol (fixP->fx_addsy)
-      )
-      {
-        tmp.pre_offs = 0;
-        tmp.insn_offs = tmp.pre_offs
-          + snowhousecpu_have_pre_distance
-            (SNOWHOUSECPU_HAVE_PRE_PRE, SNOWHOUSECPU_HAVE_PRE_NONE);
-        tmp.prefix_insn = bfd_getl32 (tmp.buf + tmp.pre_offs);
-        tmp.insn = bfd_getl32 (tmp.buf + tmp.insn_offs);
-        //snowhousecpu_put_g1_s17 (&tmp.prefix_insn, &tmp.insn,
-        //  (snowhousecpu_temp_t)(*valP));
-        snowhousecpu_put_s32_p (
-          &tmp.prefix_insn,
-          &tmp.insn, (snowhousecpu_temp_t)(*valP)
-        );
-        fixP->fx_addnumber = *valP = snowhousecpu_get_s32
-          (tmp.prefix_insn, tmp.insn);
-        //if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S17_FOR_U5
-        //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S17)
-        //{
-        //  snowhousecpu_put_g1_s17 (&tmp.prefix_insn, &tmp.insn,
-        //    (snowhousecpu_temp_t)(*valP));
-        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g1_s17
-        //    (tmp.prefix_insn, tmp.insn);
-        //}
-        //else if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S19)
-        //{
-        //  snowhousecpu_put_g5_index_s19 (&tmp.prefix_insn, &tmp.insn,
-        //    (snowhousecpu_temp_t)(*valP));
-        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g5_index_s19
-        //    (tmp.prefix_insn, tmp.insn);
-        //}
-        //else /* if (
-        //  fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S17
-        //) */
-        //{
-        //  snowhousecpu_put_g7_icreload_s17 (&tmp.prefix_insn, &tmp.insn,
-        //    (snowhousecpu_temp_t)(*valP));
-        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g7_icreload_s17
-        //    (tmp.prefix_insn, tmp.insn);
-        //}
-        bfd_putl32 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
-        bfd_putl32 (tmp.insn, tmp.buf + tmp.insn_offs);
-        //if (
-        //  //!linkrelax
-        //  //&&
-        //  fixP->fx_addsy == NULL)
-        {
-          fixP->fx_done = true;
-        }
-      }
-      break;
+    //case BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16:
+    //  if (fixP->fx_addsy == NULL
+    //    //|| snowhousecpu_relaxable_symbol (fixP->fx_addsy)
+    //  )
+    //  {
+    //    tmp.pre_offs = 0;
+    //    tmp.insn_offs = tmp.pre_offs
+    //      + snowhousecpu_have_pre_distance
+    //        (SNOWHOUSECPU_HAVE_PRE_PRE, SNOWHOUSECPU_HAVE_PRE_NONE);
+    //    tmp.prefix_insn = bfd_getl32 (tmp.buf + tmp.pre_offs);
+    //    tmp.insn = bfd_getl32 (tmp.buf + tmp.insn_offs);
+    //    //snowhousecpu_put_g1_s17 (&tmp.prefix_insn, &tmp.insn,
+    //    //  (snowhousecpu_temp_t)(*valP));
+    //    snowhousecpu_put_s32_p (
+    //      &tmp.prefix_insn,
+    //      &tmp.insn, (snowhousecpu_temp_t)(*valP)
+    //    );
+    //    fixP->fx_addnumber = *valP = snowhousecpu_get_s32
+    //      (tmp.prefix_insn, tmp.insn);
+    //    //if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S17_FOR_U5
+    //    //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S17)
+    //    //{
+    //    //  snowhousecpu_put_g1_s17 (&tmp.prefix_insn, &tmp.insn,
+    //    //    (snowhousecpu_temp_t)(*valP));
+    //    //  fixP->fx_addnumber = *valP = snowhousecpu_get_g1_s17
+    //    //    (tmp.prefix_insn, tmp.insn);
+    //    //}
+    //    //else if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S19)
+    //    //{
+    //    //  snowhousecpu_put_g5_index_s19 (&tmp.prefix_insn, &tmp.insn,
+    //    //    (snowhousecpu_temp_t)(*valP));
+    //    //  fixP->fx_addnumber = *valP = snowhousecpu_get_g5_index_s19
+    //    //    (tmp.prefix_insn, tmp.insn);
+    //    //}
+    //    //else /* if (
+    //    //  fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S17
+    //    //) */
+    //    //{
+    //    //  snowhousecpu_put_g7_icreload_s17 (&tmp.prefix_insn, &tmp.insn,
+    //    //    (snowhousecpu_temp_t)(*valP));
+    //    //  fixP->fx_addnumber = *valP = snowhousecpu_get_g7_icreload_s17
+    //    //    (tmp.prefix_insn, tmp.insn);
+    //    //}
+    //    bfd_putl32 (tmp.prefix_insn, tmp.buf + tmp.pre_offs);
+    //    bfd_putl32 (tmp.insn, tmp.buf + tmp.insn_offs);
+    //    //if (
+    //    //  //!linkrelax
+    //    //  //&&
+    //    //  fixP->fx_addsy == NULL)
+    //    {
+    //      fixP->fx_done = true;
+    //    }
+    //  }
+    //  break;
     //case BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX:
     //  if (fixP->fx_addsy == NULL)
     //  {
@@ -1401,6 +1414,7 @@ md_apply_fix (fixS *fixP,
     //case BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32:
     //case BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32_NO_RELAX:
     //case BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16:
+    case BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16:
     case BFD_RELOC_SNOWHOUSECPU_CFA:
       if (fixP->fx_addsy && fixP->fx_subsy)
       {
@@ -1436,16 +1450,17 @@ md_apply_fix (fixS *fixP,
           //  break;
           //case BFD_RELOC_SNOWHOUSECPU_G1_S32:
           //case BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX:
-          //  //if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX)
-          //  //{
-          //  //  fprintf (
-          //  //    stderr,
-          //  //    "\ntestificate\n"
-          //  //  );
-          //  //}
-          //  fixP->fx_r_type = BFD_RELOC_SNOWHOUSECPU_G1_S32_ADD32;
-          //  fixP->fx_next->fx_r_type = BFD_RELOC_SNOWHOUSECPU_G1_S32_SUB32;
-          //  break;
+          case BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16:
+            //if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX)
+            //{
+            //  fprintf (
+            //    stderr,
+            //    "\ntestificate\n"
+            //  );
+            //}
+            fixP->fx_r_type = BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16_ADD32;
+            fixP->fx_next->fx_r_type = BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16_SUB32;
+            break;
           //case BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32:
           //case BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_NO_RELAX:
           //  fixP->fx_r_type = BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_ADD32;
@@ -1516,85 +1531,90 @@ md_apply_fix (fixS *fixP,
             break;
         }
       }
-      //else if (
-      //  (
-      //    fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5
-      //    || fixP->fx_r_type
-      //      == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5_NO_RELAX
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX
+      else if (
+        (
+          //fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5
+          //|| fixP->fx_r_type
+          //  == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5_NO_RELAX
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX
 
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_NO_RELAX
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_NO_RELAX
 
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32_NO_RELAX
-      //  ) && (
-      //    fixP->fx_addsy == NULL
-      //    //|| snowhousecpu_relaxable_symbol (fixP->fx_addsy)
-      //  )
-      //)
-      //{
-      //  tmp.lpre_offs = 0;
-      //  tmp.insn_offs = tmp.lpre_offs
-      //    + snowhousecpu_have_pre_distance
-      //      (SNOWHOUSECPU_HAVE_PLP_LPRE, SNOWHOUSECPU_HAVE_PRE_NONE);
-      //  tmp.prefix_insn = (
-      //    //bfd_getb64 (tmp.buf + tmp.lpre_offs)
-      //    (bfd_getl32 (tmp.buf + tmp.lpre_offs) << 16)
-      //    | bfd_getl32 (tmp.buf + tmp.lpre_offs + 2)
-      //  );
-      //  tmp.insn = bfd_getl32 (tmp.buf + tmp.insn_offs);
-      //  if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5
-      //    || fixP->fx_r_type
-      //      == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5_NO_RELAX
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX)
-      //  {
-      //    snowhousecpu_put_g1_s32 (&tmp.prefix_insn, &tmp.insn,
-      //      (snowhousecpu_temp_t)(*valP));
-      //    fixP->fx_addnumber = *valP = snowhousecpu_get_g1_s32
-      //      (tmp.prefix_insn, tmp.insn);
-      //  }
-      //  else if (
-      //    fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_NO_RELAX
-      //  )
-      //  {
-      //    snowhousecpu_put_g5_index_s32 (&tmp.prefix_insn, &tmp.insn,
-      //      (snowhousecpu_temp_t)(*valP));
-      //    fixP->fx_addnumber = *valP = snowhousecpu_get_g5_index_s32
-      //      (tmp.prefix_insn, tmp.insn);
-      //    //printf(
-      //    //  "G5_INDEX_S32 or G5_INDEX_S32_NO_RELAX: \n"
-      //    //);
-      //  }
-      //  else /* if (
-      //    fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32
-      //    || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32_NO_RELAX
-      //  ) */
-      //  {
-      //    snowhousecpu_put_g7_icreload_s32 (&tmp.prefix_insn, &tmp.insn,
-      //      (snowhousecpu_temp_t)(*valP));
-      //    fixP->fx_addnumber = *valP = snowhousecpu_get_g7_icreload_s32
-      //      (tmp.prefix_insn, tmp.insn);
-      //  }
-      //  //bfd_putb64 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
-      //  bfd_putl32 (
-      //    (tmp.prefix_insn >> 16) & 0xffffu,
-      //    tmp.buf + tmp.lpre_offs
-      //  );
-      //  bfd_putl32 (
-      //    tmp.prefix_insn & 0xffffu,
-      //    tmp.buf + tmp.lpre_offs + 2
-      //  );
-      //  bfd_putl32 (tmp.insn, tmp.buf + tmp.insn_offs);
-      //  //printf ("testificate\n");
-      //  //if (fixP->fx_addsy == NULL)
-      //  {
-      //    fixP->fx_done = true;
-      //  }
-      //}
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32
+          //|| fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32_NO_RELAX
+          fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16
+        ) && (
+          fixP->fx_addsy == NULL
+          //|| snowhousecpu_relaxable_symbol (fixP->fx_addsy)
+        )
+      )
+      {
+        tmp.pre_offs = 0;
+        tmp.insn_offs = tmp.pre_offs
+          + snowhousecpu_have_pre_distance
+            (SNOWHOUSECPU_HAVE_PRE_PRE, SNOWHOUSECPU_HAVE_PRE_NONE);
+        tmp.prefix_insn = (
+          //bfd_getb64 (tmp.buf + tmp.lpre_offs)
+          (bfd_getl32 (tmp.buf + tmp.pre_offs) << 32)
+          | bfd_getl32 (tmp.buf + tmp.pre_offs + 4)
+        );
+        tmp.insn = bfd_getl32 (tmp.buf + tmp.insn_offs);
+        snowhousecpu_put_s32_p (&tmp.prefix_insn, &tmp.insn,
+          (snowhousecpu_temp_t)(*valP));
+        fixP->fx_addnumber = *valP = snowhousecpu_get_s32
+          (tmp.prefix_insn, tmp.insn);
+        //if (fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5
+        //  || fixP->fx_r_type
+        //    == BFD_RELOC_SNOWHOUSECPU_G1_S32_FOR_U5_NO_RELAX
+        //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32
+        //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G1_S32_NO_RELAX)
+        //{
+        //  snowhousecpu_put_g1_s32 (&tmp.prefix_insn, &tmp.insn,
+        //    (snowhousecpu_temp_t)(*valP));
+        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g1_s32
+        //    (tmp.prefix_insn, tmp.insn);
+        //}
+        //else if (
+        //  fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32
+        //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G5_INDEX_S32_NO_RELAX
+        //)
+        //{
+        //  snowhousecpu_put_g5_index_s32 (&tmp.prefix_insn, &tmp.insn,
+        //    (snowhousecpu_temp_t)(*valP));
+        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g5_index_s32
+        //    (tmp.prefix_insn, tmp.insn);
+        //  //printf(
+        //  //  "G5_INDEX_S32 or G5_INDEX_S32_NO_RELAX: \n"
+        //  //);
+        //}
+        //else /* if (
+        //  fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32
+        //  || fixP->fx_r_type == BFD_RELOC_SNOWHOUSECPU_G7_ICRELOAD_S32_NO_RELAX
+        //) */
+        //{
+        //  snowhousecpu_put_g7_icreload_s32 (&tmp.prefix_insn, &tmp.insn,
+        //    (snowhousecpu_temp_t)(*valP));
+        //  fixP->fx_addnumber = *valP = snowhousecpu_get_g7_icreload_s32
+        //    (tmp.prefix_insn, tmp.insn);
+        //}
+        //bfd_putb64 (tmp.prefix_insn, tmp.buf + tmp.lpre_offs);
+        bfd_putl32 (
+          (tmp.prefix_insn >> 32) & 0xffffffffull,
+          tmp.buf + tmp.pre_offs
+        );
+        bfd_putl32 (
+          tmp.prefix_insn & 0xffffffffull,
+          tmp.buf + tmp.pre_offs + 4
+        );
+        bfd_putl32 (tmp.insn, tmp.buf + tmp.insn_offs);
+        //printf ("testificate\n");
+        //if (fixP->fx_addsy == NULL)
+        {
+          fixP->fx_done = true;
+        }
+      }
       break;
 
     default:
@@ -1754,7 +1774,7 @@ md_begin (void)
 {
   /* -------- */
   unsigned count;
-  const snowhousecpu_opc_info_t *opc_info;
+  const snowhousecpu_opc_info_t **opc_info;
   const snowhousecpu_reg_t *reg;
   //char cbuf[SNOWHOUSECPU_HTAB_KEY_BUF_LIM];
   //snowhousecpu_opci_v2d_t *opci_list;
@@ -1783,85 +1803,85 @@ md_begin (void)
   snowhousecpu_cl_insn_vec_create ();
   /* -------- */
   /* Insert `const snowhousecpu_opc_info_t *`s.  */
-  for (count=0, opc_info=snowhousecpu_opc_info_add_arr[0];
+  for (count=0, opc_info=snowhousecpu_opc_info_add_arr;
     count++<snowhousecpu_opc_info_add_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_sub_arr[0];
+  for (count=0, opc_info=snowhousecpu_opc_info_sub_arr;
     count++<snowhousecpu_opc_info_sub_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_slt_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_slt_arr;
+    count++<snowhousecpu_opc_info_slt_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
 
-  for (count=0, opc_info=snowhousecpu_opc_info_xor_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_xor_arr;
+    count++<snowhousecpu_opc_info_xor_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_or_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_or_arr;
+    count++<snowhousecpu_opc_info_or_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_and_simm16_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_and_simm16_arr;
+    count++<snowhousecpu_opc_info_and_simm16_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_shift_etc_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_shift_etc_arr;
+    count++<snowhousecpu_opc_info_shift_etc_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_multi_cycle_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_multi_cycle_arr;
+    count++<snowhousecpu_opc_info_multi_cycle_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_ldst_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_ldst_arr;
+    count++<snowhousecpu_opc_info_ldst_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
-  for (count=0, opc_info=snowhousecpu_opc_info_branch_etc_arr[0];
-    count++<snowhousecpu_opc_info_sub_arr_size;
+  for (count=0, opc_info=snowhousecpu_opc_info_branch_etc_arr;
+    count++<snowhousecpu_opc_info_branch_etc_arr_size;
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (opc_info/*,*/ /*false,*/ /*0*/);
+    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
   }
 
@@ -2080,6 +2100,10 @@ have_relaxable_temp_insn (fragS *fragP)
     !snowhousecpu_cl_insn_no_relax (cl_insn)
     && cl_insn->have_pre != SNOWHOUSECPU_HAVE_PRE_NONE)
   {
+    fprintf (
+      stderr,
+      "have_relaxable_temp_insn (): returning true.\n"
+    );
     return true;
     //snowhousecpu_dasm_info_t dasm_info;
     //snowhousecpu_dasm_info_ctor (&dasm_info, NULL);
@@ -2124,6 +2148,10 @@ have_relaxable_temp_insn (fragS *fragP)
     //    break;
     //}
   }
+    fprintf (
+      stderr,
+      "have_relaxable_temp_insn (): returning false.\n"
+    );
   return false;
 }
 
@@ -2159,9 +2187,20 @@ snowhousecpu_relax_insn_ctor (snowhousecpu_relax_insn_t *self,
   //  (&snowhousecpu_enc_info_grp_16, cl_insn->data);
   // we don't need the ctor for self->dasm_info because we do the memset to zero in this function.
   //snowhousecpu_dasm_info_ctor (&self->dasm_info, NULL);
-  self->have_imm = false;
+  //self->have_imm = false;
   self->dasm_info.iword = cl_insn->data;
+
   snowhousecpu_dasm_info_do_disassemble_worker (&self->dasm_info);
+  self->have_imm = (
+    //true
+    self->dasm_info.have_non_pre_imm
+  );
+  fprintf (
+    stderr,
+    "self->have_imm: %u; oparg: %u\n",
+    (unsigned) self->have_imm,
+    (unsigned) self->dasm_info.opc_info->oparg
+  );
   switch (cl_insn->have_pre) {
     case SNOWHOUSECPU_HAVE_PRE_NONE:
     {
@@ -2173,10 +2212,6 @@ snowhousecpu_relax_insn_ctor (snowhousecpu_relax_insn_t *self,
       self->prefix_insn_bitsize = SNOWHOUSECPU_IMM16_BITSIZE;
       self->insn_bitsize = SNOWHOUSECPU_IMM16_BITSIZE;
       self->target_bitsize = self->insn_bitsize;
-      self->have_imm = (
-        //true
-        self->dasm_info.have_non_pre_relaxable_imm
-      );
     }
       break;
   }
@@ -2405,10 +2440,12 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
       /*(!relax_insn->was_lpre && cl_insn->is_small_imm_unsigned)*/)
     )
     {
-      //fprintf (stderr,
-      //  "relax_can_shrink_value outer: "
-      //  "self->value\n",
-      //);
+      fprintf (
+        stderr,
+        "relax_can_shrink_value: "
+        "self->value: %lx\n",
+        self->value
+      );
       //if ((self->rm_prefix = (
       //  !relax_insn->was_lpre
       //  || relax_can_shrink_value
@@ -2423,8 +2460,9 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
       //    relax_insn->insn_bitsize,
       //    cl_insn->is_small_imm_unsigned)
       //)))
-      if ((self->rm_prefix = true))
-      {
+      self->rm_prefix = true;
+      //if ((self->rm_prefix = true))
+      //{
         //if (relax_insn->is_pcrel)
         //{
         //  fprintf (stderr,
@@ -2443,28 +2481,28 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
         //    //-= 4ull;
         //    -= shrink_two_units_dist;
         //}
-      }
-      else
-      {
-        //if (relax_insn->is_pcrel)
-        //{
-        //  fprintf (stderr,
-        //    "snowhousecpu_relax_temp_ctor (): pcrel: shrink by 2: %li\n",
-        //    (long)(self->value - shrink_one_unit_dist));
-        //}
-        self->length
-          //= 4;
-          = have_pre_insn_length (SNOWHOUSECPU_HAVE_PRE_PRE);
-        //if (relax_insn->is_pcrel)
-        //{
-        //  /* I think this doesn't need to be done in a relocation?
-        //    We are already relaxing in GAS at this point, so we're already 
-        //    decreasing `self->value`. */ 
-        //  self->value
-        //    //-= 2ull;
-        //    -= shrink_one_unit_dist;
-        //}
-      }
+      //}
+      //else
+      //{
+      //  //if (relax_insn->is_pcrel)
+      //  //{
+      //  //  fprintf (stderr,
+      //  //    "snowhousecpu_relax_temp_ctor (): pcrel: shrink by 2: %li\n",
+      //  //    (long)(self->value - shrink_one_unit_dist));
+      //  //}
+      //  self->length
+      //    //= 4;
+      //    = have_pre_insn_length (SNOWHOUSECPU_HAVE_PRE_PRE);
+      //  //if (relax_insn->is_pcrel)
+      //  //{
+      //  //  /* I think this doesn't need to be done in a relocation?
+      //  //    We are already relaxing in GAS at this point, so we're already 
+      //  //    decreasing `self->value`. */ 
+      //  //  self->value
+      //  //    //-= 2ull;
+      //  //    -= shrink_one_unit_dist;
+      //  //}
+      //}
     }
     else
     {
@@ -2474,6 +2512,9 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
       //    "snowhousecpu_relax_temp_ctor (): pcrel: no shrink: %li\n",
       //    (long)(self->value - shrink_one_unit_dist));
       //}
+      self->length
+        //= 4;
+        = have_pre_insn_length (SNOWHOUSECPU_HAVE_PRE_PRE);
     }
     if (update)
     {
@@ -2549,6 +2590,7 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
         //  }
         //}
         //else // if (!self->was_lpre) // remove the `pre` instruction
+        if (self->rm_prefix)
         {
           cl_insn->have_pre = SNOWHOUSECPU_HAVE_PRE_NONE;
           cl_insn->data &= SNOWHOUSECPU_NO_EXT_MASK;
@@ -2632,6 +2674,13 @@ snowhousecpu_relax_frag (asection *sec, fragS *fragP,
   if (have_relaxable_temp_insn (fragP)) {
     offsetT old_var = fragP->fr_var;
     fragP->fr_var = relaxed_cl_insn_length (fragP, sec, true);
+    fprintf (
+      stderr,
+      "snowhousecpu_relax_frag(): %u %u; %u\n",
+      (unsigned) old_var,
+      (unsigned) fragP->fr_var,
+      (unsigned) (fragP->fr_var - old_var)
+    );
     return fragP->fr_var - old_var;
   }
 
@@ -2684,6 +2733,12 @@ md_convert_frag (bfd *abfd ATTRIBUTE_UNUSED,
   //  relax_temp.length);
   if (fragP->fr_var != have_pre_insn_length (cl_insn->have_pre))
   {
+    fprintf (
+      stderr,
+      "fragP->fr_var: %u !=: %u\n",
+      (unsigned) fragP->fr_var,
+      have_pre_insn_length (cl_insn->have_pre)
+    );
     gas_assert (fragP->fr_var == have_pre_insn_length (cl_insn->have_pre));
   }
   //const bool have_g5_index_ra_simm = (
@@ -2990,9 +3045,12 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     //  ? relax_reloc->lpre.reloc
     //  : relax_reloc->lpre_no_relax.reloc;
     cl_insn.reloc = (
-      !pd->is_pcrel
-      ? BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16
-      : BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16_PCREL
+      pd->opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5
+      ? (
+        !pd->is_pcrel
+        ? BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16
+        : BFD_RELOC_SNOWHOUSECPU_S32_FOR_S16_PCREL
+      ) : BFD_RELOC_SNOWHOUSECPU_SHIFT_U5
     );
     //--------
 
@@ -3024,7 +3082,9 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     //  //snowhousecpu_fix_sym_handler (fixP);
     //}
 
-    pd->prefix_insn = snowhousecpu_enc_temp_insn_pre_rshift (pd->opc_info,
+    pd->prefix_insn = snowhousecpu_enc_temp_insn_pre_rshift (
+      //pd->opc_info,
+      &snowhousecpu_opc_info_pre_simm16,
       pd->simm);
   }
   const snowhousecpu_temp_t
@@ -3388,11 +3448,11 @@ md_assemble (char *str)
     //  (unsigned) pd.opc_info->opcode
     //);
     op_end = op_end_prev;
-    //pd.is_pcrel = false;
-    //pd.reg_a = (const snowhousecpu_reg_t *) NULL;
-    //pd.reg_b = (const snowhousecpu_reg_t *) NULL;
-    //pd.reg_c = (const snowhousecpu_reg_t *) NULL;
-    //pd.simm = 0;
+    pd.is_pcrel = false;
+    pd.reg_a = (const snowhousecpu_reg_t *) NULL;
+    pd.reg_b = (const snowhousecpu_reg_t *) NULL;
+    pd.reg_c = (const snowhousecpu_reg_t *) NULL;
+    pd.simm = 0;
     //--------
     //pd.no_relax = !(
     //  (strncmp (pd.opc_info->names[0], op_name,
@@ -3480,6 +3540,14 @@ md_assemble (char *str)
         SNOWHOUSECPU_PARSE_GPR (reg_b);
         SNOWHOUSECPU_PARSE_COMMA ();
         SNOWHOUSECPU_PARSE_EXP ();
+        //fprintf (
+        //  stderr,
+        //  "test: %s %s, %s\n",
+        //  pd.opc_info->name,
+        //  pd.reg_a->name,
+        //  pd.reg_b->name
+        //  //pd.reg_c->name
+        //);
         pd.have_imm = true;
         pd.parse_good = true;
         break;
@@ -4447,6 +4515,80 @@ md_assemble (char *str)
 
     if (pd.parse_good)
     {
+      switch (pd.opc_info->subop.kind)
+      {
+        case SNOWHOUSECPU_SOK_NONE:
+        {
+          break;
+        }
+        case SNOWHOUSECPU_SOK_RC_IDX_FULL:
+        {
+          if (pd.opc_info->subop.is_non_inequality_branch_etc)
+          {
+            //if (
+            //  (pd.reg_a.index == pd.reg_b->index && pd.reg_a->index != 0)
+            //  == (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
+            //)
+            //{
+              if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 0)
+              {
+                //pd.reg_a = gprs[0];
+                pd.reg_b = pd.reg_a;
+              }
+              else if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 1)
+              {
+                // beq, bne
+                fprintf (
+                  stderr,
+                  "beq, bne: %s %s, %s, simm16\n",
+                  pd.opc_info->name,
+                  pd.reg_a->name,
+                  pd.reg_b->name
+                );
+                if (
+                  (pd.reg_a->index == pd.reg_b->index && pd.reg_a->index != 0)
+                  //== (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
+                ) {
+                  pd.reg_a = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
+                  pd.reg_b = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
+                }
+              }
+              else
+              {
+                gas_assert (false);
+              }
+            //}
+          }
+          pd.reg_c = (gprs + pd.opc_info->subop.val);
+        }
+          break;
+        case SNOWHOUSECPU_SOK_RC_IDX_NZ:
+        {
+          //if ((self->subop_rc_idx != 0) == opc_info->subop.val)
+          //{
+          //  finished = true;
+          //}
+          //pd.reg_c = (gprs + pd.opc_info->subop.val);
+        }
+          break;
+        case SNOWHOUSECPU_SOK_IMM16_LO:
+        {
+          const snowhousecpu_temp_t prev_simm = pd.simm;
+          snowhousecpu_set_insn_field_p (
+            SNOWHOUSECPU_SUBOP_IMM16_MASK, SNOWHOUSECPU_SUBOP_IMM16_BITPOS,
+            &pd.simm, pd.opc_info->subop.val
+          );
+          if (pd.opc_info->oparg == SNOWHOUSECPU_OA_RA_RB_SHIFT_U5)
+          {
+            // yes, technically this isn't a full instruction that we're setting here!
+            snowhousecpu_set_insn_field_p (
+              SNOWHOUSECPU_SHIFT_IMM5_MASK, SNOWHOUSECPU_SHIFT_IMM5_BITPOS,
+              &pd.simm, prev_simm
+            );
+          }
+        }
+          break;
+      }
       break;
     }
   }

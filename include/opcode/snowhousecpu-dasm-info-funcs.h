@@ -64,17 +64,23 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
   self->is_bad = false;
   self->opc_info = NULL;
   if (self->op < snowhousecpu_opc_info_a2d_size) {
-    const snowhousecpu_opc_info_t **opc_info_arr = snowhousecpu_opc_info_a2d[self->op];
+    //fprintf (
+    //  stderr,
+    //  "self->op: %u\n",
+    //  (unsigned) self->op
+    //);
+    const snowhousecpu_opc_info_t *opc_info = snowhousecpu_opc_info_a2d[self->op][0];
     //if (self->op != snowhousecpu_opc_info_beq_ra_rb_simm16.op)
-    const snowhousecpu_opc_info_t *opc_info = NULL;
+    //const snowhousecpu_opc_info_t **opc_info = NULL;
     unsigned count = 0;
     for (
-      count=0, opc_info=opc_info_arr[0];
+      count=0; //opc_info=opc_info_arr;
       //opc_info!=NULL;
-      count<snowhousecpu_opc_info_size_arr[self->op];
-      ++opc_info
+      count++<snowhousecpu_opc_info_size_arr[self->op];
+      opc_info=snowhousecpu_opc_info_a2d[self->op][count]
     )
     {
+      //const snowhousecpu_opc_info_t *opc_info = *opc_info_arr;
       bool finished = false;
       switch (opc_info->subop.kind)
       {
@@ -87,13 +93,23 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
         {
           if (self->subop_rc_idx == opc_info->subop.val)
           {
-            if (opc_info->subop.is_non_ineqaulity_branch_etc)
+            if (opc_info->subop.is_non_inequality_branch_etc)
             {
               if (
-                (self->ra_idx == self->rb_idx && self->ra_idx != 0)
-                == (opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
+                (
+                  !(self->ra_idx == self->rb_idx && self->ra_idx != 0)
+                )
+                == (opc_info->subop.is_non_inequality_branch_etc - 1ull)
               )
               {
+                fprintf (
+                  stderr,
+                  "dasm: %s %s, %s, simm16; %u\n",
+                  opc_info->name,
+                  gprs[self->ra_idx].name,
+                  gprs[self->rb_idx].name,
+                  (unsigned) opc_info->subop.is_non_inequality_branch_etc
+                );
                 finished = true;
               }
             }
@@ -135,20 +151,23 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
     {
       self->is_bad = true;
     }
-    switch (self->opc_info->oparg)
+    else
     {
-      case SNOWHOUSECPU_OA_RA_RB_S16:
-      //case SNOWHOUSECPU_OA_RA_RB_SHIFT_U5:
-      case SNOWHOUSECPU_OA_RA_PCREL_S16:
-      case SNOWHOUSECPU_OA_RA_RB_PCREL_S16:
-      case SNOWHOUSECPU_OA_RB_RA_PCREL_S16:
-      case SNOWHOUSECPU_OA_RA_PC_PCREL_S16:
-      case SNOWHOUSECPU_OA_SIMM16:
-        self->have_non_pre_relaxable_imm = false;
-        break;
-      default:
-        self->have_non_pre_relaxable_imm = false;
-        break;
+      switch (self->opc_info->oparg)
+      {
+        case SNOWHOUSECPU_OA_RA_RB_S16:
+        //case SNOWHOUSECPU_OA_RA_RB_SHIFT_U5:
+        case SNOWHOUSECPU_OA_RA_PCREL_S16:
+        case SNOWHOUSECPU_OA_RA_RB_PCREL_S16:
+        case SNOWHOUSECPU_OA_RB_RA_PCREL_S16:
+        case SNOWHOUSECPU_OA_RA_PC_PCREL_S16:
+        case SNOWHOUSECPU_OA_SIMM16:
+          self->have_non_pre_imm = true;
+          break;
+        default:
+          self->have_non_pre_imm = false;
+          break;
+      }
     }
     //else
     //{

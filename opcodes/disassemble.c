@@ -71,6 +71,7 @@
 #define ARCH_mn10200
 #define ARCH_mn10300
 #define ARCH_moxie
+#define ARCH_snowhousecpu
 #define ARCH_flare
 #define ARCH_mt
 #define ARCH_msp430
@@ -515,6 +516,11 @@ disassembler (enum bfd_architecture a,
 #ifdef ARCH_moxie
     case bfd_arch_moxie:
       disassemble = print_insn_moxie;
+      break;
+#endif
+#ifdef ARCH_snowhousecpu
+    case bfd_arch_snowhousecpu:
+      disassemble = print_insn_snowhousecpu;
       break;
 #endif
 #ifdef ARCH_flare

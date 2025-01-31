@@ -3054,10 +3054,10 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     );
     //--------
 
-    printf (
-      "cl_insn.reloc: %s\n",
-      bfd_reloc_type_lookup (stdoutput, cl_insn.reloc)->name
-    );
+    //printf (
+    //  "cl_insn.reloc: %s\n",
+    //  bfd_reloc_type_lookup (stdoutput, cl_insn.reloc)->name
+    //);
 
     //pd->p = frag_more (pd->nbytes);
 

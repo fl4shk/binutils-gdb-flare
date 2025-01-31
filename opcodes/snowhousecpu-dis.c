@@ -59,7 +59,10 @@ snowhousecpu_dasm_info_do_disassemble (snowhousecpu_dasm_info_t *self)
   const snowhousecpu_temp_t temp_simm16 = (
     snowhousecpu_get_insn_field (SNOWHOUSECPU_IMM16_MASK, SNOWHOUSECPU_IMM16_BITPOS, self->iword)
   );
-  snowhousecpu_temp_t temp_simm32 = temp_simm16;
+  snowhousecpu_temp_t temp_simm32 = snowhousecpu_sign_extend (
+    temp_simm16, SNOWHOUSECPU_IMM16_BITSIZE
+  );
+  self->simm = temp_simm32;
 
   if (
     snowhousecpu_get_insn_field (SNOWHOUSECPU_OP_MASK, SNOWHOUSECPU_OP_BITPOS, self->iword)
@@ -88,9 +91,9 @@ snowhousecpu_dasm_info_do_disassemble (snowhousecpu_dasm_info_t *self)
       ),
       32
     );
+    self->simm = temp_simm32; // change it for the bit shifts by immediate values
   }
 
-  self->simm = temp_simm32; // change it for the bit shifts by immediate values
   snowhousecpu_dasm_info_do_disassemble_worker (self);
 }
 

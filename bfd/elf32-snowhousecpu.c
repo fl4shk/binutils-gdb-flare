@@ -2471,9 +2471,11 @@ _snowhousecpu_elf_relax_section (bfd *abfd,
 /* -------- */
 #define ELF_ARCH            bfd_arch_snowhousecpu
 #define ELF_MACHINE_CODE    EM_SNOWHOUSECPU_UNOFFICIAL
-#define ELF_MAXPAGESIZE     0x1000
+#define ELF_MAXPAGESIZE     0x10000
 //#define ELF_COMMONPAGESIZE  0x1000
 
+//#undef TARGET_BIG_SYM
+//#undef TARGET_BIG_NAME
 #define TARGET_LITTLE_SYM    snowhousecpu_elf32_vec
 #define TARGET_LITTLE_NAME   "elf32-snowhousecpu"
 
@@ -2498,10 +2500,10 @@ _snowhousecpu_elf_relax_section (bfd *abfd,
 
 #include "elf32-target.h"
 
-#undef TARGET_LITTLE_SYM
-#undef TARGET_LITTLE_NAME
-#undef TARGET_BIG_SYM
-#undef TARGET_BIG_NAME
-
-#undef ELF_MAXPAGESIZE
+//#undef TARGET_LITTLE_SYM
+//#undef TARGET_LITTLE_NAME
+//#undef TARGET_BIG_SYM
+//#undef TARGET_BIG_NAME
+//
+//#undef ELF_MAXPAGESIZE
 //#undef ELF_COMMONPAGESIZE

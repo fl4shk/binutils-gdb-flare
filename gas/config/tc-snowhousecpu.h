@@ -178,7 +178,7 @@ snowhousecpu_relax_frag (asection *sec, fragS *fragP, long stretch);
 
 /* No shared lib support, so we don't need to ensure externally
   visible symbols can be overridden.  */
-#define EXTERN_FORCE_RELOC 1
+#define EXTERN_FORCE_RELOC 0
 
 /* Used to generate fixups during data allocation pseudo-ops */  
 #define TC_CONS_FIX_NEW snowhousecpu_cons_fix_new

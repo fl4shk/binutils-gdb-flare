@@ -15,7 +15,7 @@ TORS=".tors :
   } > ram"
 
 cat <<EOF
-/* Copyright (C) 2014-2024 Free Software Foundation, Inc.
+/* Copyright (C) 2025 Free Software Foundation, Inc.
 
    Copying and distribution of this script, with or without modification,
    are permitted in any medium without royalty provided the copyright
@@ -24,12 +24,18 @@ cat <<EOF
 OUTPUT_FORMAT("${OUTPUT_FORMAT}")
 OUTPUT_ARCH(${ARCH})
 
+MEMORY
+{
+  /* rom (rx) : */
+  ram (w!rx) : ORIGIN = 0x0000, LENGTH = 0x4000000
+}
+
 SECTIONS
 {
   .text :
   {
-    *(.text)
     ${RELOCATING+KEEP (*(SORT_NONE(.init)))
+    *(.text)
     KEEP (*(SORT_NONE(.fini)))
     *(.strings)
     _etext = . ; }
@@ -37,16 +43,21 @@ SECTIONS
   ${CONSTRUCTING+${TORS}}
   .data :
   {
+    ${RELOCATING+ ___data_start = . ; }
+    ${RELOCATING+ ___data_source = . ; }
     *(.data)
-    ${RELOCATING+ _edata = . ; }
+    ${RELOCATING+ ___data_end = . ; }
+    ${RELOCATING+ ___data_size = . - ___data_start ;  }
   } ${RELOCATING+ > ram}
   .bss :
   {
-    ${RELOCATING+ _bss_start = . ; }
+    ${RELOCATING+ ___bss_start = . ; }
     *(.bss)
     *(COMMON)
-    ${RELOCATING+ _end = . ;  }
+    ${RELOCATING+ ___bss_end = . ;  }
+    ${RELOCATING+ ___bss_size = . - ___bss_start ;  }
   } ${RELOCATING+ > ram}
+  /* ${RELOCATING+ PROVIDE (_stack = 0x03fffffc)} */
   .stack ${RELOCATING+ 0x30000 }  :
   {
     ${RELOCATING+ _stack = . ; }

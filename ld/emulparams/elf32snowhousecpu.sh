@@ -1,10 +1,13 @@
-SCRIPT_NAME=elf
+SCRIPT_NAME=snowhousecpu
 TEMPLATE_NAME=elf
 OUTPUT_FORMAT="elf32-snowhousecpu"
 LITTLE_OUTPUT_FORMAT="elf32-snowhousecpu"
-TEXT_START_ADDR=0x1000
-#TEXT_START_ADDR=0x0000
+#TEXT_START_ADDR=0x1000
+TEXT_START_ADDR=0x0000
+ENTRY=0x0000
 MAXPAGESIZE="CONSTANT (MAXPAGESIZE)"
 ARCH=snowhousecpu
 EMBEDDED=yes
-STACK_ADDR=0x40000000
+STACK_ADDR=0x03fffffc # 64 MiB - 4 Bytes (basically the end of CPU-addressable SDRAM in the SnowHouse Console)
+#STACK_ADDR=0x03e00000 # 62 MiB (almost the end of CPU-addressable SDRAM in the SnowHouse Console)
+ALIGNMENT=4

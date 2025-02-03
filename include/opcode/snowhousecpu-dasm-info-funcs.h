@@ -157,6 +157,12 @@ snowhousecpu_dasm_info_do_disassemble_worker (snowhousecpu_dasm_info_t *self)
         {
           self->simm = temp_shift_imm5;
         }
+        //fprintf (
+	//  stderr,
+	//  "name: %s %u\n",
+	//  self->opc_info->name,
+	//  opc_info->oparg
+        //);
         break;
       }
       //++count;

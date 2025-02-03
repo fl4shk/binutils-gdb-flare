@@ -1811,8 +1811,14 @@ md_begin (void)
     //opc_info!=NULL;
     ++opc_info)
   {
-    snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
-    //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
+    if (
+      *opc_info != &snowhousecpu_opc_info_cpy_ra_rb
+      && *opc_info != &snowhousecpu_opc_info_cpy_ra_simm16
+    )
+    {
+      snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
+      //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
+    }
   }
   for (count=0, opc_info=snowhousecpu_opc_info_sub_arr;
     count++<snowhousecpu_opc_info_sub_arr_size;
@@ -1886,6 +1892,20 @@ md_begin (void)
   {
     snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
     //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
+  }
+  for (count=0, opc_info=snowhousecpu_opc_info_add_arr;
+    count++<snowhousecpu_opc_info_add_arr_size;
+    //opc_info!=NULL;
+    ++opc_info)
+  {
+    if (
+      *opc_info == &snowhousecpu_opc_info_cpy_ra_rb
+      || *opc_info == &snowhousecpu_opc_info_cpy_ra_simm16
+    )
+    {
+      snowhousecpu_opci_v2d_and_index_hash_append (*opc_info/*,*/ /*false,*/ /*0*/);
+      //snowhousecpu_opci_v2d_and_index_hash_append (opc_info, true, 0);
+    }
   }
 
 
@@ -2373,7 +2393,10 @@ snowhousecpu_relax_temp_ctor (snowhousecpu_relax_temp_t *self,
   //snowhousecpu_relax_insn_ctor
   //  ((relax_insn = &cl_insn->relax_insn),
   //  cl_insn);
-  if (cl_insn->opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5)
+  if (
+    relax_insn->have_imm
+    && cl_insn->opc_info->oparg != SNOWHOUSECPU_OA_RA_RB_SHIFT_U5
+  )
   {
     self->length = 8;
   }
@@ -3039,9 +3062,19 @@ snowhousecpu_assemble_post_parse_worker (snowhousecpu_parse_data_t *pd,
     cl_insn.have_pre = SNOWHOUSECPU_HAVE_PRE_NONE;
     temp_ex = NULL;
     cl_insn.reloc = BFD_RELOC_UNUSED;
+    //fprintf (
+    //  stderr,
+    //  "test: %x\n",
+    //  (unsigned) cl_insn.data
+    //);
   }
   else // if (pd->have_imm)
   {
+    //fprintf (
+    //  stderr,
+    //  "test 1: %x\n",
+    //  (unsigned) cl_insn.data
+    //);
     //printf (
     //  "pd->have_imm: %lx\n",
     //  pd->simm
@@ -3542,6 +3575,15 @@ md_assemble (char *str)
         SNOWHOUSECPU_PARSE_GPR (reg_a);
         SNOWHOUSECPU_PARSE_COMMA ();
         SNOWHOUSECPU_PARSE_EXP ();
+        //fprintf (
+        //  stderr,
+        //  //"test: %s %s, %s\n",
+        //  "test: %s %s\n",
+        //  pd.opc_info->name,
+        //  pd.reg_a->name//,
+        //  //pd.reg_b->name
+        //  //pd.reg_c->name
+        //);
         pd.have_imm = true;
         pd.parse_good = true;
         break;
@@ -3697,841 +3739,6 @@ md_assemble (char *str)
         pd.have_imm = true;
         pd.parse_good = true;
         break;
-      //case SNOWHOUSECPU_OA_RA_RB_XCHG:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RB_XCHG_LOCK:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  pd.parse_good = true;
-      //  pd.fwl = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RC_RB_CMPXCHG:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_ATOMIC; 
-      //}
-      //case SNOWHOUSECPU_OA_RA_RC_RB_CMPXCHG_LOCK:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_ATOMIC; 
-      //  pd.fwl = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_S5:
-      //{
-      //  //char *where;
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_PC_S5:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_PC ();
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_SP_S5:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_NOENC_REG ("sp");
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_FP_S5:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_NOENC_REG ("fp");
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //}
-      //  break;
-      ////case SNOWHOUSECPU_OA_RA_PC_S5:
-      ////case SNOWHOUSECPU_OA_RA_SP_S5:
-      ////case SNOWHOUSECPU_OA_RA_FP_S5:
-      ////{
-      ////  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-
-      ////  switch (pd.opc_info->oparg)
-      ////  {
-      ////    case SNOWHOUSECPU_OA_RA_PC_S5:
-      ////      SNOWHOUSECPU_PARSE_PC ();
-      ////      break;
-      ////    case SNOWHOUSECPU_OA_RA_SP_S5:
-      ////      SNOWHOUSECPU_PARSE_NOENC_REG ("sp");
-      ////      break;
-      ////    case SNOWHOUSECPU_OA_RA_FP_S5:
-      ////      SNOWHOUSECPU_PARSE_NOENC_REG ("fp");
-      ////      break;
-      ////  }
-
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-
-      ////  SNOWHOUSECPU_PARSE_EXP ();
-
-      ////  pd.parse_good = true;
-      ////  pd.have_imm = true;
-      ////}
-      ////  break;
-      //case SNOWHOUSECPU_OA_RA_U5:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //  pd.is_small_imm_unsigned = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_U5:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  pd.parse_good = true;
-      //  pd.have_imm = true;
-      //  pd.is_small_imm_unsigned = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  //printf ("snowhousecpu dbg: testificate\n");
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  //printf ("snowhousecpu dbg: %s %s, %s\n",
-      //  //  pd.opc_info->names[0], pd.reg_a->name, pd.reg_b->name);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_SP_RB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_NOENC_REG ("sp");
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_FP_RB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_NOENC_REG ("fp");
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_PCREL_S9:
-      ////case SNOWHOUSECPU_OA_PCREL_S32_NO_RELAX:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  //SNOWHOUSECPU_PARSE_EXP ();
-      //  SNOWHOUSECPU_PARSE_EXP_POST_POUND ();
-
-      //  pd.parse_good = true;
-      //  pd.is_pcrel = true;
-      //  pd.have_imm = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_IRA:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_NOENC_REG ("ira");
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_SB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_RB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_SB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_PC_RB:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_PC ();
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-//    //  case SNOWHOUSECPU_OA_RA_RB_RC_DIVMOD:
-//    //  {
-//    //  SNOWHOUSECPU_SKIP_ISSPACE ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-//    //  SNOWHOUSECPU_PARSE_COMMA ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-//    //  SNOWHOUSECPU_PARSE_COMMA ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-//    //  pd.parse_good = true;
-//    //  //pd.have_index = true;
-//    //    pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_DIVMOD; 
-//    //  }
-//    //  break;
-//    //  case SNOWHOUSECPU_OA_RC_RD_RA_RB_LMUL:
-//    //  {
-//    //  SNOWHOUSECPU_SKIP_ISSPACE ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-//    //  SNOWHOUSECPU_PARSE_COMMA ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_d);
-//    //  SNOWHOUSECPU_PARSE_COMMA ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-//    //  SNOWHOUSECPU_PARSE_COMMA ();
-//    //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-//    //  pd.parse_good = true;
-//    //  //pd.have_index = true;
-//    //    pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LMUL; 
-//    //  }
-//    //  break;
-      ////case SNOWHOUSECPU_OA_RA_RB_RC_RD_DIVMOD64:
-      ////{
-      ////  SNOWHOUSECPU_SKIP_ISSPACE ();
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_c);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_d);
-      ////  pd.parse_good = true;
-      ////  //pd.have_index = true;
-      ////  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_DIVMOD64; 
-      ////}
-      //  //break;
-      //case SNOWHOUSECPU_OA_RA_IMPLICIT_SP:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  pd.reg_b = snowhousecpu_reg_lookup ("sp");
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_IMPLICIT_SP:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  pd.reg_b = snowhousecpu_reg_lookup ("sp");
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_PC_IMPLICIT_SP:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_PC ();
-      //  pd.reg_b = snowhousecpu_reg_lookup ("sp");
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RB_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      ////case SNOWHOUSECPU_OA_RA_RB_S7_LDST_32:
-      ////{
-      ////  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-
-      ////  if (*op_end != '[')
-      ////  {
-      ////    break;
-      ////  }
-      ////  ++op_end;
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      ////  if (*op_end != ']')
-      ////  {
-      ////    break;
-      ////  }
-      ////  ++op_end;
-
-      ////  pd.ex.X_op = O_constant;
-      ////  pd.ex.X_add_number = 0x0;
-
-      ////  pd.parse_good = true;
-      ////  pd.have_imm = true;
-      ////  pd.have_index_ra_simm = true;
-      ////}
-      ////  break;
-      //case SNOWHOUSECPU_OA_RA_RB_RC_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  //pd.ex.X_op = O_constant;
-      //  //pd.ex.X_add_number = 0x0;
-
-      //  pd.parse_good = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LDST;
-      //  //pd.have_imm = true;
-      //  //printf("SNOWHOUSECPU_OA_RA_RB_RC_LDST\n");
-      //}
-      //  break;
-      ////case SNOWHOUSECPU_OA_RA_RB_RC_LDST_32:
-      ////{
-      ////  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-
-      ////  if (*op_end != '[')
-      ////  {
-      ////    break;
-      ////  }
-      ////  ++op_end;
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      ////  SNOWHOUSECPU_PARSE_COMMA ();
-
-      ////  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      ////  if (*op_end != ']')
-      ////  {
-      ////    break;
-      ////  }
-      ////  ++op_end;
-
-      ////  pd.ex.X_op = O_constant;
-      ////  pd.ex.X_add_number = 0x0;
-
-      ////  pd.parse_good = true;
-      ////  pd.have_imm = true;
-      ////  //pd.have_index = true;
-      ////  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LDST;
-      ////}
-      ////  break;
-      //case SNOWHOUSECPU_OA_RA_RB_S7_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.have_imm = true;
-      //  pd.parse_good = true;
-      //  pd.have_index_ra_simm = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RB_RC_S7_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LDST;
-      //  pd.have_index_ra_simm = true;
-      //  pd.have_imm = true;
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RB_CPY64:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  //if (*op_end != '#') 
-      //  //{
-      //  //  goto post_oa_switch;
-      //  //}
-      //  //++op_end;
-
-      //  //op_end = (char *)clear_and_parse_const_dbl_save_ilp (op_end,
-      //  //  &pd.const_dbl);
-
-      //  //if (op_end == (char *) NULL)
-      //  //{
-      //  //  goto post_oa_switch;
-      //  //}
-      //  //++op_end;
-      //  SNOWHOUSECPU_PARSE_EXP ();
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP_1 ();
-
-      //  pd.have_imm = true;
-      //  pd.have_cpy64 = true;
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_RB_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_SB_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_b);
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_RB_RC_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.parse_good = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LDST;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_SA_SB_RC_LDST:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_SPR (reg_b);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.parse_good = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_LDST;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_S5_JUSTADDR:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.have_imm = true;
-      //  pd.is_g7_icreload = true;
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_JUSTADDR:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.ex.X_op = O_constant;
-      //  pd.ex.X_add_number = 0x0;
-
-      //  pd.have_imm = true;
-      //  pd.is_g7_icreload = true;
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RC_JUSTADDR:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  pd.ex.X_op = O_constant;
-      //  pd.ex.X_add_number = 0x0;
-
-      //  pd.have_imm = true;
-      //  pd.is_g7_icreload = true;
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_JUSTADDR;
-      //  pd.parse_good = true;
-      //}
-      //  break;
-      //case SNOWHOUSECPU_OA_RA_RC_S5_JUSTADDR:
-      //{
-      //  SNOWHOUSECPU_SKIP_ISSPACE ();
-
-      //  if (*op_end != '[')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  SNOWHOUSECPU_PARSE_GPR (reg_a);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_GPR (reg_c);
-      //  SNOWHOUSECPU_PARSE_COMMA ();
-      //  SNOWHOUSECPU_PARSE_EXP ();
-
-      //  if (*op_end != ']')
-      //  {
-      //    break;
-      //  }
-      //  ++op_end;
-
-      //  //pd.have_index = true;
-      //  pd.have_index_2reg_kind = SNOWHOUSECPU_HIDX2R_KIND_JUSTADDR;
-      //  pd.have_imm = true;
-      //  pd.is_g7_icreload = true;
-      //  pd.parse_good = true;
-      //}
-      //  break;
       default:
         abort ();
         break;
@@ -4550,90 +3757,100 @@ md_assemble (char *str)
 
     if (pd.parse_good)
     {
-      switch (pd.opc_info->subop.kind)
+      //if (
+      //  pd.opc_info != &snowhousecpu_opc_info_cpy_ids_rb
+      //  && pd.opc_info != &snowhousecpu_opc_info_cpy_ra_ira
+      //  && pd.opc_info != &snowhousecpu_opc_info_cpy_ids_rb
+      //  && pd.opc_info != &snowhousecpu_opc_info_ret_ira
+      //)
       {
-        case SNOWHOUSECPU_SOK_NONE:
-        {
-          break;
-        }
-        case SNOWHOUSECPU_SOK_RC_IDX_FULL:
-        {
-          if (pd.opc_info->subop.is_non_inequality_branch_etc)
-          {
-            //if (
-            //  (pd.reg_a.index == pd.reg_b->index && pd.reg_a->index != 0)
-            //  == (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
-            //)
-            //{
-              if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 0)
-              {
-                //pd.reg_a = gprs[0];
-                pd.reg_b = pd.reg_a;
-              }
-              else if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 1)
-              {
-                // beq, bne
-                //fprintf (
-                //  stderr,
-                //  "beq, bne: %s %s, %s, simm16\n",
-                //  pd.opc_info->name,
-                //  pd.reg_a->name,
-                //  pd.reg_b->name
-                //);
-                if (
-                  (pd.reg_a->index == pd.reg_b->index && pd.reg_a->index != 0)
-                  //== (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
-                ) {
-                  pd.reg_a = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
-                  pd.reg_b = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
-                }
-              }
-              else
-              {
-                gas_assert (false);
-              }
-            //}
-          }
-          pd.reg_c = (gprs + pd.opc_info->subop.val);
-        }
-          break;
-        case SNOWHOUSECPU_SOK_RC_IDX_NZ:
-        {
-          //if ((self->subop_rc_idx != 0) == opc_info->subop.val)
-          //{
-          //  finished = true;
-          //}
-          //pd.reg_c = (gprs + pd.opc_info->subop.val);
-          //fprintf (
-          //  stderr,
-          //  "debug in parse: %s\n",
-          //  pd.reg_c != NULL ? pd.reg_c->name : "null"
-          //);
-        }
-          break;
-        case SNOWHOUSECPU_SOK_IMM16_LO:
-        {
-          const snowhousecpu_temp_t prev_simm = pd.simm;
-          snowhousecpu_set_insn_field_p (
-            SNOWHOUSECPU_SUBOP_IMM16_MASK, SNOWHOUSECPU_SUBOP_IMM16_BITPOS,
-            &pd.simm, pd.opc_info->subop.val
-          );
-          if (pd.opc_info->oparg == SNOWHOUSECPU_OA_RA_RB_SHIFT_U5)
-          {
-            // yes, technically this isn't a full instruction that we're setting here!
-            snowhousecpu_set_insn_field_p (
-              SNOWHOUSECPU_SHIFT_IMM5_MASK, SNOWHOUSECPU_SHIFT_IMM5_BITPOS,
-              &pd.simm, prev_simm
-            );
-            //fprintf (
-            //  stderr,
-            //  "shift by immediate: %lx %lu\n",
-            //  pd.simm,
-            //  prev_simm
-            //);
-          }
-        }
-          break;
+	switch (pd.opc_info->subop.kind)
+	{
+	  case SNOWHOUSECPU_SOK_NONE:
+	  {
+	    break;
+	  }
+	  case SNOWHOUSECPU_SOK_RC_IDX_FULL:
+	  {
+	    if (pd.opc_info->subop.is_non_inequality_branch_etc)
+	    {
+	      //if (
+	      //  (pd.reg_a.index == pd.reg_b->index && pd.reg_a->index != 0)
+	      //  == (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
+	      //)
+	      //{
+		if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 0)
+		{
+		  //pd.reg_a = gprs[0];
+		  pd.reg_b = pd.reg_a;
+		}
+		else if (pd.opc_info->subop.is_non_inequality_branch_etc - 1 == 1)
+		{
+		  // beq, bne
+		  //fprintf (
+		  //  stderr,
+		  //  "beq, bne: %s %s, %s, simm16\n",
+		  //  pd.opc_info->name,
+		  //  pd.reg_a->name,
+		  //  pd.reg_b->name
+		  //);
+		  if (
+		    (pd.reg_a->index == pd.reg_b->index && pd.reg_a->index != 0)
+		    //== (pd.opc_info->subop.is_non_ineqaulity_branch_etc - 1ull)
+		  ) {
+		    pd.reg_a = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
+		    pd.reg_b = (gprs + SNOWHOUSECPU_GPR_ENUM_R0);
+		  }
+		}
+		else
+		{
+		  gas_assert (false);
+		}
+	      //}
+	    }
+	    pd.reg_c = (gprs + pd.opc_info->subop.val);
+	  }
+	    break;
+	  case SNOWHOUSECPU_SOK_RC_IDX_NZ:
+	  {
+	    //if ((self->subop_rc_idx != 0) == opc_info->subop.val)
+	    //{
+	    //  finished = true;
+	    //}
+	    //pd.reg_c = (gprs + pd.opc_info->subop.val);
+	    //fprintf (
+	    //  stderr,
+	    //  "debug in parse: %s\n",
+	    //  pd.reg_c != NULL ? pd.reg_c->name : "null"
+	    //);
+	  }
+	    break;
+	  case SNOWHOUSECPU_SOK_IMM16_LO:
+	  {
+	    const snowhousecpu_temp_t prev_simm = pd.simm;
+	    snowhousecpu_set_insn_field_p (
+	      SNOWHOUSECPU_SUBOP_IMM16_MASK, SNOWHOUSECPU_SUBOP_IMM16_BITPOS,
+	      &pd.simm, pd.opc_info->subop.val
+	    );
+	    if (
+	      pd.opc_info->oparg == SNOWHOUSECPU_OA_RA_RB_SHIFT_U5
+	    )
+	    {
+	      // yes, technically this isn't a full instruction that we're setting here!
+	      snowhousecpu_set_insn_field_p (
+		SNOWHOUSECPU_SHIFT_IMM5_MASK, SNOWHOUSECPU_SHIFT_IMM5_BITPOS,
+		&pd.simm, prev_simm
+	      );
+	      //fprintf (
+	      //  stderr,
+	      //  "shift by immediate: %lx %lu\n",
+	      //  pd.simm,
+	      //  prev_simm
+	      //);
+	    }
+	  }
+	    break;
+	}
       }
       break;
     }

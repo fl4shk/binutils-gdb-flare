@@ -320,7 +320,7 @@ do_print_insn_snowhousecpu (snowhousecpu_dasm_info_t *args)
       {
 	fpr (stream, "%s\t%s, %s",
 	  args->opc_info->name,
-	  gprs[SNOWHOUSECPU_SPR_ENUM_IDS].name,
+	  sprs[SNOWHOUSECPU_SPR_ENUM_IDS].name,
 	  gprs[args->rb_idx].name);
       }
     }
@@ -339,7 +339,7 @@ do_print_insn_snowhousecpu (snowhousecpu_dasm_info_t *args)
 	fpr (stream, "%s\t%s, %s",
 	  args->opc_info->name,
 	  gprs[args->ra_idx].name,
-	  gprs[SNOWHOUSECPU_SPR_ENUM_IRA].name);
+	  sprs[SNOWHOUSECPU_SPR_ENUM_IRA].name);
       }
     }
       break;
@@ -356,7 +356,7 @@ do_print_insn_snowhousecpu (snowhousecpu_dasm_info_t *args)
       {
 	fpr (stream, "%s\t%s, %s",
 	  args->opc_info->name,
-	  gprs[SNOWHOUSECPU_SPR_ENUM_IE].name,
+	  sprs[SNOWHOUSECPU_SPR_ENUM_IE].name,
 	  gprs[args->rb_idx].name);
       }
     }
@@ -374,7 +374,7 @@ do_print_insn_snowhousecpu (snowhousecpu_dasm_info_t *args)
       {
 	fpr (stream, "%s\t%s",
 	  args->opc_info->name,
-	  gprs[SNOWHOUSECPU_SPR_ENUM_IRA].name);
+	  sprs[SNOWHOUSECPU_SPR_ENUM_IRA].name);
       }
     }
       break;
